@@ -491,113 +491,122 @@ const CalendarApp = () => {
     : Object.values(fixedWeeklySelections).some(isSelected => isSelected);
 
   return (
-    <section className="section py-4 px-3" style={{ minHeight: '100vh', backgroundColor: isDarkMode ? '#0b0f17' : '#f8fafc', transition: 'background-color 0.25s ease' }}>
+    <section className="section px-4" style={{ minHeight: '100vh', paddingTop: '2.25rem', paddingBottom: '3rem', backgroundColor: isDarkMode ? '#0b0f17' : '#f8fafc', transition: 'background-color 0.25s ease' }}>
       
       {/* Contenedor principal de Propuesta Vacaciones */}
       <div className="container" style={{ maxWidth: '1280px' }}>
 
-        {/* Barra superior con Título y Switch de Modo Oscuro */}
-        <div 
-          className="box is-flex is-justify-content-space-between is-align-items-center mb-4 px-5 py-3.5" 
-          style={{ 
-            border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
-            borderRadius: '14px', 
-            backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
-            boxShadow: isDarkMode ? '0 4px 16px rgba(0,0,0,0.2)' : '0 4px 20px -2px rgba(30, 41, 59, 0.06)'
-          }}
-        >
-          <div className="is-flex is-align-items-center" style={{ gap: '0.75rem' }}>
+        {/* Fila Principal: Panel Leyenda a la izquierda | Panel Calendarios en el centro con Acciones a su derecha */}
+        <div className="columns is-variable is-3 is-desktop">
+
+          {/* 1. Contenedor Propio Izquierdo: Título Propuesta Vacaciones + Colores */}
+          <div className="column is-3-desktop is-4-tablet">
+            
+            {/* Contenedor del Título Propuesta Vacaciones con switch vertical integrado a la derecha */}
             <div 
+              className="box mb-3 p-0 is-flex is-align-items-stretch is-justify-content-space-between" 
               style={{ 
-                width: '38px', 
-                height: '38px', 
-                borderRadius: '10px', 
-                background: 'linear-gradient(135deg, #0e7490 0%, #0d9488 100%)', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                fontSize: '18px', 
-                boxShadow: '0 4px 12px rgba(15, 118, 110, 0.3)',
-                color: '#ffffff'
+                border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', 
+                borderRadius: '12px', 
+                backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+                boxShadow: isDarkMode ? 'none' : '0 4px 16px -2px rgba(30, 41, 59, 0.05)',
+                overflow: 'hidden',
+                minHeight: '52px'
               }}
             >
-              🏖️
-            </div>
-            <div>
-              <h1 className="title is-4 mb-0" style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontWeight: 800, letterSpacing: '-0.02em' }}>
-                Propuesta Vacaciones
-              </h1>
-              <span className="is-size-7" style={{ color: isDarkMode ? '#94a3b8' : '#64748b', fontSize: '11.5px', fontWeight: 500 }}>
-                Organiza y planifica tu calendario laboral
-              </span>
-            </div>
-          </div>
-
-          {/* Switch Modo Oscuro (Sol / Luna) en la cabecera donde antes estaba el botón azul */}
-          <div className="is-flex is-align-items-center">
-            <button
-              onClick={toggleDarkMode}
-              type="button"
-              aria-label={isDarkMode ? 'Cambiar a modo diurno' : 'Cambiar a modo nocturno'}
-              title={isDarkMode ? 'Cambiar a modo diurno' : 'Cambiar a modo nocturno'}
-              style={{
-                position: 'relative',
-                width: '56px',
-                height: '30px',
-                borderRadius: '9999px',
-                padding: '3px',
-                border: 'none',
-                cursor: 'pointer',
-                background: isDarkMode 
-                  ? 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)' 
-                  : 'linear-gradient(135deg, #38bdf8 0%, #f59e0b 100%)',
-                boxShadow: isDarkMode 
-                  ? 'inset 0 2px 4px rgba(0,0,0,0.5), 0 0 10px rgba(99, 102, 241, 0.25)' 
-                  : 'inset 0 2px 4px rgba(0,0,0,0.15), 0 0 10px rgba(245, 158, 11, 0.25)',
-                display: 'flex',
-                alignItems: 'center',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              <div
-                className="theme-switch-knob"
-                style={{
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: '50%',
-                  backgroundColor: '#ffffff',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transform: isDarkMode ? 'translateX(26px)' : 'translateX(0px)'
-                }}
-              >
-                {isDarkMode ? (
-                  <Moon size={14} color="#f59e0b" fill="#f59e0b" />
-                ) : (
-                  <Sun size={14} color="#ea580c" fill="#f59e0b" />
-                )}
+              {/* Lado izquierdo: Título y subtítulo */}
+              <div className="py-2 px-3 is-flex is-flex-direction-column is-justify-content-center" style={{ minWidth: 0, flex: 1 }}>
+                <h1 
+                  className="title mb-0" 
+                  style={{ 
+                    color: isDarkMode ? '#f8fafc' : '#0f172a', 
+                    fontWeight: 800, 
+                    fontSize: '1rem', 
+                    letterSpacing: '-0.01em',
+                    whiteSpace: 'nowrap',
+                    lineHeight: 1.2
+                  }}
+                >
+                  Propuesta Vacaciones
+                </h1>
+                <span 
+                  style={{ 
+                    color: isDarkMode ? '#94a3b8' : '#64748b', 
+                    fontSize: '10.5px', 
+                    fontWeight: 500,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    lineHeight: 1.3,
+                    marginTop: '2px'
+                  }}
+                >
+                  Organiza y planifica tu calendario laboral
+                </span>
               </div>
-            </button>
-          </div>
-        </div>
 
-          {/* Fila Principal: Panel Leyenda a la izquierda | Panel Calendarios en el centro con Acciones a su derecha */}
-          <div className="columns is-variable is-3 is-desktop">
-
-            {/* 1. Contenedor Propio Izquierdo: Colores + Añadir nuevo color */}
-            <div className="column is-3-desktop is-4-tablet">
+              {/* Lado derecho: Switch vertical (alto total, 2 mitades: arriba Sol/Día, abajo Luna/Noche) */}
               <div 
-                className="box p-3 is-flex is-flex-direction-column" 
-                style={{ 
-                  border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
-                  borderRadius: '14px', 
-                  height: '100%', 
-                  backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
-                  boxShadow: isDarkMode ? 'none' : '0 4px 20px -2px rgba(30, 41, 59, 0.05)'
+                className="is-flex is-flex-direction-column"
+                style={{
+                  width: '38px',
+                  borderLeft: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                  backgroundColor: isDarkMode ? '#17202e' : '#f8fafc',
+                  flexShrink: 0
                 }}
               >
+                {/* Mitad superior: Sol / Día */}
+                <div 
+                  onClick={() => isDarkMode && toggleDarkMode()}
+                  className="is-flex is-align-items-center is-justify-content-center"
+                  style={{
+                    flex: 1,
+                    cursor: 'pointer',
+                    backgroundColor: !isDarkMode ? '#e0f2fe' : 'transparent',
+                    borderBottom: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title="Activar modo diurno"
+                >
+                  <Sun 
+                    size={14} 
+                    color={!isDarkMode ? '#0284c7' : '#64748b'} 
+                    fill={!isDarkMode ? '#38bdf8' : 'none'} 
+                    strokeWidth={!isDarkMode ? 2.5 : 2}
+                  />
+                </div>
+
+                {/* Mitad inferior: Luna / Noche */}
+                <div 
+                  onClick={() => !isDarkMode && toggleDarkMode()}
+                  className="is-flex is-align-items-center is-justify-content-center"
+                  style={{
+                    flex: 1,
+                    cursor: 'pointer',
+                    backgroundColor: isDarkMode ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title="Activar modo nocturno"
+                >
+                  <Moon 
+                    size={13} 
+                    color={isDarkMode ? '#a5b4fc' : '#94a3b8'} 
+                    fill={isDarkMode ? '#818cf8' : 'none'} 
+                    strokeWidth={isDarkMode ? 2.5 : 2}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div 
+              className="box p-3 is-flex is-flex-direction-column" 
+              style={{ 
+                border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
+                borderRadius: '14px', 
+                backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+                boxShadow: isDarkMode ? 'none' : '0 4px 20px -2px rgba(30, 41, 59, 0.05)'
+              }}
+            >
                 {/* Cabecera Colores */}
                 <div className="pb-2 mb-2" style={{ borderBottom: isDarkMode ? '1px solid #334155' : '1px solid #edf2f7' }}>
                   <h3 className="is-size-7 is-uppercase has-text-weight-bold" style={{ color: isDarkMode ? '#94a3b8' : '#475569', letterSpacing: '0.05em' }}>
@@ -803,21 +812,21 @@ const CalendarApp = () => {
                   {/* Bloque de los dos calendarios con navegación unida en óvalo (< >) en el centro */}
                   <div className="column is-10-desktop is-12-tablet">
                     <div style={{ position: 'relative' }}>
-                      <div className="columns is-variable is-3 is-mobile mb-0" style={{ alignItems: 'flex-start' }}>
-                        <div className="column is-6 is-flex is-justify-content-center" style={{ alignSelf: 'flex-start' }}>
+                      <div className="is-flex is-justify-content-center" style={{ gap: '1rem', alignItems: 'flex-start' }}>
+                        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 0 }}>
                           {renderMonth(leftYear, leftMonth)}
                         </div>
-                        <div className="column is-6 is-flex is-justify-content-center" style={{ alignSelf: 'flex-start' }}>
+                        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 0 }}>
                           {renderMonth(rightYear, rightMonth)}
                         </div>
                       </div>
 
-                      {/* Óvalo (< >) que sobresale entre ambos calendarios en el centro */}
+                      {/* Óvalo (< >) centrado verticalmente a la perfección con las cabeceras de los meses */}
                       <div 
                         style={{ 
                           position: 'absolute', 
                           left: '50%', 
-                          top: '23px', 
+                          top: '24px', 
                           transform: 'translate(-50%, -50%)', 
                           zIndex: 20 
                         }}
