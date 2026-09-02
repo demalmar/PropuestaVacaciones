@@ -264,27 +264,41 @@ const CalendarApp = () => {
     const cols = showWeekends ? 7 : 5;
 
     return (
-      <div className={`w-full flex-1 ${showWeekends ? 'min-w-[220px]' : 'min-w-[170px]'} border border-blue-400 bg-white transition-all duration-300 rounded-lg overflow-hidden`}>
+      <div 
+        className="box p-0 mb-0 has-background-white" 
+        style={{ 
+          border: '1px solid #3273dc', 
+          borderRadius: '8px', 
+          overflow: 'hidden', 
+          minWidth: showWeekends ? '220px' : '170px',
+          width: '100%' 
+        }}
+      >
         {/* Cabecera del Mes */}
-        <div className="text-center py-2 font-bold text-blue-800 bg-blue-50 border-b border-blue-400">
+        <div 
+          className="has-background-link-light has-text-link-dark has-text-weight-bold has-text-centered py-2 is-size-6" 
+          style={{ borderBottom: '1px solid #3273dc' }}
+        >
           {MONTHS[targetMonth]} {targetYear}
         </div>
         
         {/* Días de la semana (Cabecera interactiva) */}
-        <div className={`grid ${showWeekends ? 'grid-cols-7' : 'grid-cols-5'} border-b border-blue-400 bg-gray-50`}>
+        <div 
+          className={`calendar-grid-${cols}`} 
+          style={{ borderBottom: '1px solid #3273dc', backgroundColor: '#f9fafb' }}
+        >
           {DAYS_OF_WEEK.map((day, index) => {
             if (!showWeekends && index >= 5) return null;
             return (
                 <div 
                     key={day} 
                     onClick={!isExport ? () => handleHeaderDayClick(targetYear, targetMonth, index) : undefined}
-                    className={`
-                        text-center py-1.5 font-bold transition-colors select-none
-                        ${!isExport ? 'cursor-pointer hover:bg-gray-200' : ''}
-                        ${index >= 5 ? 'text-red-600' : 'text-blue-600'} 
-                        ${isHeaderDaySelected(index) ? 'bg-blue-100' : ''}
-                        border-r border-blue-400 last:border-r-0
-                    `}
+                    className={`has-text-centered py-1.5 is-size-7 has-text-weight-bold ${index >= 5 ? 'has-text-danger' : 'has-text-link'} ${isHeaderDaySelected(index) ? 'has-background-info-light' : ''}`}
+                    style={{ 
+                      borderRight: index === cols - 1 ? 'none' : '1px solid #3273dc',
+                      cursor: !isExport ? 'pointer' : 'default',
+                      userSelect: 'none'
+                    }}
                     title={presencialFirstMonday ? `Seleccionar todos los ${day} de este mes` : `Seleccionar todos los ${day} del calendario`}
                 >
                   {day}
@@ -294,7 +308,7 @@ const CalendarApp = () => {
         </div>
         
         {/* Cuadrícula de días */}
-        <div className={`grid ${showWeekends ? 'grid-cols-7' : 'grid-cols-5'}`}>
+        <div className={`calendar-grid-${cols}`}>
           {visibleDays.map((dayData, index) => {
             
             // --- DETERMINAR COLOR DE FONDO ---
@@ -310,45 +324,31 @@ const CalendarApp = () => {
             let bgColorStyle = finalBgColor ? { backgroundColor: finalBgColor } : {};
             
             // Estilos del texto
-            let textClass = 'text-blue-800';
-            if (dayData.dayIndex >= 5 && dayData.isCurrentMonth && !assignedColor) textClass = 'text-red-600 font-bold'; 
-            if (!dayData.isCurrentMonth) textClass = 'text-gray-300'; 
+            let textColorClass = 'has-text-link-dark';
+            if (dayData.dayIndex >= 5 && dayData.isCurrentMonth && !assignedColor) textColorClass = 'has-text-danger has-text-weight-bold'; 
+            if (!dayData.isCurrentMonth) textColorClass = 'has-text-grey-light'; 
             
             // --- LÓGICA DE SELECCIÓN POR COLUMNA (PRESENCIAL) ---
             const isColumnSelected = presencialFirstMonday
               ? weeklySelections[dayData.owningMonthKey]?.[dayData.dayIndex]
               : Boolean(fixedWeeklySelections[dayData.dayIndex]);
-            
-            // Determinar clases de borde para el efecto "bloque"
-            let borderClasses = "border-r border-b border-blue-200"; // Borde por defecto de la celda
-            
-            if (isColumnSelected) {
-                borderClasses += " ring-[1.5px] ring-inset ring-blue-400 z-10 bg-blue-50/30"; 
-            }
-            
-            // Ajustar bordes extremos del calendario para que no queden gruesos
 
             return (
               <div 
                 key={`${targetYear}-${targetMonth}-${index}`}
                 onClick={!isExport ? () => handleDayClick(dayData.dateStr.split('-')[0], parseInt(dayData.dateStr.split('-')[1])-1, parseInt(dayData.dateStr.split('-')[2])) : undefined}
-                className={`
-                    relative h-10 sm:h-11 flex items-center justify-center font-semibold cursor-pointer 
-                    transition-all hover:opacity-80 select-none text-xs sm:text-sm
-                    ${textClass}
-                    ${borderClasses}
-                `}
+                className={`calendar-day-cell ${isColumnSelected ? 'is-presencial' : ''} ${textColorClass}`}
                 style={bgColorStyle}
               >
-                {/* Indicadores visuales refinados para "Das Presenciales" */}
+                {/* Indicadores visuales refinados para "Días Presenciales" */}
                 {isColumnSelected && (
                     <>
-                        <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-blue-500 rounded-full shadow-sm"></div>
-                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500 opacity-20"></div>
+                        <span className="presencial-dot" />
+                        <span className="presencial-bar" />
                     </>
                 )}
                 
-                <span className="relative z-0">{dayData.day}</span>
+                <span style={{ position: 'relative', zIndex: 1, fontSize: '0.82rem' }}>{dayData.day}</span>
               </div>
             );
           })}
@@ -375,219 +375,260 @@ const CalendarApp = () => {
     : Object.values(fixedWeeklySelections).some(isSelected => isSelected);
 
   return (
-    <div className="min-h-screen bg-slate-100 p-3 sm:p-4 md:p-6 flex flex-col items-center overflow-x-auto relative">
+    <section className="section py-4 px-3" style={{ minHeight: '100vh', backgroundColor: '#f0f4f8' }}>
       
       {/* Contenedor principal */}
-      <div className="w-full max-w-[1280px] flex flex-col gap-4">
+      <div className="container" style={{ maxWidth: '1280px' }}>
 
         {/* Barra superior con Título y Botones */}
-        <div className="w-full flex justify-between items-center bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-200 gap-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-800">Propuesta Vacaciones</h1>
-          <div className="flex items-center gap-2 sm:gap-3">
+        <div className="box is-flex is-justify-content-space-between is-align-items-center mb-4 p-4 has-background-white" style={{ border: '1px solid #e2e8f0', borderRadius: '10px' }}>
+          <h1 className="title is-4 mb-0 has-text-grey-dark">Propuesta Vacaciones</h1>
+          <div className="buttons mb-0">
             <button 
                 onClick={() => setShowHowItWorks(true)}
-                className="flex items-center gap-1.5 sm:gap-2 bg-blue-100 hover:bg-blue-200 text-blue-600 px-3 sm:px-4 py-2 rounded-lg shadow-sm transition-all font-semibold text-xs sm:text-sm"
+                className="button is-info is-light is-small"
+                style={{ fontWeight: 600 }}
                 title="Ver instrucciones"
             >
-                <Info size={18} />
-                Cómo funciona
+                <span className="icon is-small"><Info size={16} /></span>
+                <span>¿Cómo funciona?</span>
             </button>
             <button 
                 onClick={handleExportPNG}
-                className="flex items-center gap-1.5 sm:gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg shadow-sm transition-all font-semibold hover:shadow-md text-xs sm:text-sm"
+                className="button is-link is-small"
+                style={{ fontWeight: 600 }}
             >
-                <Download size={18} />
-                Descargar PNG
+                <span className="icon is-small"><Download size={16} /></span>
+                <span>Descargar PNG</span>
             </button>
           </div>
         </div>
 
         {/* Fila Principal: Panel Leyenda a la izquierda | Panel Calendarios en el centro con Acciones a su derecha */}
-        <div className="w-full flex flex-col lg:flex-row items-start gap-4">
+        <div className="columns is-variable is-3 is-desktop">
 
           {/* 1. Contenedor Propio Izquierdo: Leyenda de Colores + Añadir Etiqueta */}
-          <div className="w-full lg:w-64 xl:w-72 bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-3 shrink-0">
-            <div className="border-b pb-2 flex items-center justify-between">
-              <h3 className="font-bold text-slate-700 uppercase text-xs tracking-wider">Leyenda de Colores</h3>
-              <span className="text-[10px] text-slate-400 font-semibold">{legendColors.length} tipos</span>
-            </div>
+          <div className="column is-3-desktop is-4-tablet">
+            <div className="box p-4 has-background-white is-flex is-flex-direction-column" style={{ border: '1px solid #e2e8f0', borderRadius: '10px', height: '100%' }}>
+              <div className="is-flex is-justify-content-space-between is-align-items-center pb-2 mb-3" style={{ borderBottom: '1px solid #edf2f7' }}>
+                <h3 className="is-size-7 is-uppercase has-text-weight-bold has-text-grey">Leyenda de Colores</h3>
+                <span className="tag is-rounded is-light is-small">{legendColors.length} tipos</span>
+              </div>
 
-            {/* Contenedor con scroll interno para la lista de etiquetas */}
-            <div className="flex-1 overflow-y-auto max-h-[340px] flex flex-col gap-2 pr-1">
-              {legendColors.map((item) => {
-                const isSpecial = ['2', '3', '4'].includes(item.id);
-                const limitConfig = limits[item.id];
-                const usage = Object.values(coloredDays).filter(id => id === item.id).length;
-                const remaining = (limitConfig?.max || 0) - usage;
+              {/* Contenedor con scroll interno para la lista de etiquetas */}
+              <div className="custom-scrollbar pr-1 mb-3" style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                {legendColors.map((item) => {
+                  const isSpecial = ['2', '3', '4'].includes(item.id);
+                  const limitConfig = limits[item.id];
+                  const usage = Object.values(coloredDays).filter(id => id === item.id).length;
+                  const remaining = (limitConfig?.max || 0) - usage;
 
-                return (
-                  <div 
-                    key={item.id} 
-                    className={`rounded-lg border transition-all duration-200 p-2 ${activeColorId === item.id ? 'bg-blue-50/60 border-blue-300 shadow-sm ring-1 ring-blue-200' : 'border-slate-200 hover:bg-slate-50'}`}
-                  >
+                  return (
                     <div 
-                      title={item.fullName || item.label} 
-                      onClick={() => setActiveColorId(item.id)} 
-                      className="flex items-center gap-2 cursor-pointer mb-1"
+                      key={item.id} 
+                      className="box p-2 mb-2"
+                      style={{ 
+                        cursor: 'pointer', 
+                        border: activeColorId === item.id ? '2px solid #3273dc' : '1px solid #e2e8f0', 
+                        backgroundColor: activeColorId === item.id ? '#ebf3fe' : '#ffffff', 
+                        boxShadow: 'none',
+                        transition: 'all 0.15s ease'
+                      }}
                     >
-                      <div className="w-4 h-4 rounded shadow-sm border border-black/10 shrink-0" style={{ backgroundColor: item.color }} />
-                      <span className="text-xs font-semibold text-slate-700 truncate flex-1">{item.label}</span>
-                    </div>
-                    {isSpecial && (
-                      <div className="flex items-center gap-2 text-xs px-0.5 pt-1 border-t border-slate-100">
-                        <label className="flex items-center gap-1 cursor-pointer text-slate-500 hover:text-slate-800 transition-colors font-medium">
-                          <input 
-                            type="checkbox" 
-                            checked={limitConfig?.enabled || false} 
-                            onChange={(e) => handleLimitToggle(item.id, e.target.checked)} 
-                            className="rounded w-3 h-3 accent-blue-600 cursor-pointer" 
-                          />
-                          <span className="text-[10px]">Limitar</span>
-                        </label>
-                        {limitConfig?.enabled && (
-                          <div className="flex items-center gap-1 ml-auto">
-                            <input 
-                              type="number" 
-                              min="0" 
-                              value={limitConfig.max} 
-                              onChange={(e) => handleLimitChange(item.id, parseInt(e.target.value) || 0)} 
-                              className="w-9 border border-slate-300 rounded text-[11px] px-1 py-0.5 text-center focus:outline-none focus:ring-1 focus:ring-blue-400 bg-white shadow-sm" 
-                              title="Límite máximo de días" 
-                            />
-                            <span className={`font-bold px-1.5 py-0.5 rounded text-[10px] whitespace-nowrap ${remaining <= 0 ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'}`} title="Días restantes">
-                              {remaining}R
-                            </span>
-                          </div>
-                        )}
+                      <div 
+                        title={item.fullName || item.label} 
+                        onClick={() => setActiveColorId(item.id)} 
+                        className="is-flex is-align-items-center mb-1"
+                        style={{ gap: '0.5rem' }}
+                      >
+                        <span 
+                          style={{ 
+                            width: '18px', 
+                            height: '18px', 
+                            borderRadius: '4px', 
+                            backgroundColor: item.color, 
+                            border: '1px solid rgba(0,0,0,0.15)', 
+                            display: 'inline-block', 
+                            flexShrink: 0 
+                          }} 
+                        />
+                        <span className="is-size-7 has-text-weight-semibold has-text-grey-dark is-flex-grow-1 is-clipped">
+                          {item.label}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                      {isSpecial && (
+                        <div className="is-flex is-align-items-center is-justify-content-space-between pt-1 mt-1" style={{ borderTop: '1px solid #edf2f7' }}>
+                          <label className="checkbox is-size-7 has-text-grey is-flex is-align-items-center" style={{ gap: '0.35rem' }}>
+                            <input 
+                              type="checkbox" 
+                              checked={limitConfig?.enabled || false} 
+                              onChange={(e) => handleLimitToggle(item.id, e.target.checked)} 
+                            />
+                            <span style={{ fontSize: '11px' }}>Limitar</span>
+                          </label>
+                          {limitConfig?.enabled && (
+                            <div className="is-flex is-align-items-center" style={{ gap: '0.25rem' }}>
+                              <input 
+                                type="number" 
+                                min="0" 
+                                value={limitConfig.max} 
+                                onChange={(e) => handleLimitChange(item.id, parseInt(e.target.value) || 0)} 
+                                className="input is-small has-text-centered py-0 px-1"
+                                style={{ width: '42px', height: '22px', fontSize: '11px' }}
+                                title="Límite máximo de días" 
+                              />
+                              <span className={`tag is-small ${remaining <= 0 ? 'is-danger' : 'is-light'}`} style={{ fontSize: '10px', height: '20px', padding: '0 4px', fontWeight: 700 }}>
+                                {remaining}R
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
 
-            {/* Añadir Etiqueta */}
-            <div className="flex flex-col gap-2 p-2.5 bg-slate-50 rounded-lg border border-slate-200 w-full mt-auto">
-              <h4 className="font-semibold text-[11px] text-slate-600 uppercase tracking-wider">Añadir Etiqueta</h4>
-              <div className="flex items-center gap-2 w-full">
-                <input 
-                  type="color" 
-                  value={newColorHex} 
-                  onChange={(e) => setNewColorHex(e.target.value)} 
-                  className="w-5 h-5 shrink-0 rounded cursor-pointer p-0 border-0 bg-transparent" 
-                  title="Seleccionar color" 
-                />
-                <input 
-                  type="text" 
-                  value={newLabel} 
-                  onChange={(e) => setNewLabel(e.target.value)} 
-                  placeholder="Nombre..." 
-                  className="flex-1 min-w-0 px-2 py-1 border border-slate-300 rounded focus:outline-none focus:border-blue-500 text-xs" 
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddColor()} 
-                />
-                <button 
-                  onClick={handleAddColor} 
-                  className="p-1.5 shrink-0 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded transition-colors" 
-                  title="Añadir etiqueta"
-                >
-                  <Plus size={14} />
-                </button>
+              {/* Añadir Etiqueta */}
+              <div className="box has-background-white-ter p-3 mt-auto" style={{ border: '1px solid #e2e8f0', boxShadow: 'none' }}>
+                <label className="label is-size-7 is-uppercase has-text-grey mb-2">Añadir Etiqueta</label>
+                <div className="field has-addons mb-0">
+                  <div className="control">
+                    <input 
+                      type="color" 
+                      value={newColorHex} 
+                      onChange={(e) => setNewColorHex(e.target.value)} 
+                      className="input is-small" 
+                      style={{ width: '36px', padding: '2px', cursor: 'pointer' }}
+                      title="Seleccionar color" 
+                    />
+                  </div>
+                  <div className="control is-expanded">
+                    <input 
+                      type="text" 
+                      value={newLabel} 
+                      onChange={(e) => setNewLabel(e.target.value)} 
+                      placeholder="Nombre..." 
+                      className="input is-small" 
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddColor()} 
+                    />
+                  </div>
+                  <div className="control">
+                    <button 
+                      onClick={handleAddColor} 
+                      className="button is-info is-small" 
+                      title="Añadir etiqueta"
+                    >
+                      <Plus size={14} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* 2. Contenedor de Calendarios + Acciones a la derecha */}
-          <div className="flex-1 min-w-0 bg-slate-50 p-4 md:p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-4">
+          <div className="column is-9-desktop is-8-tablet">
+            <div className="box p-4 has-background-white-ter" style={{ border: '1px solid #e2e8f0', borderRadius: '10px' }}>
 
-            {/* Selector de meses encima */}
-            <div className="w-full flex items-center justify-center gap-4">
-              <button onClick={handlePrevMonth} className="p-2 hover:bg-white rounded-md transition-colors shadow-sm text-slate-700"><ChevronLeft size={20} /></button>
-              <div className="text-center">
-                <div className="font-bold text-lg md:text-xl text-slate-800 flex items-center gap-6">
-                  <span>{MONTHS[leftMonth]} {leftYear}</span>
-                  <span>{MONTHS[rightMonth]} {rightYear}</span>
-                </div>
-              </div>
-              <button onClick={handleNextMonth} className="p-2 hover:bg-white rounded-md transition-colors shadow-sm text-slate-700"><ChevronRight size={20} /></button>
-            </div>
-
-            {/* Meses + Columna derecha de acciones */}
-            <div className="w-full flex flex-col md:flex-row gap-4 items-start justify-center">
-              <div className="flex-1 min-w-0 flex justify-center w-full">{renderMonth(leftYear, leftMonth)}</div>
-              <div className="flex-1 min-w-0 flex justify-center w-full">{renderMonth(rightYear, rightMonth)}</div>
-
-              {/* 3. Columna derecha estrecha: Mostrar fin de semana, Presencial cambia primer lunes, Limpiar calendario, Guardar imagen */}
-              <div className="w-full md:w-48 lg:w-52 flex flex-col gap-2.5 shrink-0">
-                {/* Mostrar fin de semana */}
-                <label className="flex items-center gap-2.5 bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors">
-                  <input 
-                    type="checkbox" 
-                    checked={showWeekends} 
-                    onChange={(e) => setShowWeekends(e.target.checked)} 
-                    className="w-4 h-4 accent-blue-600 rounded cursor-pointer shrink-0" 
-                  />
-                  <span className="text-xs font-semibold text-slate-700 select-none leading-tight">Mostrar fin de semana</span>
-                </label>
-
-                {/* Presencial cambia primer lunes del mes */}
-                <label className="flex items-start gap-2 bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors" title="Si está marcado, los días presenciales cambian a partir del primer lunes del mes. Si se desmarca, se seleccionan siempre esas columnas en todo el calendario.">
-                  <input 
-                    type="checkbox" 
-                    checked={presencialFirstMonday} 
-                    onChange={(e) => {
-                      const val = e.target.checked;
-                      setPresencialFirstMonday(val);
-                      if (!val && Object.keys(fixedWeeklySelections).length === 0) {
-                        const current = weeklySelections[`${leftYear}-${leftMonth}`];
-                        if (current) setFixedWeeklySelections(current);
-                      }
-                    }} 
-                    className="w-4 h-4 mt-0.5 accent-blue-600 rounded cursor-pointer shrink-0" 
-                  />
-                  <span className="text-xs font-semibold text-slate-700 select-none leading-tight">Presencial cambia primer lunes del mes</span>
-                </label>
-
-                {/* Limpiar calendario */}
-                <div className="w-full">
-                  {showClearConfirm ? (
-                    <div className="flex flex-col gap-2 p-2.5 bg-white rounded-lg border border-red-200 shadow-sm">
-                      <span className="text-xs text-red-600 font-semibold text-center leading-tight">¿Borrar todo lo marcado?</span>
-                      <div className="flex flex-col gap-1.5">
-                        <button 
-                          onClick={() => { setColoredDays({}); setWeeklySelections({}); setFixedWeeklySelections({}); setShowClearConfirm(false); }} 
-                          className="w-full bg-red-500 text-white py-1.5 rounded-md text-xs font-bold hover:bg-red-600 transition-colors shadow-sm"
-                        >
-                          Sí, borrar
-                        </button>
-                        <button 
-                          onClick={() => setShowClearConfirm(false)} 
-                          className="w-full bg-slate-200 text-slate-700 py-1.5 rounded-md text-xs font-bold hover:bg-slate-300 transition-colors shadow-sm"
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button 
-                      onClick={() => setShowClearConfirm(true)} 
-                      className="flex items-center justify-center gap-2 w-full py-2.5 px-2.5 bg-white border border-red-200 text-red-500 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors text-xs font-semibold shadow-sm"
-                      title="Limpiar todas las selecciones del calendario"
-                    >
-                      <Trash2 size={16} /> 
-                      <span>Limpiar calendario</span>
-                    </button>
-                  )}
-                </div>
-
-                {/* Guardar imagen */}
-                <button 
-                  onClick={handleExportPNG}
-                  className="flex items-center justify-center gap-2 w-full bg-green-600 hover:bg-green-700 text-white py-2.5 px-2.5 rounded-lg shadow-sm transition-all font-semibold hover:shadow-md text-xs"
-                  title="Descargar imagen de la propuesta en PNG"
-                >
-                  <Download size={16} /> 
-                  <span>Guardar imagen</span>
+              {/* Selector de meses encima */}
+              <div className="is-flex is-align-items-center is-justify-content-center mb-4" style={{ gap: '1rem' }}>
+                <button onClick={handlePrevMonth} className="button is-white is-rounded shadow-sm" title="Mes anterior">
+                  <ChevronLeft size={18} />
                 </button>
+                <h2 className="title is-4 mb-0 has-text-grey-dark has-text-weight-bold">
+                  <span className="mr-4">{MONTHS[leftMonth]} {leftYear}</span>
+                  <span>{MONTHS[rightMonth]} {rightYear}</span>
+                </h2>
+                <button onClick={handleNextMonth} className="button is-white is-rounded shadow-sm" title="Mes siguiente">
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+
+              {/* Meses + Columna derecha de acciones */}
+              <div className="columns is-variable is-3 is-desktop">
+                <div className="column is-5-desktop is-6-tablet is-flex is-justify-content-center">
+                  {renderMonth(leftYear, leftMonth)}
+                </div>
+                <div className="column is-5-desktop is-6-tablet is-flex is-justify-content-center">
+                  {renderMonth(rightYear, rightMonth)}
+                </div>
+
+                {/* 3. Columna derecha estrecha: Mostrar fin de semana, Presencial cambia primer lunes, Limpiar calendario, Guardar imagen */}
+                <div className="column is-2-desktop is-12-tablet">
+                  <div className="is-flex is-flex-direction-column" style={{ gap: '0.65rem' }}>
+                    {/* Mostrar fin de semana */}
+                    <label className="checkbox box p-3 is-flex is-align-items-center mb-0" style={{ gap: '0.5rem', border: '1px solid #e2e8f0', boxShadow: 'none' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={showWeekends} 
+                        onChange={(e) => setShowWeekends(e.target.checked)} 
+                      />
+                      <span className="is-size-7 has-text-weight-semibold has-text-grey-darker">Mostrar fin de semana</span>
+                    </label>
+
+                    {/* Presencial cambia primer lunes del mes */}
+                    <label className="checkbox box p-3 is-flex is-align-items-start mb-0" style={{ gap: '0.5rem', border: '1px solid #e2e8f0', boxShadow: 'none' }} title="Si está marcado, los días presenciales cambian a partir del primer lunes del mes. Si se desmarca, se seleccionan siempre esas columnas en todo el calendario.">
+                      <input 
+                        type="checkbox" 
+                        checked={presencialFirstMonday} 
+                        className="mt-1"
+                        onChange={(e) => {
+                          const val = e.target.checked;
+                          setPresencialFirstMonday(val);
+                          if (!val && Object.keys(fixedWeeklySelections).length === 0) {
+                            const current = weeklySelections[`${leftYear}-${leftMonth}`];
+                            if (current) setFixedWeeklySelections(current);
+                          }
+                        }} 
+                      />
+                      <span className="is-size-7 has-text-weight-semibold has-text-grey-darker">Presencial cambia primer lunes del mes</span>
+                    </label>
+
+                    {/* Limpiar calendario */}
+                    <div>
+                      {showClearConfirm ? (
+                        <div className="notification is-danger is-light p-3 mb-0" style={{ border: '1px solid #f87171' }}>
+                          <p className="is-size-7 has-text-weight-bold has-text-centered mb-2">¿Borrar todo lo marcado?</p>
+                          <div className="buttons are-small mb-0 is-flex">
+                            <button 
+                              onClick={() => { setColoredDays({}); setWeeklySelections({}); setFixedWeeklySelections({}); setShowClearConfirm(false); }} 
+                              className="button is-danger is-fullwidth"
+                            >
+                              Sí, borrar
+                            </button>
+                            <button 
+                              onClick={() => setShowClearConfirm(false)} 
+                              className="button is-light is-fullwidth"
+                            >
+                              Cancelar
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={() => setShowClearConfirm(true)} 
+                          className="button is-danger is-outlined is-fullwidth is-small"
+                          title="Limpiar todas las selecciones del calendario"
+                        >
+                          <span className="icon is-small"><Trash2 size={15} /></span>
+                          <span>Limpiar calendario</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Guardar imagen */}
+                    <button 
+                      onClick={handleExportPNG}
+                      className="button is-success is-fullwidth is-small"
+                      title="Descargar imagen de la propuesta en PNG"
+                    >
+                      <span className="icon is-small"><Download size={15} /></span>
+                      <span>Guardar imagen</span>
+                    </button>
+                  </div>
+                </div>
+
               </div>
 
             </div>
@@ -598,34 +639,34 @@ const CalendarApp = () => {
 
       </div>
 
-      {/* Contenedor Oculto Formateado Especficamente para la Exportacin (PNG) */}
+      {/* Contenedor Oculto Formateado Específicamente para la Exportación (PNG) */}
       <div style={{ position: 'absolute', top: 0, left: 0, zIndex: -10, opacity: 0, pointerEvents: 'none' }}>
-        <div ref={exportRef} className="p-8 bg-white w-max flex flex-col items-center gap-6">
-          <h1 className="text-3xl font-bold text-slate-800">Propuesta Vacaciones</h1>
+        <div ref={exportRef} className="p-8 bg-white is-flex is-flex-direction-column is-align-items-center" style={{ width: 'max-content', gap: '1.5rem', backgroundColor: '#ffffff' }}>
+          <h1 className="title is-3 has-text-grey-darker mb-0">Propuesta Vacaciones</h1>
           
-          <div className="flex flex-row gap-8 items-start">
+          <div className="is-flex" style={{ gap: '2rem', alignItems: 'flex-start' }}>
             {renderMonth(leftYear, leftMonth, true)}
             {renderMonth(rightYear, rightMonth, true)}
           </div>
           
           {(usedLegends.length > 0 || hasWeeklySelections) && (
-            <div className="mt-4 pt-6 border-t border-slate-200 w-full flex flex-col items-center gap-4">
-              <h3 className="text-lg font-bold text-slate-700 uppercase tracking-wider">Leyenda</h3>
-              <div className="flex flex-row gap-6 flex-wrap justify-center">
+            <div className="mt-3 pt-4 is-flex is-flex-direction-column is-align-items-center" style={{ borderTop: '1px solid #dbdbdb', width: '100%', gap: '1rem' }}>
+              <h3 className="is-size-7 is-uppercase has-text-weight-bold has-text-grey">Leyenda</h3>
+              <div className="is-flex is-flex-wrap-wrap is-justify-content-center" style={{ gap: '1.5rem' }}>
                 {usedLegends.map(color => (
-                  <div key={color.id} className="flex items-center gap-2 text-slate-800 font-semibold">
-                    <div className="w-6 h-6 rounded-md border border-slate-300 shadow-sm" style={{ backgroundColor: color.color }}></div>
-                    <span>{color.fullName || color.label}</span>
+                  <div key={color.id} className="is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
+                    <span style={{ width: '20px', height: '20px', borderRadius: '4px', backgroundColor: color.color, border: '1px solid rgba(0,0,0,0.15)', display: 'inline-block' }} />
+                    <span className="is-size-7 has-text-weight-bold has-text-grey-darker">{color.fullName || color.label}</span>
                   </div>
                 ))}
                 
                 {hasWeeklySelections && (
-                  <div className="flex items-center gap-2 text-slate-800 font-semibold">
-                    <div className="relative w-6 h-6 rounded-md border border-blue-200 bg-blue-50/50 ring-2 ring-inset ring-blue-400">
-                         <div className="absolute top-1 right-1 w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                         <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500 opacity-20"></div>
+                  <div className="is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
+                    <div style={{ position: 'relative', width: '20px', height: '20px', borderRadius: '4px', border: '1px solid #bce8f1', backgroundColor: '#ebf3fe', boxShadow: 'inset 0 0 0 1.5px #3273dc' }}>
+                         <div style={{ position: 'absolute', top: '3px', right: '3px', width: '5px', height: '5px', backgroundColor: '#3273dc', borderRadius: '50%' }}></div>
+                         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '3px', backgroundColor: '#3273dc', opacity: 0.25 }}></div>
                     </div>
-                    <span>Días presenciales</span>
+                    <span className="is-size-7 has-text-weight-bold has-text-grey-darker">Días presenciales</span>
                   </div>
                 )}
               </div>
@@ -634,68 +675,72 @@ const CalendarApp = () => {
         </div>
       </div>
 
-      {/* Modal "¿Cómo funciona?" */}
+      {/* Modal "¿Cómo funciona?" con diseño Bulma Modal */}
       {showHowItWorks && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-slate-200 p-6 flex items-center justify-between z-10">
-              <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+        <div className="modal is-active">
+          <div className="modal-background" onClick={() => setShowHowItWorks(false)} />
+          <div className="modal-card" style={{ maxWidth: '720px', width: '92%', maxHeight: '90vh' }}>
+            <header className="modal-card-head py-3 px-5">
+              <p className="modal-card-title is-size-5 has-text-weight-bold mb-0 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
                 <span>💡</span>
                 <span>¿Cómo funciona?</span>
-              </h2>
-              <button onClick={() => setShowHowItWorks(false)} className="p-2 hover:bg-slate-100 rounded-lg transition-colors" title="Cerrar ventana">
-                <X size={24} className="text-slate-600" />
-              </button>
-            </div>
+              </p>
+              <button 
+                className="delete is-medium" 
+                aria-label="close" 
+                onClick={() => setShowHowItWorks(false)} 
+                title="Cerrar ventana"
+              />
+            </header>
             
-            <div className="p-6 space-y-6">
-              <section>
-                <h3 className="text-lg font-bold text-blue-600 mb-2 flex items-center gap-2">
+            <section className="modal-card-body content p-5" style={{ overflowY: 'auto' }}>
+              <section className="mb-4">
+                <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
                   <span>📌</span>
                   <span>¿Qué es?</span>
-                </h3>
-                <p className="text-slate-700 leading-relaxed">
+                </h4>
+                <p className="has-text-grey-dark">
                   Es una pantalla que te permite jugar con tus días de vacaciones, organizarlos y ver cómo quedarían. Además, puedes descargar una imagen para presentar a tu superior en caso de necesitarlo.
                 </p>
               </section>
 
-              <section>
-                <h3 className="text-lg font-bold text-blue-600 mb-2 flex items-center gap-2">
+              <section className="mb-4">
+                <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
                   <span>🏢</span>
                   <span>Días presenciales y teletrabajo</span>
-                </h3>
-                <p className="text-slate-700 mb-3 leading-relaxed">
+                </h4>
+                <p className="has-text-grey-dark mb-2">
                   Si dispones de un régimen con días presenciales y teletrabajo, haciendo clic en los días semanales de la cabecera (<strong>L, M, X, J, V, S, D</strong>) se emplazan automáticamente los días de cada semana como <strong>Presenciales</strong> (señalizados con borde azul y punto indicador).
                 </p>
-                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs text-slate-700 space-y-2">
-                  <p>
+                <div className="box has-background-white-ter p-3 mb-0" style={{ fontSize: '0.82rem', border: '1px solid #e8e8e8', boxShadow: 'none' }}>
+                  <p className="mb-1">
                     <strong>• Presencial cambia primer lunes del mes (marcado por defecto):</strong> El patrón presencial se adapta al mes y cambia a partir del primer lunes del mes.
                   </p>
-                  <p>
+                  <p className="mb-0">
                     <strong>• Si se desmarca esta opción:</strong> Se seleccionarán siempre esas columnas de forma continua en todos los meses. Por ejemplo, si seleccionas <strong>L</strong> y <strong>M</strong> (martes), quedarán siempre seleccionados todos los lunes y martes del calendario.
                   </p>
                 </div>
               </section>
 
-              <section>
-                <h3 className="text-lg font-bold text-blue-600 mb-2 flex items-center gap-2">
+              <section className="mb-4">
+                <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
                   <span>📅</span>
                   <span>Navegación de calendarios</span>
-                </h3>
-                <p className="text-slate-700 leading-relaxed">
+                </h4>
+                <p className="has-text-grey-dark">
                   Se muestran dos meses consecutivos en pantalla. Utiliza los botones de flecha (<strong>‹</strong> y <strong>›</strong>) situados en la parte superior para avanzar o retroceder de mes.
                 </p>
               </section>
 
-              <section>
-                <h3 className="text-lg font-bold text-blue-600 mb-2 flex items-center gap-2">
+              <section className="mb-4">
+                <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
                   <span>🎨</span>
                   <span>Leyenda de colores</span>
-                </h3>
-                <p className="text-slate-700 mb-2 leading-relaxed">
+                </h4>
+                <p className="has-text-grey-dark mb-2">
                   El panel izquierdo contiene las categorías predeterminadas y las que tú añadas:
                 </p>
-                <ul className="space-y-1.5 text-slate-700 list-disc list-inside">
+                <ul className="has-text-grey-dark">
                   <li><strong>Festivo:</strong> Días no laborales (los fines de semana se pintan automáticamente en este color si no se personalizan).</li>
                   <li><strong>Vac. por periodo:</strong> Vacaciones planificadas por temporadas o bloques continuos.</li>
                   <li><strong>Asuntos Propios:</strong> Días reservados para trámites y gestiones personales.</li>
@@ -704,97 +749,91 @@ const CalendarApp = () => {
                 </ul>
               </section>
 
-              <section>
-                <h3 className="text-lg font-bold text-blue-600 mb-2 flex items-center gap-2">
+              <section className="mb-4">
+                <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
                   <span>🖱️</span>
                   <span>Cómo interactuar</span>
-                </h3>
-                <ul className="space-y-2 text-slate-700">
-                  <li className="flex items-start gap-2">
-                    <span className="font-bold text-blue-600 shrink-0">•</span>
-                    <span><strong>Seleccionar categoría activa:</strong> Haz clic en cualquier etiqueta de la leyenda para seleccionarla como color activo de trabajo.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="font-bold text-blue-600 shrink-0">•</span>
-                    <span><strong>Pintar días:</strong> Haz clic sobre cualquier día del calendario para aplicarle la categoría activa.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="font-bold text-blue-600 shrink-0">•</span>
-                    <span><strong>Quitar color:</strong> Vuelve a hacer clic sobre un día ya coloreado con la misma categoría activa para desmarcarlo.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="font-bold text-blue-600 shrink-0">•</span>
-                    <span><strong>Marcar días presenciales por columna:</strong> Haz clic en la cabecera de cualquier día (L, M, X, J, V, S, D) para marcar o desmarcar todos los días de esa columna en el mes como días presenciales.</span>
-                  </li>
+                </h4>
+                <ul className="has-text-grey-dark">
+                  <li><strong>Seleccionar categoría activa:</strong> Haz clic en cualquier etiqueta de la leyenda para seleccionarla como color activo de trabajo.</li>
+                  <li><strong>Pintar días:</strong> Haz clic sobre cualquier día del calendario para aplicarle la categoría activa.</li>
+                  <li><strong>Quitar color:</strong> Vuelve a hacer clic sobre un día ya coloreado con la misma categoría activa para desmarcarlo.</li>
+                  <li><strong>Marcar días presenciales por columna:</strong> Haz clic en la cabecera de cualquier día (L, M, X, J, V, S, D) para marcar o desmarcar todos los días de esa columna en el mes como días presenciales.</li>
                 </ul>
               </section>
 
-              <section>
-                <h3 className="text-lg font-bold text-blue-600 mb-2 flex items-center gap-2">
+              <section className="mb-4">
+                <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
                   <span>⏱️</span>
                   <span>Control de límites</span>
-                </h3>
-                <p className="text-slate-700 mb-2 leading-relaxed">
+                </h4>
+                <p className="has-text-grey-dark mb-2">
                   Puedes establecer un límite máximo de días en las categorías configurables:
                 </p>
-                <ul className="space-y-1.5 text-slate-700 list-disc list-inside">
+                <ul className="has-text-grey-dark">
                   <li>Activa la casilla <strong>"Limitar"</strong> en la etiqueta deseada.</li>
                   <li>Introduce el número máximo de días permitidos.</li>
                   <li>El contador <strong>"Restantes" (R)</strong> indicará cuántos días te quedan disponibles (se resaltará en rojo si alcanzas o superas el tope).</li>
                 </ul>
               </section>
 
-              <section>
-                <h3 className="text-lg font-bold text-blue-600 mb-2 flex items-center gap-2">
+              <section className="mb-4">
+                <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
                   <span>➕</span>
                   <span>Añadir etiquetas</span>
-                </h3>
-                <p className="text-slate-700 leading-relaxed">
+                </h4>
+                <p className="has-text-grey-dark">
                   En el formulario <strong>"Añadir Etiqueta"</strong> del panel izquierdo puedes crear nuevas categorías personalizadas: selecciona un color con la paleta, escribe su nombre y pulsa el botón <strong>+</strong> (o la tecla Enter).
                 </p>
               </section>
 
-              <section>
-                <h3 className="text-lg font-bold text-blue-600 mb-2 flex items-center gap-2">
+              <section className="mb-4">
+                <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
                   <span>👁️</span>
                   <span>Mostrar u ocultar fines de semana</span>
-                </h3>
-                <p className="text-slate-700 leading-relaxed">
+                </h4>
+                <p className="has-text-grey-dark">
                   Marca o desmarca la opción <strong>"Mostrar fin de semana"</strong> en la columna derecha para alternar entre ver solo la semana laboral (Lunes a Viernes) o la semana completa (Lunes a Domingo).
                 </p>
               </section>
 
-              <section>
-                <h3 className="text-lg font-bold text-blue-600 mb-2 flex items-center gap-2">
+              <section className="mb-4">
+                <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
                   <span>📥</span>
                   <span>Guardar imagen (PNG)</span>
-                </h3>
-                <p className="text-slate-700 leading-relaxed">
+                </h4>
+                <p className="has-text-grey-dark">
                   Pulsa el botón <strong>"Guardar imagen"</strong> o <strong>"Descargar PNG"</strong> para exportar un archivo PNG de alta resolución con los dos meses y la leyenda de categorías empleadas, listo para adjuntar, compartir o imprimir.
                 </p>
               </section>
 
-              <section>
-                <h3 className="text-lg font-bold text-blue-600 mb-2 flex items-center gap-2">
+              <section className="mb-4">
+                <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
                   <span>🗑️</span>
                   <span>Limpiar calendario</span>
-                </h3>
-                <p className="text-slate-700 leading-relaxed">
+                </h4>
+                <p className="has-text-grey-dark">
                   El botón <strong>"Limpiar calendario"</strong> borra de golpe todos los días coloreados y selecciones presenciales para reiniciar tu propuesta. ¡Requiere confirmación previa para evitar borrados por error!
                 </p>
               </section>
 
-              <section className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-slate-700 text-sm leading-relaxed">
+              <article className="message is-info is-small">
+                <div className="message-body">
                   <strong>Nota:</strong> Todos tus datos (colores, selecciones, límites y etiquetas) se guardan automáticamente en tu navegador (Local Storage), por lo que no perderás tu planificación aunque recargues o cierres la página.
-                </p>
-              </section>
-            </div>
+                </div>
+              </article>
+            </section>
+
+            <footer className="modal-card-foot is-justify-content-flex-end py-2 px-5">
+              <button onClick={() => setShowHowItWorks(false)} className="button is-info is-small">
+                Entendido
+              </button>
+            </footer>
           </div>
         </div>
       )}
 
-    </div>
+    </section>
   );
 };
 
