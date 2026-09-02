@@ -171,7 +171,23 @@ const CalendarApp = () => {
     const newId = Date.now().toString();
     setLegendColors(prev => [...prev, { id: newId, label: newLabel, color: newColorHex }]);
     setNewLabel('');
-    setActiveColorId(newId); // Selecciona el nuevo color automticamente
+    setActiveColorId(newId); // Selecciona el nuevo color automáticamente
+  };
+
+  const handleDeleteColor = (idToDelete) => {
+    setLegendColors(prev => prev.filter(c => c.id !== idToDelete));
+    setColoredDays(prev => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach(dateStr => {
+        if (updated[dateStr] === idToDelete) {
+          delete updated[dateStr];
+        }
+      });
+      return updated;
+    });
+    if (activeColorId === idToDelete) {
+      setActiveColorId('1');
+    }
   };
 
   const handlePrevMonth = () => {
@@ -610,10 +626,10 @@ const CalendarApp = () => {
           {/* Fila Principal: Panel Leyenda a la izquierda | Panel Calendarios en el centro con Acciones a su derecha */}
           <div className="columns is-variable is-3 is-desktop">
 
-            {/* 1. Contenedor Propio Izquierdo: Leyenda de Colores + Añadir nuevo color */}
+            {/* 1. Contenedor Propio Izquierdo: Colores + Añadir nuevo color */}
             <div className="column is-3-desktop is-4-tablet">
               <div 
-                className="box p-4 is-flex is-flex-direction-column" 
+                className="box p-3 is-flex is-flex-direction-column" 
                 style={{ 
                   border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
                   borderRadius: '14px', 
@@ -622,19 +638,18 @@ const CalendarApp = () => {
                   boxShadow: isDarkMode ? 'none' : '0 4px 20px -2px rgba(30, 41, 59, 0.05)'
                 }}
               >
-                <div className="is-flex is-justify-content-space-between is-align-items-center pb-2.5 mb-3" style={{ borderBottom: isDarkMode ? '1px solid #334155' : '1px solid #edf2f7' }}>
+                {/* Cabecera Colores */}
+                <div className="pb-2 mb-2" style={{ borderBottom: isDarkMode ? '1px solid #334155' : '1px solid #edf2f7' }}>
                   <h3 className="is-size-7 is-uppercase has-text-weight-bold" style={{ color: isDarkMode ? '#94a3b8' : '#475569', letterSpacing: '0.05em' }}>
-                    🎨 Leyenda de Colores
+                    🎨 Colores
                   </h3>
-                  <span className="tag is-rounded is-small" style={{ backgroundColor: isDarkMode ? '#334155' : '#e0f2fe', color: isDarkMode ? '#93c5fd' : '#0369a1', fontWeight: 700 }}>
-                    {legendColors.length} tipos
-                  </span>
                 </div>
 
-                {/* Contenedor con scroll interno para la lista de etiquetas */}
-                <div className="custom-scrollbar pr-1 mb-3" style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                {/* Lista compacta de colores */}
+                <div className="custom-scrollbar pr-1 mb-2.5" style={{ maxHeight: '380px', overflowY: 'auto' }}>
                   {legendColors.map((item) => {
                     const isSpecial = ['2', '3', '4'].includes(item.id);
+                    const isCustom = !['1', '2', '3', '4'].includes(item.id);
                     const limitConfig = limits[item.id];
                     const usage = Object.values(coloredDays).filter(id => id === item.id).length;
                     const remaining = (limitConfig?.max || 0) - usage;
@@ -650,76 +665,107 @@ const CalendarApp = () => {
                     return (
                       <div 
                         key={item.id} 
-                        className="box p-2.5 mb-2"
+                        onClick={() => setActiveColorId(item.id)}
+                        className="box mb-1.5 is-flex is-align-items-center is-justify-content-space-between"
                         style={{ 
                           cursor: 'pointer', 
                           border: itemBorder, 
                           backgroundColor: itemBg, 
-                          boxShadow: isActive ? '0 0 0 2px rgba(37,99,235,0.15)' : 'none',
-                          borderRadius: '10px',
-                          transition: 'all 0.15s ease'
+                          boxShadow: isActive ? '0 0 0 1.5px rgba(37,99,235,0.15)' : 'none',
+                          borderRadius: '8px',
+                          padding: '4px 8px',
+                          minHeight: '34px',
+                          transition: 'all 0.12s ease',
+                          gap: '0.4rem'
                         }}
                       >
-                        <div 
-                          title={item.fullName || item.label} 
-                          onClick={() => setActiveColorId(item.id)} 
-                          className="is-flex is-align-items-center mb-1"
-                          style={{ gap: '0.6rem' }}
-                        >
+                        {/* Izquierda: Muestra de color + Nombre en una sola línea */}
+                        <div className="is-flex is-align-items-center is-flex-grow-1 is-clipped" style={{ gap: '0.45rem', minWidth: 0 }}>
                           <span 
                             style={{ 
-                              width: '18px', 
-                              height: '18px', 
-                              borderRadius: '5px', 
+                              width: '16px', 
+                              height: '16px', 
+                              borderRadius: '4px', 
                               backgroundColor: item.color, 
                               border: '1px solid rgba(0,0,0,0.18)', 
                               display: 'inline-block', 
                               flexShrink: 0 
                             }} 
                           />
-                          <span className="is-size-7 has-text-weight-bold is-flex-grow-1 is-clipped" style={{ color: isDarkMode ? '#f1f5f9' : '#1e293b' }}>
+                          <span 
+                            className="is-size-7 has-text-weight-bold is-clipped" 
+                            title={item.fullName || item.label}
+                            style={{ 
+                              color: isDarkMode ? '#f1f5f9' : '#1e293b', 
+                              whiteSpace: 'nowrap', 
+                              overflow: 'hidden', 
+                              textOverflow: 'ellipsis', 
+                              fontSize: '12px' 
+                            }}
+                          >
                             {item.label}
                           </span>
                         </div>
-                        {isSpecial && (
-                          <div className="is-flex is-align-items-center is-justify-content-space-between pt-1.5 mt-1" style={{ borderTop: isDarkMode ? '1px solid #334155' : '1px solid #f1f5f9' }}>
-                            <label className="checkbox is-size-7 has-text-grey is-flex is-align-items-center" style={{ gap: '0.35rem' }}>
-                              <input 
-                                type="checkbox" 
-                                checked={limitConfig?.enabled || false} 
-                                onChange={(e) => handleLimitToggle(item.id, e.target.checked)} 
-                              />
-                              <span style={{ fontSize: '11px', color: isDarkMode ? '#94a3b8' : '#64748b' }}>Limitar</span>
-                            </label>
-                            {limitConfig?.enabled && (
-                              <div className="is-flex is-align-items-center" style={{ gap: '0.25rem' }}>
+
+                        {/* Derecha: Control de límite compacto o papelera para eliminar personalizadas */}
+                        <div className="is-flex is-align-items-center" style={{ gap: '0.25rem', flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
+                          {isSpecial && (
+                            limitConfig?.enabled ? (
+                              <div className="is-flex is-align-items-center" style={{ gap: '0.2rem' }}>
                                 <input 
                                   type="number" 
                                   min="0" 
                                   value={limitConfig.max} 
                                   onChange={(e) => handleLimitChange(item.id, parseInt(e.target.value) || 0)} 
                                   className="input is-small has-text-centered py-0 px-1"
-                                  style={{ width: '42px', height: '22px', fontSize: '11px', borderRadius: '5px' }}
+                                  style={{ width: '36px', height: '22px', fontSize: '11px', borderRadius: '4px' }}
                                   title="Límite máximo de días" 
                                 />
                                 <span 
                                   className="tag is-small" 
                                   style={{ 
                                     fontSize: '10px', 
-                                    height: '20px', 
-                                    padding: '0 6px', 
+                                    height: '22px', 
+                                    padding: '0 5px', 
                                     fontWeight: 700,
-                                    borderRadius: '5px',
+                                    borderRadius: '4px',
                                     backgroundColor: remaining <= 0 ? '#ffe4e6' : '#dcfce7',
                                     color: remaining <= 0 ? '#e11d48' : '#15803d'
                                   }}
+                                  title={`Días restantes: ${remaining}`}
                                 >
                                   Restan {remaining}
                                 </span>
+                                <button
+                                  onClick={() => handleLimitToggle(item.id, false)}
+                                  className="delete is-small"
+                                  title="Desactivar límite"
+                                  style={{ width: '16px', height: '16px', minWidth: '16px', minHeight: '16px' }}
+                                />
                               </div>
-                            )}
-                          </div>
-                        )}
+                            ) : (
+                              <button
+                                onClick={() => handleLimitToggle(item.id, true)}
+                                className="button is-small is-ghost px-1.5 py-0"
+                                style={{ height: '22px', fontSize: '11px', color: isDarkMode ? '#94a3b8' : '#64748b', textDecoration: 'none' }}
+                                title="Activar límite de días"
+                              >
+                                + Límite
+                              </button>
+                            )
+                          )}
+
+                          {isCustom && (
+                            <button
+                              onClick={() => handleDeleteColor(item.id)}
+                              className="button is-small is-ghost p-1"
+                              style={{ height: '22px', width: '22px', color: '#e11d48', border: 'none' }}
+                              title="Eliminar este color"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
@@ -727,7 +773,7 @@ const CalendarApp = () => {
 
                 {/* Añadir nuevo color */}
                 <div 
-                  className="box p-3 mt-auto" 
+                  className="box p-2.5 mt-auto" 
                   style={{ 
                     border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
                     boxShadow: 'none', 
@@ -735,7 +781,7 @@ const CalendarApp = () => {
                     borderRadius: '10px'
                   }}
                 >
-                  <label className="label is-size-7 is-uppercase mb-2" style={{ color: isDarkMode ? '#94a3b8' : '#64748b', fontSize: '11px', letterSpacing: '0.04em' }}>
+                  <label className="label is-size-7 is-uppercase mb-1.5" style={{ color: isDarkMode ? '#94a3b8' : '#64748b', fontSize: '11px', letterSpacing: '0.04em' }}>
                     Añadir nuevo color
                   </label>
                   <div className="field has-addons mb-0">
@@ -745,7 +791,7 @@ const CalendarApp = () => {
                         value={newColorHex} 
                         onChange={(e) => setNewColorHex(e.target.value)} 
                         className="input is-small" 
-                        style={{ width: '38px', height: '30px', padding: '2px', cursor: 'pointer', borderRadius: '6px 0 0 6px' }}
+                        style={{ width: '38px', height: '28px', padding: '2px', cursor: 'pointer', borderRadius: '6px 0 0 6px' }}
                         title="Seleccionar color" 
                       />
                     </div>
@@ -756,7 +802,7 @@ const CalendarApp = () => {
                         onChange={(e) => setNewLabel(e.target.value)} 
                         placeholder="Nombre..." 
                         className="input is-small" 
-                        style={{ height: '30px', borderRadius: 0 }}
+                        style={{ height: '28px', borderRadius: 0, fontSize: '12px' }}
                         onKeyDown={(e) => e.key === 'Enter' && handleAddColor()} 
                       />
                     </div>
@@ -765,7 +811,7 @@ const CalendarApp = () => {
                         onClick={handleAddColor} 
                         className="button is-small" 
                         style={{ 
-                          height: '30px', 
+                          height: '28px', 
                           background: 'linear-gradient(135deg, #2563eb, #3b82f6)', 
                           color: '#ffffff', 
                           border: 'none',
@@ -796,35 +842,82 @@ const CalendarApp = () => {
                 <div className="columns is-variable is-3 is-desktop">
                   {/* Bloque de los dos calendarios con su cabecera centrada exactamente sobre los dos calendarios */}
                   <div className="column is-10-desktop is-12-tablet">
-                    {/* Fila de selectores y títulos alineados con cada calendario */}
-                    <div className="columns is-variable is-3 is-mobile mb-3">
-                      {/* Primer mes y selector izquierdo: justificado a la derecha del primer calendario */}
-                      <div className="column is-6 is-flex is-align-items-center is-justify-content-flex-end" style={{ gap: '0.75rem' }}>
+                    
+                    {/* Fila de navegación << >> al inicio y títulos de meses */}
+                    <div style={{ position: 'relative', width: '100%', marginBottom: '0.85rem' }}>
+                      
+                      {/* Selectores << >> al inicio de la línea sin influir en el desplazamiento del texto */}
+                      <div 
+                        style={{ 
+                          position: 'absolute', 
+                          left: 0, 
+                          top: '50%', 
+                          transform: 'translateY(-50%)', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '6px', 
+                          zIndex: 10 
+                        }}
+                      >
                         <button 
                           onClick={handlePrevMonth} 
-                          className={`button is-rounded shadow-sm ${isDarkMode ? 'is-dark' : 'is-white'}`}
+                          className="button is-small is-rounded"
+                          style={{ 
+                            width: '32px', 
+                            height: '32px', 
+                            padding: 0,
+                            backgroundColor: isDarkMode ? '#3b82f6' : '#2563eb',
+                            color: '#ffffff',
+                            border: 'none',
+                            boxShadow: '0 3px 10px rgba(37, 99, 235, 0.35)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer'
+                          }}
                           title="Mes anterior"
                         >
-                          <ChevronLeft size={18} />
+                          <ChevronLeft size={18} strokeWidth={2.5} />
                         </button>
-                        <h2 className="title is-4 mb-0 has-text-weight-bold" style={{ color: isDarkMode ? '#f8fafc' : '#1e293b' }}>
-                          {MONTHS[leftMonth]} {leftYear}
-                        </h2>
-                      </div>
-
-                      {/* Segundo mes y selector derecho: justificado a la izquierda del segundo calendario */}
-                      <div className="column is-6 is-flex is-align-items-center is-justify-content-flex-start" style={{ gap: '0.75rem' }}>
-                        <h2 className="title is-4 mb-0 has-text-weight-bold" style={{ color: isDarkMode ? '#f8fafc' : '#1e293b' }}>
-                          {MONTHS[rightMonth]} {rightYear}
-                        </h2>
                         <button 
                           onClick={handleNextMonth} 
-                          className={`button is-rounded shadow-sm ${isDarkMode ? 'is-dark' : 'is-white'}`}
+                          className="button is-small is-rounded"
+                          style={{ 
+                            width: '32px', 
+                            height: '32px', 
+                            padding: 0,
+                            backgroundColor: isDarkMode ? '#3b82f6' : '#2563eb',
+                            color: '#ffffff',
+                            border: 'none',
+                            boxShadow: '0 3px 10px rgba(37, 99, 235, 0.35)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer'
+                          }}
                           title="Mes siguiente"
                         >
-                          <ChevronRight size={18} />
+                          <ChevronRight size={18} strokeWidth={2.5} />
                         </button>
                       </div>
+
+                      {/* Fila de los dos meses: mes 1 a la derecha del primer calendario, mes 2 a la izquierda del segundo */}
+                      <div className="columns is-variable is-3 is-mobile mb-0">
+                        {/* Primer mes justificado a la derecha del primer calendario */}
+                        <div className="column is-6 is-flex is-align-items-center is-justify-content-flex-end py-1">
+                          <h2 className="title is-4 mb-0 has-text-weight-bold" style={{ color: isDarkMode ? '#f8fafc' : '#1e293b' }}>
+                            {MONTHS[leftMonth]} {leftYear}
+                          </h2>
+                        </div>
+
+                        {/* Segundo mes justificado a la izquierda del segundo calendario */}
+                        <div className="column is-6 is-flex is-align-items-center is-justify-content-flex-start py-1">
+                          <h2 className="title is-4 mb-0 has-text-weight-bold" style={{ color: isDarkMode ? '#f8fafc' : '#1e293b' }}>
+                            {MONTHS[rightMonth]} {rightYear}
+                          </h2>
+                        </div>
+                      </div>
+
                     </div>
 
                     {/* Los dos calendarios lado a lado */}
