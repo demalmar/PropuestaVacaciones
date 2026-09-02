@@ -821,12 +821,12 @@ const CalendarApp = () => {
                         </div>
                       </div>
 
-                      {/* Óvalo (< >) centrado verticalmente a la perfección con las cabeceras de los meses */}
+                      {/* Óvalo (< >) estilizado: menos alto y más alargado horizontalmente */}
                       <div 
                         style={{ 
                           position: 'absolute', 
                           left: '50%', 
-                          top: '24px', 
+                          top: '23px', 
                           transform: 'translate(-50%, -50%)', 
                           zIndex: 20 
                         }}
@@ -836,17 +836,17 @@ const CalendarApp = () => {
                           style={{
                             backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
                             borderRadius: '9999px',
-                            boxShadow: '0 4px 14px rgba(15, 118, 110, 0.45)',
+                            boxShadow: '0 3px 12px rgba(15, 118, 110, 0.4)',
                             overflow: 'hidden',
                             border: isDarkMode ? '1.5px solid #14b8a6' : '1.5px solid #115e59',
-                            height: '46px'
+                            height: '34px'
                           }}
                         >
                           <button
                             onClick={handlePrevMonth}
                             className="button is-small p-0 oval-nav-btn"
                             style={{
-                              width: '52px',
+                              width: '60px',
                               height: '100%',
                               backgroundColor: 'transparent',
                               border: 'none',
@@ -860,13 +860,13 @@ const CalendarApp = () => {
                             }}
                             title="Mes anterior"
                           >
-                            <ChevronLeft size={21} strokeWidth={2.8} />
+                            <ChevronLeft size={19} strokeWidth={2.8} />
                           </button>
                           <button
                             onClick={handleNextMonth}
                             className="button is-small p-0 oval-nav-btn"
                             style={{
-                              width: '52px',
+                              width: '60px',
                               height: '100%',
                               backgroundColor: 'transparent',
                               border: 'none',
@@ -879,7 +879,7 @@ const CalendarApp = () => {
                             }}
                             title="Mes siguiente"
                           >
-                            <ChevronRight size={21} strokeWidth={2.8} />
+                            <ChevronRight size={19} strokeWidth={2.8} />
                           </button>
                         </div>
                       </div>
