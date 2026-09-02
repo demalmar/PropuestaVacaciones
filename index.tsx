@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Download, Trash2, Info, X, Moon, Sun } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Download, Trash2, Info, X, Moon, Sun, Menu } from 'lucide-react';
 
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const DAYS_OF_WEEK = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -26,6 +26,96 @@ const CalendarApp = () => {
   
   // Estado para mostrar/ocultar modal "¿Cómo funciona?"
   const [showHowItWorks, setShowHowItWorks] = useState(false);
+
+  // Estado para el menú lateral en móvil (Off-canvas Drawer)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMenuClosing, setIsMenuClosing] = useState(false);
+
+  const closeMobileMenu = () => {
+    setIsMenuClosing(true);
+    setTimeout(() => {
+      setMobileMenuOpen(false);
+      setIsMenuClosing(false);
+    }, 210);
+  };
+
+  // Estado para el modal de configuración de etiqueta (límites o eliminar) en móvil
+  const [colorSettingsItem, setColorSettingsItem] = useState<any>(null);
+
+  // Estado para el modal de añadir nueva etiqueta en móvil
+  const [showAddColorModal, setShowAddColorModal] = useState(false);
+
+  // Cada botón permite editar su color y opciones
+  const canConfigureColor = (_id: string) => true;
+
+  // Estado y funciones para detectar y accionar el scroll horizontal de colores en móvil
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = () => {
+    if (mobileColorScrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = mobileColorScrollRef.current;
+      setCanScrollLeft(scrollLeft > 4);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 4);
+    }
+  };
+
+
+
+  const scrollByDirection = (direction: 'left' | 'right') => {
+    if (mobileColorScrollRef.current) {
+      const scrollAmount = mobileColorScrollRef.current.clientWidth * 0.75;
+      mobileColorScrollRef.current.scrollBy({
+        left: direction === 'right' ? scrollAmount : -scrollAmount,
+        behavior: 'smooth'
+      });
+      setTimeout(checkScroll, 320);
+    }
+  };
+
+  // Referencias para manejar la pulsación prolongada (Long-press) en móvil
+  const longPressTimerRef = useRef<any>(null);
+  const isLongPressRef = useRef(false);
+  const mobileColorScrollRef = useRef<HTMLDivElement>(null);
+
+  const handleTouchStart = (item: any) => {
+    isLongPressRef.current = false;
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+    }
+
+    // Temporizador de pulsación prolongada (450ms) antes de que el navegador dispare menú de contexto
+    longPressTimerRef.current = setTimeout(() => {
+      isLongPressRef.current = true;
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+      setColorSettingsItem(item);
+    }, 450);
+  };
+
+  const handleTouchEnd = (item: any) => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    if (!isLongPressRef.current) {
+      // Pulsación corta normal: selecciona el color
+      setActiveColorId(item.id);
+    }
+  };
+
+  const handleTouchMove = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  const handleSquareClick = (item: any) => {
+    if (isLongPressRef.current) return;
+    setActiveColorId(item.id);
+  };
 
   // Estado para el modo nocturno (con Local Storage)
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -167,6 +257,17 @@ const CalendarApp = () => {
   useEffect(() => { localStorage.setItem('vacationApp_fixedWeeklySelections', JSON.stringify(fixedWeeklySelections)); }, [fixedWeeklySelections]);
   useEffect(() => { localStorage.setItem('vacationApp_presencialFirstMonday', JSON.stringify(presencialFirstMonday)); }, [presencialFirstMonday]);
   useEffect(() => { localStorage.setItem('vacationApp_limits', JSON.stringify(limits)); }, [limits]);
+  
+  // Actualizar visibilidad de botones de scroll para las etiquetas en móvil
+  useEffect(() => {
+    checkScroll();
+    const timer = setTimeout(checkScroll, 120);
+    window.addEventListener('resize', checkScroll);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, [legendColors]);
 
   const handleLimitToggle = (id, enabled) => {
     setLimits(prev => ({ ...prev, [id]: { ...prev[id], enabled } }));
@@ -185,6 +286,16 @@ const CalendarApp = () => {
     setLegendColors(prev => [...prev, { id: newId, label: newLabel, color: newColorHex }]);
     setNewLabel('');
     setActiveColorId(newId); // Selecciona el nuevo color automáticamente
+
+    // Si se crea en móvil, se desplaza horizontalmente al final para ver la creación
+    setTimeout(() => {
+      if (mobileColorScrollRef.current) {
+        mobileColorScrollRef.current.scrollTo({
+          left: mobileColorScrollRef.current.scrollWidth,
+          behavior: 'smooth'
+        });
+      }
+    }, 80);
   };
 
   const handleDeleteColor = (idToDelete) => {
@@ -201,6 +312,11 @@ const CalendarApp = () => {
     if (activeColorId === idToDelete) {
       setActiveColorId('1');
     }
+  };
+
+  const handleUpdateItemColor = (id: string, newColor: string) => {
+    setLegendColors(prev => prev.map(c => c.id === id ? { ...c, color: newColor } : c));
+    setColorSettingsItem(prev => prev ? { ...prev, color: newColor } : null);
   };
 
   const handlePrevMonth = () => {
@@ -384,8 +500,12 @@ const CalendarApp = () => {
                 <div 
                     key={day} 
                     onClick={!isExport ? () => handleHeaderDayClick(targetYear, targetMonth, index) : undefined}
-                    className="has-text-centered py-1.5 is-size-7 has-text-weight-bold"
+                    className="has-text-centered calendar-header-day is-size-7 has-text-weight-bold"
                     style={{ 
+                      minHeight: '38px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       borderRight: (index === cols - 1) ? 'none' : (useDarkMode ? '1px solid #293548' : '1px solid #cbd5e1'),
                       cursor: !isExport ? 'pointer' : 'default',
                       userSelect: 'none',
@@ -494,16 +614,22 @@ const CalendarApp = () => {
   const rightYear = rightDate.getFullYear();
   const rightMonth = rightDate.getMonth();
 
-  // Calcular elementos para la leyenda exportable (Solo colores/selecciones usados)
-  const usedColorIds = new Set(Object.values(coloredDays));
-  if (showWeekends) {
-    const festivoItem = legendColors.find(c => c.id === '4' || c.label.toLowerCase().includes('festivo'));
-    if (festivoItem) usedColorIds.add(festivoItem.id);
-  }
+  // Calcular elementos para la leyenda exportable (Solo colores y selecciones que realmente aparezcan en los calendarios visibles)
+  const usedColorIds = new Set<string>();
+  Object.entries(coloredDays).forEach(([dateStr, colorId]) => {
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const y = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10) - 1; // 0-indexed
+      if ((y === leftYear && m === leftMonth) || (y === rightYear && m === rightMonth)) {
+        usedColorIds.add(colorId as string);
+      }
+    }
+  });
   const usedLegends = legendColors.filter(color => usedColorIds.has(color.id));
   const hasWeeklySelections = presencialFirstMonday
-    ? Object.values(weeklySelections).some(monthObj => 
-        Object.values(monthObj).some(isSelected => isSelected)
+    ? [`${leftYear}-${leftMonth}`, `${rightYear}-${rightMonth}`].some(mKey => 
+        weeklySelections[mKey] && Object.values(weeklySelections[mKey]).some(isSelected => isSelected)
       )
     : Object.values(fixedWeeklySelections).some(isSelected => isSelected);
 
@@ -513,8 +639,10 @@ const CalendarApp = () => {
       {/* Contenedor principal de Propuesta Vacaciones */}
       <div className="container" style={{ maxWidth: '1280px' }}>
 
-        {/* Fila Principal: Panel Leyenda a la izquierda | Panel Calendarios en el centro con Acciones a su derecha */}
-        <div className="columns is-variable is-3 is-desktop">
+        {/* ===== VISTA DE ESCRITORIO (>= 769px) ===== */}
+        <div className="is-hidden-mobile">
+          {/* Fila Principal: Panel Leyenda a la izquierda | Panel Calendarios en el centro con Acciones a su derecha */}
+          <div className="columns is-variable is-3 is-desktop">
 
           {/* 1. Contenedor Propio Izquierdo: Título Propuesta Vacaciones + Colores */}
           <div className="column is-3-desktop is-4-tablet">
@@ -1051,8 +1179,1009 @@ const CalendarApp = () => {
             </div>
 
           </div>
+        </div>
+
+        {/* ===== VISTA MÓVIL (< 769px) ===== */}
+        <div className="is-hidden-tablet is-flex is-flex-direction-column" style={{ gap: '1.25rem', width: '100%' }}>
+          
+          {/* 1. Cabecera móvil con borde completo y botón para abrir menú lateral */}
+          <div 
+            className="box mb-0 p-3 is-flex is-align-items-center is-justify-content-space-between"
+            style={{
+              border: isDarkMode ? '1.5px solid #334155' : '1.5px solid #cbd5e1',
+              borderRadius: '12px',
+              backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+              width: '100%',
+              boxSizing: 'border-box',
+              boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.04)'
+            }}
+          >
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <h1 
+                className="title mb-0" 
+                style={{ 
+                  color: isDarkMode ? '#f8fafc' : '#0f172a', 
+                  fontWeight: 800, 
+                  fontSize: '1.15rem', 
+                  letterSpacing: '-0.01em',
+                  lineHeight: 1.2
+                }}
+              >
+                Propuesta Vacaciones
+              </h1>
+              <p 
+                style={{ 
+                  color: isDarkMode ? '#94a3b8' : '#64748b', 
+                  fontSize: '11px', 
+                  fontWeight: 500,
+                  margin: '2px 0 0 0',
+                  lineHeight: 1.3
+                }}
+              >
+                Organiza y planifica tu calendario laboral
+              </p>
+            </div>
+
+            {/* Botón de Menú Lateral (Hamburguesa) */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="button is-small ml-2"
+              style={{
+                borderRadius: '10px',
+                border: isDarkMode ? '1.5px solid #0d9488' : '1.5px solid #0f766e',
+                backgroundColor: isDarkMode ? 'rgba(15, 118, 110, 0.25)' : '#f0fdfa',
+                color: isDarkMode ? '#5eead4' : '#0f766e',
+                width: '40px',
+                height: '40px',
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}
+              title="Abrir menú de opciones"
+            >
+              <Menu size={22} strokeWidth={2.4} />
+            </button>
+          </div>
+
+          {/* 2. Colores y Etiquetas (después del título y antes de los calendarios) */}
+          <div 
+            className="box p-3 mb-0"
+            style={{
+              border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1',
+              borderRadius: '14px',
+              backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+              width: '100%'
+            }}
+          >
+            <div className="is-flex is-align-items-center is-justify-content-space-between mb-2.5">
+              <h3 
+                className="is-size-7 is-uppercase has-text-weight-bold" 
+                style={{ color: isDarkMode ? '#94a3b8' : '#475569', letterSpacing: '0.05em' }}
+              >
+                🎨 Colores y Etiquetas
+              </h3>
+              <span style={{ fontSize: '10.5px', color: isDarkMode ? '#64748b' : '#94a3b8' }}>
+                mantén pulsado para opciones
+              </span>
+            </div>
+
+            {/* Fila fija de botones: Track scrolleable con fondo diferenciado + 4º botón "+" fijo al final */}
+            <div 
+              className="is-flex is-align-items-stretch"
+              style={{ 
+                gap: '8px', 
+                width: '100%',
+                position: 'relative'
+              }}
+            >
+              {/* Pista / Carril scrolleable con fondo diferenciado y sombreado */}
+              <div 
+                style={{ 
+                  flex: 1, 
+                  minWidth: 0, 
+                  position: 'relative',
+                  overflow: 'hidden',
+                  backgroundColor: isDarkMode ? '#0f172a' : '#f1f5f9',
+                  borderRadius: '14px',
+                  padding: '5px',
+                  border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+                  boxShadow: isDarkMode ? 'inset 0 2px 4px rgba(0,0,0,0.5)' : 'inset 0 1px 3px rgba(0,0,0,0.06)'
+                }}
+              >
+                {/* Botón izquierdo que ocupa todo el alto y bloquea el fondo */}
+                {canScrollLeft && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); scrollByDirection('left'); }}
+                    onTouchStart={(e) => { e.stopPropagation(); }}
+                    onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); scrollByDirection('left'); }}
+                    style={{
+                      position: 'absolute',
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: '32px',
+                      background: isDarkMode 
+                        ? 'linear-gradient(to left, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.85) 35%, #0f172a 100%)' 
+                        : 'linear-gradient(to left, rgba(241, 245, 249, 0) 0%, rgba(241, 245, 249, 0.9) 35%, #f1f5f9 100%)',
+                      border: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'flex-start',
+                      paddingLeft: '4px',
+                      zIndex: 20,
+                      color: isDarkMode ? '#5eead4' : '#0f766e',
+                      cursor: 'pointer',
+                      borderRadius: '12px 0 0 12px',
+                      boxShadow: isDarkMode ? '4px 0 10px rgba(0,0,0,0.4)' : '3px 0 8px rgba(0,0,0,0.06)'
+                    }}
+                    aria-label="Ver etiquetas anteriores"
+                    title="Ver etiquetas anteriores"
+                  >
+                    <div 
+                      style={{ 
+                        width: '24px', 
+                        height: '24px', 
+                        borderRadius: '50%', 
+                        backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                      }}
+                    >
+                      <ChevronLeft size={16} strokeWidth={3} />
+                    </div>
+                  </button>
+                )}
+
+                {/* Botón derecho que ocupa todo el alto y bloquea el fondo */}
+                {canScrollRight && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); scrollByDirection('right'); }}
+                    onTouchStart={(e) => { e.stopPropagation(); }}
+                    onTouchEnd={(e) => { e.stopPropagation(); e.preventDefault(); scrollByDirection('right'); }}
+                    style={{
+                      position: 'absolute',
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: '32px',
+                      background: isDarkMode 
+                        ? 'linear-gradient(to right, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.85) 35%, #0f172a 100%)' 
+                        : 'linear-gradient(to right, rgba(241, 245, 249, 0) 0%, rgba(241, 245, 249, 0.9) 35%, #f1f5f9 100%)',
+                      border: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'flex-end',
+                      paddingRight: '4px',
+                      zIndex: 20,
+                      color: isDarkMode ? '#5eead4' : '#0f766e',
+                      cursor: 'pointer',
+                      borderRadius: '0 12px 12px 0',
+                      boxShadow: isDarkMode ? '-4px 0 10px rgba(0,0,0,0.4)' : '-3px 0 8px rgba(0,0,0,0.06)'
+                    }}
+                    aria-label="Ver más etiquetas"
+                    title="Ver más etiquetas"
+                  >
+                    <div 
+                      style={{ 
+                        width: '24px', 
+                        height: '24px', 
+                        borderRadius: '50%', 
+                        backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                      }}
+                    >
+                      <ChevronRight size={16} strokeWidth={3} />
+                    </div>
+                  </button>
+                )}
+
+                {/* Área desplazable horizontalmente */}
+                <div 
+                  ref={mobileColorScrollRef}
+                  onScroll={checkScroll}
+                  className="mobile-color-scroll"
+                  style={{ width: '100%', padding: 0 }}
+                >
+                  {legendColors.map((item) => {
+                    const isActive = activeColorId === item.id;
+                    const isSpecial = ['1', '2', '3'].includes(item.id);
+                    const limitConfig = limits[item.id];
+                    const hasLimit = isSpecial && Boolean(limitConfig?.enabled);
+                    const usage = Object.values(coloredDays).filter(id => id === item.id).length;
+                    const remaining = (limitConfig?.max || 0) - usage;
+                    const isConfigurable = canConfigureColor(item.id);
+
+                    return (
+                      <div
+                        key={item.id}
+                        onClick={() => handleSquareClick(item)}
+                        onTouchStart={() => handleTouchStart(item)}
+                        onTouchEnd={() => handleTouchEnd(item)}
+                        onTouchMove={handleTouchMove}
+                        onContextMenu={(e) => { 
+                          e.preventDefault(); 
+                          e.stopPropagation();
+                          if (isConfigurable) setColorSettingsItem(item); 
+                        }}
+                        className="mobile-color-square"
+                        style={{
+                          flex: '0 0 calc((100% - 16px) / 3)',
+                          width: 'calc((100% - 16px) / 3)',
+                          backgroundColor: isActive 
+                            ? (isDarkMode ? 'rgba(15, 118, 110, 0.3)' : '#ffffff') 
+                            : (isDarkMode ? '#151e2b' : '#ffffff'),
+                          border: isActive
+                            ? (isDarkMode ? '2.5px solid #2dd4bf' : '2.5px solid #0f766e')
+                            : (isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1'),
+                          boxShadow: isActive 
+                            ? '0 0 0 2px rgba(15, 118, 110, 0.25)' 
+                            : '0 1px 3px rgba(0,0,0,0.06)'
+                        }}
+                        title={isConfigurable ? `${item.fullName || item.label} (Mantén pulsado para opciones)` : (item.fullName || item.label)}
+                      >
+                        {/* Muestra de color */}
+                        <span
+                          style={{
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '6px',
+                            backgroundColor: item.color,
+                            border: '1.5px solid rgba(0,0,0,0.2)',
+                            display: 'block',
+                            marginBottom: '4px',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                          }}
+                        />
+                        
+                        {/* Nombre de la etiqueta */}
+                        <span
+                          style={{
+                            fontSize: '11px',
+                            fontWeight: isActive ? 700 : 600,
+                            color: isDarkMode ? '#e2e8f0' : '#1e293b',
+                            lineHeight: 1.15,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                            wordBreak: 'break-word'
+                          }}
+                        >
+                          {item.label}
+                        </span>
+
+                        {/* Badge de límite: DEBE VERSE SOLO SI SE HA PUESTO UN LÍMITE */}
+                        {hasLimit && (
+                          <span
+                            style={{
+                              position: 'absolute',
+                              top: '3px',
+                              right: '3px',
+                              fontSize: '9.5px',
+                              fontWeight: 800,
+                              padding: '1px 5px',
+                              borderRadius: '9999px',
+                              backgroundColor: remaining <= 0 ? '#ef4444' : (isDarkMode ? '#0d9488' : '#0f766e'),
+                              color: '#ffffff',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                            }}
+                          >
+                            {remaining}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* 4º posición: Botón "+" fijo fuera del scroll horizontal */}
+              <div
+                onClick={() => setShowAddColorModal(true)}
+                className="mobile-color-square"
+                style={{
+                  flex: '0 0 calc((100% - 24px) / 4)',
+                  width: 'calc((100% - 24px) / 4)',
+                  backgroundColor: isDarkMode ? '#151e2b' : '#ffffff',
+                  border: isDarkMode ? '1.5px dashed #475569' : '1.5px dashed #94a3b8',
+                  borderRadius: '14px',
+                  boxShadow: 'none',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer'
+                }}
+                title="Añadir nueva etiqueta"
+              >
+                <div 
+                  style={{
+                    width: '26px',
+                    height: '26px',
+                    borderRadius: '50%',
+                    backgroundColor: isDarkMode ? 'rgba(15, 118, 110, 0.25)' : '#e0f2fe',
+                    color: isDarkMode ? '#5eead4' : '#0284c7',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: '3px'
+                  }}
+                >
+                  <Plus size={16} strokeWidth={2.6} />
+                </div>
+                <span
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: isDarkMode ? '#94a3b8' : '#64748b',
+                    lineHeight: 1.15
+                  }}
+                >
+                  Añadir
+                </span>
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* 3. Primer Mes (Calendario Superior) */}
+          <div style={{ width: '100%' }}>
+            {renderMonth(leftYear, leftMonth)}
+          </div>
+
+          {/* 4. Desplazador de meses adaptado entre ambos meses (mismo ancho) */}
+          <div 
+            className="mobile-nav-bar"
+            style={{
+              backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
+              border: isDarkMode ? '1.5px solid #14b8a6' : '1.5px solid #115e59'
+            }}
+          >
+            <button
+              onClick={handlePrevMonth}
+              className="button is-small"
+              style={{
+                flex: 1,
+                height: '100%',
+                backgroundColor: 'transparent',
+                border: 'none',
+                borderRight: '1.5px solid rgba(255, 255, 255, 0.35)',
+                color: '#ffffff',
+                fontWeight: 700,
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.45rem',
+                borderRadius: 0,
+                cursor: 'pointer'
+              }}
+              title="Mes anterior"
+            >
+              <ChevronLeft size={19} strokeWidth={2.8} />
+              <span>Mes anterior</span>
+            </button>
+
+            <button
+              onClick={handleNextMonth}
+              className="button is-small"
+              style={{
+                flex: 1,
+                height: '100%',
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: '#ffffff',
+                fontWeight: 700,
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.45rem',
+                borderRadius: 0,
+                cursor: 'pointer'
+              }}
+              title="Mes siguiente"
+            >
+              <span>Mes siguiente</span>
+              <ChevronRight size={19} strokeWidth={2.8} />
+            </button>
+          </div>
+
+          {/* 5. Segundo Mes (Calendario Inferior) */}
+          <div style={{ width: '100%' }}>
+            {renderMonth(rightYear, rightMonth)}
+          </div>
 
         </div>
+
+      </div>
+
+      {/* ===== MENÚ LATERAL OCULTO PARA MÓVILES (OFF-CANVAS DRAWER) ===== */}
+      {mobileMenuOpen && (
+        <>
+          <div 
+            className={`mobile-drawer-overlay ${isMenuClosing ? 'is-closing' : ''}`}
+            onClick={closeMobileMenu} 
+          />
+          <div className={`mobile-drawer p-4 ${isMenuClosing ? 'is-closing' : ''}`} style={{ backgroundColor: isDarkMode ? '#151e2b' : '#ffffff' }}>
+            {/* Cabecera del Drawer */}
+            <div className="is-flex is-align-items-center is-justify-content-space-between pb-3 mb-3" style={{ borderBottom: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0' }}>
+              <div className="is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
+                <span style={{ fontSize: '20px' }}>⚙️</span>
+                <h2 className="title is-6 mb-0" style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontWeight: 800 }}>
+                  Menú de Opciones
+                </h2>
+              </div>
+              <button
+                onClick={closeMobileMenu}
+                className="button is-small"
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  border: 'none',
+                  backgroundColor: isDarkMode ? '#334155' : '#f1f5f9',
+                  color: isDarkMode ? '#e2e8f0' : '#475569',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  padding: 0,
+                  transition: 'all 0.15s ease'
+                }}
+                aria-label="Cerrar menú"
+              >
+                <X size={18} strokeWidth={2.5} />
+              </button>
+            </div>
+
+            {/* Opciones del menú lateral */}
+            <div className="is-flex is-flex-direction-column" style={{ gap: '0.85rem' }}>
+              
+              {/* 1. Selector Modo Día / Modo Noche: Fila compacta con switch al final */}
+              <div 
+                onClick={toggleDarkMode}
+                className="is-flex is-align-items-center is-justify-content-space-between p-3 mb-0" 
+                style={{ 
+                  border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
+                  backgroundColor: isDarkMode ? '#1e293b' : '#f8fafc',
+                  borderRadius: '12px',
+                  cursor: 'pointer',
+                  userSelect: 'none'
+                }}
+                title="Alternar entre modo día y modo noche"
+              >
+                <div className="is-flex is-align-items-center" style={{ gap: '0.65rem' }}>
+                  {isDarkMode ? (
+                    <Moon size={18} color="#a5b4fc" fill="#818cf8" />
+                  ) : (
+                    <Sun size={18} color="#0284c7" fill="#38bdf8" />
+                  )}
+                  <span className="is-size-7 has-text-weight-bold" style={{ color: isDarkMode ? '#e2e8f0' : '#1e293b' }}>
+                    {isDarkMode ? 'Modo noche activo' : 'Modo día activo'}
+                  </span>
+                </div>
+
+                {/* Switch deslizante al final */}
+                <div 
+                  style={{
+                    width: '44px',
+                    height: '24px',
+                    borderRadius: '9999px',
+                    backgroundColor: isDarkMode ? '#0f766e' : '#cbd5e1',
+                    position: 'relative',
+                    transition: 'background-color 0.2s ease',
+                    flexShrink: 0
+                  }}
+                >
+                  <div 
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      borderRadius: '50%',
+                      backgroundColor: '#ffffff',
+                      position: 'absolute',
+                      top: '3px',
+                      left: isDarkMode ? '23px' : '3px',
+                      transition: 'left 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.25)'
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* 2. ¿Cómo funciona? */}
+              <button 
+                onClick={() => { setShowHowItWorks(true); closeMobileMenu(); }}
+                className="button is-fullwidth mb-0"
+                style={{ 
+                  fontWeight: 600,
+                  borderRadius: '10px',
+                  border: isDarkMode ? '1px solid #0d9488' : '1px solid #99f6e4',
+                  backgroundColor: isDarkMode ? 'rgba(15, 118, 110, 0.18)' : '#f0fdfa',
+                  color: isDarkMode ? '#5eead4' : '#0f766e',
+                  height: '44px'
+                }}
+              >
+                <span className="icon is-small"><Info size={16} /></span>
+                <span>¿Cómo funciona?</span>
+              </button>
+
+              {/* 3. Mostrar fin de semana */}
+              <label 
+                className="checkbox box p-3 is-flex is-align-items-center mb-0" 
+                style={{ 
+                  gap: '0.65rem', 
+                  border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
+                  backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', 
+                  boxShadow: 'none',
+                  borderRadius: '10px',
+                  cursor: 'pointer'
+                }}
+              >
+                <input 
+                  type="checkbox" 
+                  checked={showWeekends} 
+                  onChange={(e) => setShowWeekends(e.target.checked)} 
+                  style={{ width: '18px', height: '18px' }}
+                />
+                <span className="is-size-7 has-text-weight-bold" style={{ color: isDarkMode ? '#e2e8f0' : '#334155' }}>
+                  Mostrar fin de semana
+                </span>
+              </label>
+
+              {/* 4. Presencial cambia primer lunes del mes */}
+              <label 
+                className="checkbox box p-3 is-flex is-align-items-start mb-0" 
+                style={{ 
+                  gap: '0.65rem', 
+                  border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
+                  backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', 
+                  boxShadow: 'none',
+                  borderRadius: '10px',
+                  cursor: 'pointer'
+                }}
+              >
+                <input 
+                  type="checkbox" 
+                  checked={presencialFirstMonday} 
+                  className="mt-1"
+                  style={{ width: '18px', height: '18px' }}
+                  onChange={(e) => {
+                    const val = e.target.checked;
+                    setPresencialFirstMonday(val);
+                    if (!val && Object.keys(fixedWeeklySelections).length === 0) {
+                      const current = weeklySelections[`${leftYear}-${leftMonth}`];
+                      if (current) setFixedWeeklySelections(current);
+                    }
+                  }} 
+                />
+                <div>
+                  <span className="is-size-7 has-text-weight-bold is-block" style={{ color: isDarkMode ? '#e2e8f0' : '#334155', lineHeight: 1.35 }}>
+                    Presencial cambia primer lunes
+                  </span>
+                  <span style={{ fontSize: '10.5px', color: isDarkMode ? '#94a3b8' : '#64748b' }}>
+                    Alternar semanas presenciales por mes
+                  </span>
+                </div>
+              </label>
+
+              <hr style={{ margin: '0.5rem 0', backgroundColor: isDarkMode ? '#334155' : '#e2e8f0' }} />
+
+              {/* 5. Limpiar calendario */}
+              <div>
+                {showClearConfirm ? (
+                  <div className="notification is-danger is-light p-3 mb-0" style={{ border: '1px solid #f87171', borderRadius: '10px' }}>
+                    <p className="is-size-7 has-text-weight-bold has-text-centered mb-2">¿Borrar todo lo marcado?</p>
+                    <div className="buttons are-small mb-0 is-flex">
+                      <button 
+                        onClick={() => { setColoredDays({}); setWeeklySelections({}); setFixedWeeklySelections({}); setShowClearConfirm(false); closeMobileMenu(); }} 
+                        className="button is-danger is-fullwidth"
+                        style={{ borderRadius: '6px' }}
+                      >
+                        Sí, borrar
+                      </button>
+                      <button 
+                        onClick={() => setShowClearConfirm(false)} 
+                        className="button is-light is-fullwidth"
+                        style={{ borderRadius: '6px' }}
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => setShowClearConfirm(true)} 
+                    className="button is-fullwidth"
+                    style={{ 
+                      borderRadius: '10px', 
+                      border: '1px solid #fecdd3', 
+                      color: '#e11d48', 
+                      backgroundColor: isDarkMode ? 'rgba(225, 29, 72, 0.12)' : '#fff1f2', 
+                      fontWeight: 600,
+                      height: '42px'
+                    }}
+                  >
+                    <span className="icon is-small"><Trash2 size={16} /></span>
+                    <span>Limpiar calendario</span>
+                  </button>
+                )}
+              </div>
+
+              {/* 6. Descargar PNG */}
+              <button 
+                onClick={() => { handleExportPNG(); closeMobileMenu(); }}
+                className="button is-fullwidth"
+                style={{ 
+                  height: '48px',
+                  borderRadius: '10px', 
+                  background: 'linear-gradient(135deg, #0e7490 0%, #0f766e 100%)', 
+                  color: '#ffffff', 
+                  border: 'none', 
+                  fontWeight: 700, 
+                  boxShadow: '0 4px 14px rgba(15, 118, 110, 0.35)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  marginTop: '0.25rem'
+                }}
+              >
+                <Download size={19} strokeWidth={2.3} />
+                <span>Descargar PNG</span>
+              </button>
+
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Modal de configuración de etiqueta en móvil (Límites o Eliminar) */}
+      {colorSettingsItem && (
+        <div className="modal is-active" style={{ zIndex: 1100 }}>
+          <div className="modal-background" onClick={() => setColorSettingsItem(null)} />
+          <div className="modal-card" style={{ maxWidth: '340px', width: '92%', margin: 'auto' }}>
+            <div 
+              className="modal-card-body p-4" 
+              style={{ 
+                borderRadius: '16px', 
+                backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+                border: isDarkMode ? '1.5px solid #334155' : '1.5px solid #cbd5e1',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
+              }}
+            >
+              {/* Cabecera del modal */}
+              <div className="is-flex is-align-items-center is-justify-content-space-between pb-3 mb-3" style={{ borderBottom: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0' }}>
+                <div className="is-flex is-align-items-center" style={{ gap: '0.65rem' }}>
+                  <span 
+                    style={{ 
+                      width: '24px', 
+                      height: '24px', 
+                      borderRadius: '6px', 
+                      backgroundColor: colorSettingsItem.color, 
+                      border: '1.5px solid rgba(0,0,0,0.2)',
+                      display: 'inline-block' 
+                    }} 
+                  />
+                  <h3 className="title is-6 mb-0" style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontWeight: 800 }}>
+                    {colorSettingsItem.fullName || colorSettingsItem.label}
+                  </h3>
+                </div>
+                <button 
+                  onClick={() => setColorSettingsItem(null)} 
+                  className="delete is-medium"
+                  aria-label="Cerrar"
+                />
+              </div>
+
+              {/* Opciones según tipo de etiqueta */}
+              <div className="is-flex is-flex-direction-column" style={{ gap: '1rem' }}>
+                
+                {/* 1. Selector de color editable para cualquier etiqueta */}
+                <div 
+                  className="p-3" 
+                  style={{ 
+                    backgroundColor: isDarkMode ? '#141d2b' : '#f8fafc',
+                    borderRadius: '12px',
+                    border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0'
+                  }}
+                >
+                  <div className="is-flex is-align-items-center is-justify-content-space-between">
+                    <div>
+                      <span className="is-size-7 has-text-weight-bold is-block" style={{ color: isDarkMode ? '#e2e8f0' : '#1e293b' }}>
+                        Color de la etiqueta
+                      </span>
+                      <span style={{ fontSize: '11px', color: isDarkMode ? '#94a3b8' : '#64748b' }}>
+                        Pulsa para cambiar de color
+                      </span>
+                    </div>
+
+                    <div className="is-flex is-align-items-center" style={{ gap: '0.65rem' }}>
+                      <input 
+                        type="color" 
+                        value={colorSettingsItem.color} 
+                        onChange={(e) => handleUpdateItemColor(colorSettingsItem.id, e.target.value)}
+                        style={{ 
+                          width: '42px', 
+                          height: '34px', 
+                          padding: '2px', 
+                          cursor: 'pointer', 
+                          borderRadius: '8px', 
+                          border: isDarkMode ? '1px solid #475569' : '1px solid #cbd5e1' 
+                        }}
+                        title="Cambiar color" 
+                      />
+                      <span className="is-size-7 font-monospace" style={{ fontWeight: 600, color: isDarkMode ? '#94a3b8' : '#64748b' }}>
+                        {colorSettingsItem.color.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Nota para etiqueta de Festivos ('4') */}
+                {colorSettingsItem.id === '4' && (
+                  <p className="is-size-7 mb-0 has-text-centered" style={{ color: isDarkMode ? '#94a3b8' : '#64748b' }}>
+                    Esta es la etiqueta oficial de días festivos.
+                  </p>
+                )}
+
+                {/* 2. Si pertenece a las etiquetas con límite ('1', '2', '3') */}
+                {['1', '2', '3'].includes(colorSettingsItem.id) && (
+                  <div 
+                    className="p-3" 
+                    style={{ 
+                      backgroundColor: isDarkMode ? '#141d2b' : '#f8fafc',
+                      borderRadius: '12px',
+                      border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0'
+                    }}
+                  >
+                    {/* Fila: Activar/Desactivar Límite */}
+                    <div className="is-flex is-align-items-center is-justify-content-space-between mb-2">
+                      <div>
+                        <span className="is-size-7 has-text-weight-bold is-block" style={{ color: isDarkMode ? '#e2e8f0' : '#1e293b' }}>
+                          Limitar días máximos
+                        </span>
+                        <span style={{ fontSize: '11px', color: isDarkMode ? '#94a3b8' : '#64748b' }}>
+                          {limits[colorSettingsItem.id]?.enabled ? 'Límite activado' : 'Sin límite de días'}
+                        </span>
+                      </div>
+
+                      {/* Toggle switch iOS */}
+                      <div 
+                        onClick={() => handleLimitToggle(colorSettingsItem.id, !limits[colorSettingsItem.id]?.enabled)}
+                        style={{
+                          width: '44px',
+                          height: '24px',
+                          borderRadius: '9999px',
+                          backgroundColor: limits[colorSettingsItem.id]?.enabled ? '#0f766e' : '#cbd5e1',
+                          position: 'relative',
+                          cursor: 'pointer',
+                          transition: 'background-color 0.2s ease',
+                          flexShrink: 0
+                        }}
+                      >
+                        <div 
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            backgroundColor: '#ffffff',
+                            position: 'absolute',
+                            top: '3px',
+                            left: limits[colorSettingsItem.id]?.enabled ? '23px' : '3px',
+                            transition: 'left 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                            boxShadow: '0 1px 4px rgba(0,0,0,0.25)'
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Selector de número de días si está activo */}
+                    {limits[colorSettingsItem.id]?.enabled && (
+                      <div className="pt-2 mt-2" style={{ borderTop: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0' }}>
+                        <div className="is-flex is-align-items-center is-justify-content-space-between">
+                          <span className="is-size-7 has-text-weight-bold" style={{ color: isDarkMode ? '#e2e8f0' : '#1e293b' }}>
+                            Días máximos:
+                          </span>
+                          <div className="is-flex is-align-items-center" style={{ gap: '0.4rem' }}>
+                            <button 
+                              onClick={() => handleLimitChange(colorSettingsItem.id, Math.max(1, (limits[colorSettingsItem.id]?.max || 1) - 1))}
+                              className="button is-small"
+                              style={{ width: '28px', height: '28px', padding: 0, fontWeight: 800, borderRadius: '6px' }}
+                            >
+                              -
+                            </button>
+                            <input 
+                              type="number"
+                              min="1"
+                              max="99"
+                              value={limits[colorSettingsItem.id]?.max || 0}
+                              onChange={(e) => handleLimitChange(colorSettingsItem.id, Math.max(0, parseInt(e.target.value) || 0))}
+                              className="input is-small has-text-centered has-text-weight-bold"
+                              style={{ width: '48px', height: '28px', borderRadius: '6px' }}
+                            />
+                            <button 
+                              onClick={() => handleLimitChange(colorSettingsItem.id, (limits[colorSettingsItem.id]?.max || 0) + 1)}
+                              className="button is-small"
+                              style={{ width: '28px', height: '28px', padding: 0, fontWeight: 800, borderRadius: '6px' }}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                        <p className="is-size-7 mt-2 mb-0" style={{ color: isDarkMode ? '#94a3b8' : '#64748b' }}>
+                          Marcados: <strong>{Object.values(coloredDays).filter(id => id === colorSettingsItem.id).length}</strong> de <strong>{limits[colorSettingsItem.id]?.max || 0}</strong> días.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 2. Si es una etiqueta personalizada (!['1', '2', '3', '4']) */}
+                {!['1', '2', '3', '4'].includes(colorSettingsItem.id) && (
+                  <div 
+                    className="p-3" 
+                    style={{ 
+                      backgroundColor: isDarkMode ? '#141d2b' : '#fff1f2',
+                      borderRadius: '12px',
+                      border: isDarkMode ? '1px solid #7f1d1d' : '1px solid #fecdd3'
+                    }}
+                  >
+                    <p className="is-size-7 mb-3" style={{ color: isDarkMode ? '#fda4af' : '#991b1b' }}>
+                      Esta es una etiqueta creada por ti. Al eliminarla se desmarcarán todos sus días del calendario.
+                    </p>
+                    <button 
+                      onClick={() => {
+                        handleDeleteColor(colorSettingsItem.id);
+                        setColorSettingsItem(null);
+                      }}
+                      className="button is-danger is-small is-fullwidth"
+                      style={{ borderRadius: '8px', fontWeight: 600, gap: '0.4rem' }}
+                    >
+                      <Trash2 size={14} />
+                      <span>Eliminar etiqueta</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* Botón Aceptar / Cerrar */}
+                <button 
+                  onClick={() => setColorSettingsItem(null)}
+                  className="button is-fullwidth"
+                  style={{ 
+                    borderRadius: '10px',
+                    backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
+                    color: '#ffffff',
+                    fontWeight: 700,
+                    border: 'none',
+                    height: '40px'
+                  }}
+                >
+                  Listo
+                </button>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para añadir nuevo color en móvil */}
+      {showAddColorModal && (
+        <div className="modal is-active" style={{ zIndex: 1150 }}>
+          <div className="modal-background" onClick={() => setShowAddColorModal(false)} />
+          <div className="modal-card" style={{ maxWidth: '340px', width: '92%', margin: 'auto' }}>
+            <div 
+              className="modal-card-body p-4" 
+              style={{ 
+                borderRadius: '16px', 
+                backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+                border: isDarkMode ? '1.5px solid #334155' : '1.5px solid #cbd5e1',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
+              }}
+            >
+              {/* Cabecera */}
+              <div className="is-flex is-align-items-center is-justify-content-space-between pb-3 mb-3" style={{ borderBottom: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0' }}>
+                <div className="is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
+                  <span style={{ fontSize: '18px' }}>🎨</span>
+                  <h3 className="title is-6 mb-0" style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontWeight: 800 }}>
+                    Añadir nuevo color
+                  </h3>
+                </div>
+                <button 
+                  onClick={() => setShowAddColorModal(false)} 
+                  className="delete is-medium"
+                  aria-label="Cerrar"
+                />
+              </div>
+
+              {/* Formulario */}
+              <div className="is-flex is-flex-direction-column" style={{ gap: '1rem' }}>
+                <div>
+                  <label className="label is-size-7 mb-1.5" style={{ color: isDarkMode ? '#e2e8f0' : '#1e293b' }}>
+                    Nombre de la etiqueta:
+                  </label>
+                  <input 
+                    type="text" 
+                    value={newLabel} 
+                    onChange={(e) => setNewLabel(e.target.value)} 
+                    placeholder="Ej: Formación, Guardia..." 
+                    className="input is-small" 
+                    style={{ height: '36px', borderRadius: '8px', fontSize: '13px' }}
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newLabel.trim()) {
+                        handleAddColor();
+                        setShowAddColorModal(false);
+                      }
+                    }} 
+                  />
+                </div>
+
+                <div>
+                  <label className="label is-size-7 mb-1.5" style={{ color: isDarkMode ? '#e2e8f0' : '#1e293b' }}>
+                    Color de la etiqueta:
+                  </label>
+                  <div className="is-flex is-align-items-center" style={{ gap: '0.75rem' }}>
+                    <input 
+                      type="color" 
+                      value={newColorHex} 
+                      onChange={(e) => setNewColorHex(e.target.value)} 
+                      style={{ width: '48px', height: '36px', padding: '2px', cursor: 'pointer', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                      title="Seleccionar color" 
+                    />
+                    <span className="is-size-7 font-monospace" style={{ color: isDarkMode ? '#94a3b8' : '#64748b', fontWeight: 600 }}>
+                      {newColorHex.toUpperCase()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Botones */}
+                <div className="buttons is-flex is-justify-content-flex-end mt-2 mb-0" style={{ gap: '0.5rem' }}>
+                  <button 
+                    onClick={() => setShowAddColorModal(false)}
+                    className="button is-small is-light"
+                    style={{ borderRadius: '8px' }}
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    onClick={() => {
+                      if (newLabel.trim()) {
+                        handleAddColor();
+                        setShowAddColorModal(false);
+                      }
+                    }} 
+                    disabled={!newLabel.trim()}
+                    className="button is-small" 
+                    style={{ 
+                      background: 'linear-gradient(135deg, #0e7490, #0f766e)', 
+                      color: '#ffffff', 
+                      border: 'none', 
+                      borderRadius: '8px',
+                      fontWeight: 700,
+                      padding: '0 16px'
+                    }}
+                  >
+                    Crear etiqueta
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Contenedor Oculto Formateado Específicamente para la Exportación (PNG) */}
       <div style={{ position: 'fixed', left: '-99999px', top: '0', pointerEvents: 'none', zIndex: -9999 }}>
@@ -1076,9 +2205,6 @@ const CalendarApp = () => {
             <h1 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', margin: 0 }}>
               Propuesta Vacaciones
             </h1>
-            <p style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500, margin: '4px 0 0 0' }}>
-              Organiza y planifica tu calendario laboral
-            </p>
           </div>
           
           {/* Bloque de los dos calendarios */}

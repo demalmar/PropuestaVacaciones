@@ -115,3 +115,146 @@
 .oval-nav-btn:active {
   background-color: rgba(0, 0, 0, 0.18) !important;
 }
+
+/* --- ESTILOS RESPONSIVE PARA VISTA MÓVIL (< 769px) --- */
+
+/* Menú lateral deslizable (Off-canvas Drawer) */
+.mobile-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  animation: fadeIn 0.22s ease forwards;
+}
+
+.mobile-drawer-overlay.is-closing {
+  animation: fadeOut 0.22s ease forwards;
+}
+
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 86%;
+  max-width: 340px;
+  background-color: #ffffff;
+  z-index: 1000;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  overflow-y: auto;
+}
+
+.mobile-drawer.is-closing {
+  animation: slideOutRight 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+[data-theme="dark"] .mobile-drawer {
+  background-color: #151e2b;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.6);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideOutRight {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+/* Contenedor con scroll horizontal para etiquetas en móvil */
+.mobile-color-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE / Edge */
+  padding: 2px 1px;
+}
+
+.mobile-color-scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Botones cuadrados de etiquetas en móvil */
+.mobile-color-square {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 4px;
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
+  transition: transform 0.1s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  position: relative;
+  text-align: center;
+}
+
+.mobile-color-square * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+.mobile-color-square:active {
+  transform: scale(0.95);
+}
+
+/* Días de la semana en la cabecera */
+.calendar-header-day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* Ajustes de altura táctil en móviles (< 769px) */
+@media screen and (max-width: 768px) {
+  .calendar-header-day {
+    min-height: 44px !important;
+    font-size: 0.9rem !important;
+  }
+  .calendar-day-cell {
+    height: 3.25rem !important;
+    font-size: 0.92rem !important;
+  }
+}
+
+/* Barra de navegación de meses intermedia en móvil */
+.mobile-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0e7490 0%, #0f766e 100%);
+  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.3);
+  overflow: hidden;
+  user-select: none;
+}
+
