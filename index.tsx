@@ -87,7 +87,12 @@ const CalendarApp = () => {
   const [legendColors, setLegendColors] = useState(() => {
     try {
         const saved = localStorage.getItem('vacationApp_legendColors');
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          // Si el guardado anterior tiene Festivo como ID 1, migramos al nuevo orden e IDs del usuario
+          const isOldOrder = parsed.some((c: any) => c.id === '1' && c.label && c.label.toLowerCase().includes('festivo'));
+          if (!isOldOrder) return parsed;
+        }
     } catch (e) { console.error("Error cargando colores"); }
     return [
       { id: '1', label: 'Vac. días independientes', fullName: 'Vacaciones días independientes', color: '#bbf7d0' }, 
@@ -141,9 +146,9 @@ const CalendarApp = () => {
         if (saved) return JSON.parse(saved);
     } catch (e) {}
     return {
+      '1': { enabled: false, max: 0 },
       '2': { enabled: false, max: 0 },
       '3': { enabled: false, max: 0 },
-      '4': { enabled: false, max: 0 },
     };
   });
 
@@ -208,11 +213,11 @@ const CalendarApp = () => {
         return newColoredDays;
       } 
       
-      // Comprobar lmites si es un color especial
-      if (['2', '3', '4'].includes(activeColorId) && limits[activeColorId]?.enabled) {
+      // Comprobar límites si es un color configurable (Vac. independientes, Vac. por periodo, Asuntos Propios)
+      if (['1', '2', '3'].includes(activeColorId) && limits[activeColorId]?.enabled) {
          const currentUsage = Object.values(prev).filter(id => id === activeColorId).length;
          if (currentUsage >= limits[activeColorId].max) {
-             return prev; // Lmite alcanzado, no se aade el color
+             return prev; // Límite alcanzado, no se añade el color
          }
       }
       
@@ -399,9 +404,9 @@ const CalendarApp = () => {
             const assignedColor = legendColors.find(c => c.id === colorId)?.color;
             let finalBgColor = assignedColor;
             
-            // Si es fin de semana del mes actual y no tiene color manual, hereda el color de "Festivo" (ID '1')
+            // Si es fin de semana del mes actual y no tiene color manual, hereda el color de "Festivo" (ID '4')
             if (!assignedColor && dayData.dayIndex >= 5 && dayData.isCurrentMonth) {
-                finalBgColor = legendColors.find(c => c.id === '1')?.color;
+                finalBgColor = legendColors.find(c => c.id === '4' || c.label.toLowerCase().includes('festivo'))?.color;
             }
 
             // Color de fondo: en modo nocturno si no tiene color es oscuro (#1c2635), en diurno es blanco (#ffffff)
@@ -491,12 +496,12 @@ const CalendarApp = () => {
                 width: '38px', 
                 height: '38px', 
                 borderRadius: '10px', 
-                background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)', 
+                background: 'linear-gradient(135deg, #0e7490 0%, #0d9488 100%)', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center', 
                 fontSize: '18px', 
-                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+                boxShadow: '0 4px 12px rgba(15, 118, 110, 0.3)',
                 color: '#ffffff'
               }}
             >
@@ -587,7 +592,7 @@ const CalendarApp = () => {
                 {/* Lista compacta de colores */}
                 <div className="custom-scrollbar pr-1 mb-2.5" style={{ maxHeight: '380px', overflowY: 'auto' }}>
                   {legendColors.map((item) => {
-                    const isSpecial = ['2', '3', '4'].includes(item.id);
+                    const isSpecial = ['1', '2', '3'].includes(item.id);
                     const isCustom = !['1', '2', '3', '4'].includes(item.id);
                     const limitConfig = limits[item.id];
                     const usage = Object.values(coloredDays).filter(id => id === item.id).length;
@@ -595,10 +600,10 @@ const CalendarApp = () => {
 
                     const isActive = activeColorId === item.id;
                     const itemBorder = isActive 
-                      ? (isDarkMode ? '2px solid #60a5fa' : '2px solid #2563eb')
+                      ? (isDarkMode ? '2px solid #2dd4bf' : '2px solid #0f766e')
                       : (isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0');
                     const itemBg = isActive
-                      ? (isDarkMode ? 'rgba(59, 130, 246, 0.18)' : '#eff6ff')
+                      ? (isDarkMode ? 'rgba(15, 118, 110, 0.22)' : '#f0fdfa')
                       : (isDarkMode ? '#151e2b' : '#ffffff');
 
                     return (
@@ -610,7 +615,7 @@ const CalendarApp = () => {
                           cursor: 'pointer', 
                           border: itemBorder, 
                           backgroundColor: itemBg, 
-                          boxShadow: isActive ? '0 0 0 1.5px rgba(37,99,235,0.15)' : 'none',
+                          boxShadow: isActive ? '0 0 0 1.5px rgba(15, 118, 110, 0.2)' : 'none',
                           borderRadius: '8px',
                           padding: '4px 8px',
                           minHeight: '34px',
@@ -751,9 +756,9 @@ const CalendarApp = () => {
                         className="button is-small" 
                         style={{ 
                           height: '28px', 
-                          background: 'linear-gradient(135deg, #2563eb, #3b82f6)', 
+                          background: 'linear-gradient(135deg, #0e7490, #0f766e)', 
                           color: '#ffffff', 
-                          border: 'none',
+                          border: 'none', 
                           borderRadius: '0 6px 6px 0'
                         }}
                         title="Añadir nuevo color"
@@ -805,10 +810,10 @@ const CalendarApp = () => {
                             width: '32px', 
                             height: '32px', 
                             padding: 0,
-                            backgroundColor: isDarkMode ? '#3b82f6' : '#2563eb',
+                            backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
                             color: '#ffffff',
                             border: 'none',
-                            boxShadow: '0 3px 10px rgba(37, 99, 235, 0.35)',
+                            boxShadow: '0 3px 10px rgba(15, 118, 110, 0.35)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -825,10 +830,10 @@ const CalendarApp = () => {
                             width: '32px', 
                             height: '32px', 
                             padding: 0,
-                            backgroundColor: isDarkMode ? '#3b82f6' : '#2563eb',
+                            backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
                             color: '#ffffff',
                             border: 'none',
-                            boxShadow: '0 3px 10px rgba(37, 99, 235, 0.35)',
+                            boxShadow: '0 3px 10px rgba(15, 118, 110, 0.35)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -880,9 +885,9 @@ const CalendarApp = () => {
                         style={{ 
                           fontWeight: 600,
                           borderRadius: '10px',
-                          border: isDarkMode ? '1px solid #3b82f6' : '1px solid #bae6fd',
-                          backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.15)' : '#e0f2fe',
-                          color: isDarkMode ? '#93c5fd' : '#0284c7',
+                          border: isDarkMode ? '1px solid #0d9488' : '1px solid #99f6e4',
+                          backgroundColor: isDarkMode ? 'rgba(15, 118, 110, 0.18)' : '#f0fdfa',
+                          color: isDarkMode ? '#5eead4' : '#0f766e',
                           height: '36px'
                         }}
                         title="Ver instrucciones y ayuda de uso"
@@ -989,11 +994,11 @@ const CalendarApp = () => {
                           flex: 1,
                           minHeight: '64px',
                           borderRadius: '10px', 
-                          background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)', 
+                          background: 'linear-gradient(135deg, #0e7490 0%, #0f766e 100%)', 
                           color: '#ffffff', 
                           border: 'none', 
                           fontWeight: 700, 
-                          boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
+                          boxShadow: '0 4px 14px rgba(15, 118, 110, 0.35)',
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
@@ -1235,7 +1240,17 @@ const CalendarApp = () => {
                 borderBottomRightRadius: '12px'
               }}
             >
-              <button onClick={() => setShowHowItWorks(false)} className="button is-info is-small">
+              <button 
+                onClick={() => setShowHowItWorks(false)} 
+                className="button is-small"
+                style={{ 
+                  background: 'linear-gradient(135deg, #0e7490 0%, #0f766e 100%)', 
+                  color: '#ffffff', 
+                  border: 'none', 
+                  fontWeight: 600, 
+                  borderRadius: '6px' 
+                }}
+              >
                 Entendido
               </button>
             </footer>
