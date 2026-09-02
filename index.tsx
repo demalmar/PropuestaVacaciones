@@ -875,9 +875,9 @@ const CalendarApp = () => {
                     </div>
                   </div>
 
-                  {/* 3. Columna derecha estrecha: Mostrar fin de semana, Presencial cambia primer lunes, Limpiar calendario, Guardar imagen */}
-                  <div className="column is-2-desktop is-12-tablet">
-                    <div className="is-flex is-flex-direction-column" style={{ gap: '0.65rem', transform: 'translateZ(0)', willChange: 'transform' }}>
+                  {/* 3. Columna derecha estrecha: Cómo funciona, Mostrar fin de semana, Presencial cambia primer lunes, Limpiar calendario, Descargar PNG */}
+                  <div className="column is-2-desktop is-12-tablet is-flex is-flex-direction-column">
+                    <div className="is-flex is-flex-direction-column is-flex-grow-1" style={{ gap: '0.65rem', transform: 'translateZ(0)', willChange: 'transform', height: '100%' }}>
                       {/* 1. ¿Cómo funciona? como primera opción */}
                       <button 
                         onClick={() => setShowHowItWorks(true)}
@@ -986,22 +986,31 @@ const CalendarApp = () => {
                         )}
                       </div>
 
-                      {/* 5. Descargar PNG (en lugar del verde Guardar imagen) */}
+                      {/* 5. Descargar PNG: ocupa toda la altura disponible con icono grande centrado y texto debajo */}
                       <button 
                         onClick={handleExportPNG}
-                        className="button is-fullwidth is-small"
+                        className="button is-fullwidth"
                         style={{ 
-                          borderRadius: '8px', 
+                          flex: 1,
+                          minHeight: '64px',
+                          borderRadius: '10px', 
                           background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)', 
                           color: '#ffffff', 
                           border: 'none', 
                           fontWeight: 700, 
-                          boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)' 
+                          boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.45rem',
+                          padding: '0.75rem 0.5rem',
+                          transition: 'all 0.15s ease'
                         }}
                         title="Descargar propuesta en formato PNG"
                       >
-                        <span className="icon is-small"><Download size={15} /></span>
-                        <span>Descargar PNG</span>
+                        <Download size={24} strokeWidth={2.3} />
+                        <span style={{ fontSize: '12px', fontWeight: 700, lineHeight: 1.2 }}>Descargar PNG</span>
                       </button>
                     </div>
                   </div>
