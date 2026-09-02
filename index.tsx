@@ -300,25 +300,26 @@ const CalendarApp = () => {
 
     // En exportación siempre forzamos tema diurno claro para descarga PNG impecable
     const useDarkMode = isDarkMode && !isExport;
+    const cellBorder = isExport ? '1px solid #bfdbfe' : (useDarkMode ? '1px solid #283445' : '1px solid #e2e8f0');
 
     return (
       <div 
         className="box p-0 mb-0" 
         style={{ 
-          border: useDarkMode ? '1px solid #334155' : '1px solid #93c5fd', 
+          border: isExport ? '1.5px solid #60a5fa' : (useDarkMode ? '1px solid #334155' : '1px solid #93c5fd'), 
           borderRadius: '12px', 
           overflow: 'hidden', 
-          minWidth: showWeekends ? '220px' : '170px',
-          width: '100%',
+          minWidth: isExport ? (showWeekends ? '320px' : '240px') : (showWeekends ? '220px' : '170px'),
+          width: isExport ? (showWeekends ? '320px' : '240px') : '100%',
           backgroundColor: useDarkMode ? '#17202e' : '#ffffff',
-          boxShadow: useDarkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 20px -2px rgba(37,99,235,0.08)'
+          boxShadow: isExport ? 'none' : (useDarkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 20px -2px rgba(37,99,235,0.08)')
         }}
       >
         {/* Cabecera del Mes */}
         <div 
           className="has-text-weight-bold has-text-centered py-2.5 is-size-6" 
           style={{ 
-            borderBottom: useDarkMode ? '1px solid #334155' : '1px solid #bfdbfe',
+            borderBottom: isExport ? '1.5px solid #60a5fa' : (useDarkMode ? '1px solid #334155' : '1px solid #bfdbfe'),
             background: useDarkMode 
               ? 'linear-gradient(135deg, #1e293b 0%, #293548 100%)' 
               : 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
@@ -333,7 +334,7 @@ const CalendarApp = () => {
         <div 
           className={`calendar-grid-${cols}`} 
           style={{ 
-            borderBottom: useDarkMode ? '1px solid #334155' : '1px solid #bfdbfe', 
+            borderBottom: isExport ? '1.5px solid #60a5fa' : (useDarkMode ? '1px solid #334155' : '1px solid #bfdbfe'), 
             backgroundColor: useDarkMode ? '#131b26' : '#f8fafc' 
           }}
         >
@@ -357,7 +358,7 @@ const CalendarApp = () => {
                     onClick={!isExport ? () => handleHeaderDayClick(targetYear, targetMonth, index) : undefined}
                     className="has-text-centered py-1.5 is-size-7 has-text-weight-bold"
                     style={{ 
-                      borderRight: index === cols - 1 ? 'none' : (useDarkMode ? '1px solid #293548' : '1px solid #e2e8f0'),
+                      borderRight: index === cols - 1 ? 'none' : (isExport ? '1px solid #93c5fd' : (useDarkMode ? '1px solid #293548' : '1px solid #e2e8f0')),
                       cursor: !isExport ? 'pointer' : 'default',
                       userSelect: 'none',
                       backgroundColor: headerBg,
@@ -384,11 +385,8 @@ const CalendarApp = () => {
                   className="calendar-day-cell is-empty"
                   style={{
                     backgroundColor: useDarkMode ? '#111620' : '#f1f5f9',
-                    borderColor: useDarkMode ? '#1e2837' : '#e2e8f0',
-                    borderRightWidth: (index % cols === cols - 1) ? '0' : '1px',
-                    borderRightStyle: 'solid',
-                    borderBottomWidth: '1px',
-                    borderBottomStyle: 'solid',
+                    borderRight: (index % cols === cols - 1) ? 'none' : cellBorder,
+                    borderBottom: cellBorder,
                     cursor: 'default',
                     opacity: 0.3
                   }}
@@ -433,11 +431,8 @@ const CalendarApp = () => {
                   backgroundColor: cellBg,
                   color: textColor,
                   fontWeight: (dayData.dayIndex >= 5 || finalBgColor) ? 700 : 600,
-                  borderColor: useDarkMode ? '#283445' : '#e2e8f0',
-                  borderRightWidth: (index % cols === cols - 1) ? '0' : '1px',
-                  borderRightStyle: 'solid',
-                  borderBottomWidth: '1px',
-                  borderBottomStyle: 'solid',
+                  borderRight: (index % cols === cols - 1) ? 'none' : cellBorder,
+                  borderBottom: cellBorder,
                 }}
               >
                 {/* Indicadores visuales para "Días Presenciales" */}
@@ -1026,7 +1021,7 @@ const CalendarApp = () => {
         </div>
 
       {/* Contenedor Oculto Formateado Específicamente para la Exportación (PNG) */}
-      <div style={{ position: 'absolute', top: 0, left: 0, zIndex: -10, opacity: 0, pointerEvents: 'none' }}>
+      <div style={{ position: 'fixed', left: '-99999px', top: '0', pointerEvents: 'none', zIndex: -9999 }}>
         <div ref={exportRef} className="p-8 bg-white is-flex is-flex-direction-column is-align-items-center" style={{ width: 'max-content', gap: '1.5rem', backgroundColor: '#ffffff' }}>
           <h1 className="title is-3 has-text-grey-darker mb-0">Propuesta Vacaciones</h1>
           
