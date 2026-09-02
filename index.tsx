@@ -477,22 +477,48 @@ const CalendarApp = () => {
   return (
     <section className="section py-4 px-3" style={{ minHeight: '100vh', backgroundColor: isDarkMode ? '#0b0f17' : '#f8fafc', transition: 'background-color 0.25s ease' }}>
       
-      {/* Contenedor relativo para posicionar el switch de modo nocturno pegado a la derecha sin alterar el centrado */}
-      <div style={{ position: 'relative', maxWidth: '1280px', margin: '0 auto' }}>
+      {/* Contenedor principal de Propuesta Vacaciones */}
+      <div className="container" style={{ maxWidth: '1280px' }}>
 
-        {/* Widget Modo Nocturno (Switch Sol / Luna) pegado a la derecha del contenedor sin desplazar el centro */}
-        <div className="dark-mode-widget-container">
-          <div 
-            className="box p-2.5 is-flex is-flex-direction-column is-align-items-center" 
-            style={{ 
-              borderRadius: '16px', 
-              border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1',
-              backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
-              boxShadow: isDarkMode ? '0 4px 20px rgba(0,0,0,0.4)' : '0 8px 24px -4px rgba(30, 41, 59, 0.12)',
-              minWidth: '76px'
-            }}
-          >
-            {/* Toggle Switch Sol / Luna */}
+        {/* Barra superior con Título y Switch de Modo Oscuro */}
+        <div 
+          className="box is-flex is-justify-content-space-between is-align-items-center mb-4 px-5 py-3.5" 
+          style={{ 
+            border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
+            borderRadius: '14px', 
+            backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+            boxShadow: isDarkMode ? '0 4px 16px rgba(0,0,0,0.2)' : '0 4px 20px -2px rgba(30, 41, 59, 0.06)'
+          }}
+        >
+          <div className="is-flex is-align-items-center" style={{ gap: '0.75rem' }}>
+            <div 
+              style={{ 
+                width: '38px', 
+                height: '38px', 
+                borderRadius: '10px', 
+                background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                fontSize: '18px', 
+                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+                color: '#ffffff'
+              }}
+            >
+              🏖️
+            </div>
+            <div>
+              <h1 className="title is-4 mb-0" style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontWeight: 800, letterSpacing: '-0.02em' }}>
+                Propuesta Vacaciones
+              </h1>
+              <span className="is-size-7" style={{ color: isDarkMode ? '#94a3b8' : '#64748b', fontSize: '11.5px', fontWeight: 500 }}>
+                Organiza y planifica tu calendario laboral
+              </span>
+            </div>
+          </div>
+
+          {/* Switch Modo Oscuro (Sol / Luna) en la cabecera donde antes estaba el botón azul */}
+          <div className="is-flex is-align-items-center">
             <button
               onClick={toggleDarkMode}
               type="button"
@@ -517,7 +543,6 @@ const CalendarApp = () => {
                 transition: 'all 0.3s ease'
               }}
             >
-              {/* Knob con icono Sol / Luna */}
               <div
                 className="theme-switch-knob"
                 style={{
@@ -539,89 +564,8 @@ const CalendarApp = () => {
                 )}
               </div>
             </button>
-            <span 
-              className="is-size-7 has-text-weight-bold mt-1.5 select-none" 
-              style={{ fontSize: '10px', letterSpacing: '0.04em', color: isDarkMode ? '#94a3b8' : '#475569' }}
-            >
-              {/*isDarkMode ? 'NOCHE' : 'DÍA'}*/}
-              
-            </span>
           </div>
         </div>
-
-        {/* Contenedor principal de Propuesta Vacaciones (permanece exactamente centrado) */}
-        <div className="container" style={{ maxWidth: '1280px' }}>
-
-          {/* Barra superior con Título y Botones */}
-          <div 
-            className="box is-flex is-justify-content-space-between is-align-items-center mb-4 px-5 py-3.5" 
-            style={{ 
-              border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
-              borderRadius: '14px', 
-              backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
-              boxShadow: isDarkMode ? '0 4px 16px rgba(0,0,0,0.2)' : '0 4px 20px -2px rgba(30, 41, 59, 0.06)'
-            }}
-          >
-            <div className="is-flex is-align-items-center" style={{ gap: '0.75rem' }}>
-              <div 
-                style={{ 
-                  width: '38px', 
-                  height: '38px', 
-                  borderRadius: '10px', 
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  fontSize: '18px', 
-                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
-                  color: '#ffffff'
-                }}
-              >
-                🏖️
-              </div>
-              <div>
-                <h1 className="title is-4 mb-0" style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontWeight: 800, letterSpacing: '-0.02em' }}>
-                  Propuesta Vacaciones
-                </h1>
-                <span className="is-size-7" style={{ color: isDarkMode ? '#94a3b8' : '#64748b', fontSize: '11.5px', fontWeight: 500 }}>
-                  Organiza y planifica tu calendario laboral
-                </span>
-              </div>
-            </div>
-
-            <div className="buttons mb-0">
-              <button 
-                  onClick={() => setShowHowItWorks(true)}
-                  className="button is-small"
-                  style={{ 
-                    fontWeight: 600,
-                    borderRadius: '8px',
-                    border: isDarkMode ? '1px solid #3b82f6' : '1px solid #bae6fd',
-                    backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.15)' : '#e0f2fe',
-                    color: isDarkMode ? '#93c5fd' : '#0284c7'
-                  }}
-                  title="Ver instrucciones"
-              >
-                  <span className="icon is-small"><Info size={16} /></span>
-                  <span>¿Cómo funciona?</span>
-              </button>
-              <button 
-                  onClick={handleExportPNG}
-                  className="button is-small"
-                  style={{ 
-                    fontWeight: 600,
-                    borderRadius: '8px',
-                    background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
-                    color: '#ffffff',
-                    border: 'none',
-                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
-                  }}
-              >
-                  <span className="icon is-small"><Download size={16} /></span>
-                  <span>Descargar PNG</span>
-              </button>
-            </div>
-          </div>
 
           {/* Fila Principal: Panel Leyenda a la izquierda | Panel Calendarios en el centro con Acciones a su derecha */}
           <div className="columns is-variable is-3 is-desktop">
@@ -933,11 +877,26 @@ const CalendarApp = () => {
 
                   {/* 3. Columna derecha estrecha: Mostrar fin de semana, Presencial cambia primer lunes, Limpiar calendario, Guardar imagen */}
                   <div className="column is-2-desktop is-12-tablet">
-                    {/* Espaciador en desktop para alinear las acciones con el inicio de los calendarios */}
-                    <div className="is-hidden-touch mb-3" style={{ height: '40px' }} />
-                    
                     <div className="is-flex is-flex-direction-column" style={{ gap: '0.65rem', transform: 'translateZ(0)', willChange: 'transform' }}>
-                      {/* Mostrar fin de semana */}
+                      {/* 1. ¿Cómo funciona? como primera opción */}
+                      <button 
+                        onClick={() => setShowHowItWorks(true)}
+                        className="button is-fullwidth is-small mb-0"
+                        style={{ 
+                          fontWeight: 600,
+                          borderRadius: '10px',
+                          border: isDarkMode ? '1px solid #3b82f6' : '1px solid #bae6fd',
+                          backgroundColor: isDarkMode ? 'rgba(59, 130, 246, 0.15)' : '#e0f2fe',
+                          color: isDarkMode ? '#93c5fd' : '#0284c7',
+                          height: '36px'
+                        }}
+                        title="Ver instrucciones y ayuda de uso"
+                      >
+                        <span className="icon is-small"><Info size={15} /></span>
+                        <span>¿Cómo funciona?</span>
+                      </button>
+
+                      {/* 2. Mostrar fin de semana */}
                       <label 
                         className="checkbox box p-3 is-flex is-align-items-center mb-0" 
                         style={{ 
@@ -956,7 +915,7 @@ const CalendarApp = () => {
                         <span className="is-size-7 has-text-weight-bold" style={{ color: isDarkMode ? '#e2e8f0' : '#334155' }}>Mostrar fin de semana</span>
                       </label>
 
-                      {/* Presencial cambia primer lunes del mes */}
+                      {/* 3. Presencial cambia primer lunes del mes */}
                       <label 
                         className="checkbox box p-3 is-flex is-align-items-start mb-0" 
                         style={{ 
@@ -984,7 +943,7 @@ const CalendarApp = () => {
                         <span className="is-size-7 has-text-weight-bold" style={{ color: isDarkMode ? '#e2e8f0' : '#334155', lineHeight: 1.35 }}>Presencial cambia primer lunes</span>
                       </label>
 
-                      {/* Limpiar calendario */}
+                      {/* 4. Limpiar calendario */}
                       <div>
                         {showClearConfirm ? (
                           <div className="notification is-danger is-light p-3 mb-0" style={{ border: '1px solid #f87171', borderRadius: '10px' }}>
@@ -1027,22 +986,22 @@ const CalendarApp = () => {
                         )}
                       </div>
 
-                      {/* Guardar imagen */}
+                      {/* 5. Descargar PNG (en lugar del verde Guardar imagen) */}
                       <button 
                         onClick={handleExportPNG}
                         className="button is-fullwidth is-small"
                         style={{ 
                           borderRadius: '8px', 
-                          background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', 
+                          background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)', 
                           color: '#ffffff', 
                           border: 'none', 
                           fontWeight: 700, 
-                          boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)' 
+                          boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)' 
                         }}
-                        title="Descargar imagen de la propuesta en PNG"
+                        title="Descargar propuesta en formato PNG"
                       >
                         <span className="icon is-small"><Download size={15} /></span>
-                        <span>Guardar imagen</span>
+                        <span>Descargar PNG</span>
                       </button>
                     </div>
                   </div>
@@ -1056,8 +1015,6 @@ const CalendarApp = () => {
           </div>
 
         </div>
-
-      </div>
 
       {/* Contenedor Oculto Formateado Específicamente para la Exportación (PNG) */}
       <div style={{ position: 'absolute', top: 0, left: 0, zIndex: -10, opacity: 0, pointerEvents: 'none' }}>

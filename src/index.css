@@ -96,25 +96,7 @@
   background: #475569;
 }
 
-/* Contenedor del widget de modo nocturno */
-@media (min-width: 1440px) {
-  .dark-mode-widget-container {
-    position: absolute;
-    top: 0;
-    left: 100%;
-    margin-left: 14px;
-    z-index: 20;
-  }
-}
 
-@media (max-width: 1439px) {
-  .dark-mode-widget-container {
-    position: fixed;
-    top: 0.85rem;
-    right: 0.85rem;
-    z-index: 40;
-  }
-}
 
 /* Animación sutil de botón switch */
 .theme-switch-knob {
