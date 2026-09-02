@@ -317,7 +317,9 @@ const CalendarApp = () => {
           minWidth: isExport ? (showWeekends ? '320px' : '240px') : (showWeekends ? '220px' : '170px'),
           width: isExport ? (showWeekends ? '320px' : '240px') : '100%',
           backgroundColor: useDarkMode ? '#17202e' : '#ffffff',
-          boxShadow: isExport ? 'none' : (useDarkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 20px -2px rgba(37,99,235,0.08)')
+          boxShadow: isExport ? 'none' : (useDarkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 20px -2px rgba(37,99,235,0.08)'),
+          alignSelf: 'flex-start',
+          height: 'fit-content'
         }}
       >
         {/* Cabecera del Mes con estilo blanco y grande */}
@@ -801,11 +803,11 @@ const CalendarApp = () => {
                   {/* Bloque de los dos calendarios con navegación unida en óvalo (< >) en el centro */}
                   <div className="column is-10-desktop is-12-tablet">
                     <div style={{ position: 'relative' }}>
-                      <div className="columns is-variable is-3 is-mobile mb-0">
-                        <div className="column is-6 is-flex is-justify-content-center">
+                      <div className="columns is-variable is-3 is-mobile mb-0" style={{ alignItems: 'flex-start' }}>
+                        <div className="column is-6 is-flex is-justify-content-center" style={{ alignSelf: 'flex-start' }}>
                           {renderMonth(leftYear, leftMonth)}
                         </div>
-                        <div className="column is-6 is-flex is-justify-content-center">
+                        <div className="column is-6 is-flex is-justify-content-center" style={{ alignSelf: 'flex-start' }}>
                           {renderMonth(rightYear, rightMonth)}
                         </div>
                       </div>
