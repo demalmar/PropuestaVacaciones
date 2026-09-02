@@ -91,14 +91,22 @@ const CalendarApp = () => {
           const parsed = JSON.parse(saved);
           // Si el guardado anterior tiene Festivo como ID 1, migramos al nuevo orden e IDs del usuario
           const isOldOrder = parsed.some((c: any) => c.id === '1' && c.label && c.label.toLowerCase().includes('festivo'));
-          if (!isOldOrder) return parsed;
+          if (!isOldOrder) {
+            // Actualizar Festivo a su propio rojo diferenciado #ef4444
+            return parsed.map((c: any) => {
+              if ((c.id === '4' || c.label?.toLowerCase().includes('festivo')) && (c.color === '#fca5a5' || c.color === '#f87171')) {
+                return { ...c, color: '#ef4444' };
+              }
+              return c;
+            });
+          }
         }
     } catch (e) { console.error("Error cargando colores"); }
     return [
       { id: '1', label: 'Vac. días independientes', fullName: 'Vacaciones días independientes', color: '#bbf7d0' }, 
       { id: '2', label: 'Vac. por periodo', fullName: 'Vacaciones por periodo', color: '#fef08a' }, 
       { id: '3', label: 'Asuntos Propios', fullName: 'Asuntos Propios', color: '#bae6fd' }, 
-      { id: '4', label: 'Festivo', fullName: 'Festivo', color: '#fca5a5' },
+      { id: '4', label: 'Festivo', fullName: 'Festivo', color: '#ef4444' },
     ];
   });
   
@@ -305,38 +313,37 @@ const CalendarApp = () => {
 
     // En exportación siempre forzamos tema diurno claro para descarga PNG impecable
     const useDarkMode = isDarkMode && !isExport;
-    const cellBorder = isExport ? '1px solid #bfdbfe' : (useDarkMode ? '1px solid #283445' : '1px solid #e2e8f0');
+    const cellBorder = useDarkMode ? '1px solid #283445' : '1px solid #cbd5e1';
 
     return (
       <div 
         className="box p-0 mb-0" 
         style={{ 
-          border: isExport ? '1.5px solid #60a5fa' : (useDarkMode ? '1px solid #334155' : '1px solid #93c5fd'), 
+          border: useDarkMode ? '2px solid #0d9488' : '2px solid #0f766e', 
           borderRadius: '12px', 
           overflow: 'hidden', 
-          minWidth: isExport ? (showWeekends ? '320px' : '240px') : (showWeekends ? '220px' : '170px'),
-          width: isExport ? (showWeekends ? '320px' : '240px') : '100%',
+          minWidth: isExport ? (showWeekends ? '350px' : '260px') : (showWeekends ? '220px' : '170px'),
+          width: isExport ? (showWeekends ? '350px' : '260px') : '100%',
           backgroundColor: useDarkMode ? '#17202e' : '#ffffff',
-          boxShadow: isExport ? 'none' : (useDarkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 20px -2px rgba(37,99,235,0.08)'),
+          boxShadow: isExport ? '0 4px 20px rgba(0,0,0,0.08)' : (useDarkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 20px -2px rgba(15,118,110,0.1)'),
           alignSelf: 'flex-start',
           height: 'fit-content'
         }}
       >
-        {/* Cabecera del Mes con estilo blanco y grande */}
+        {/* Cabecera del Mes con color secundario para destacar los botones de navegación centrales */}
         <div 
           style={{ 
             height: '46px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            borderBottom: isExport ? '1.5px solid #60a5fa' : (useDarkMode ? '1px solid #334155' : '1px solid #bfdbfe'),
+            borderBottom: useDarkMode ? '2px solid #0d9488' : '2px solid #0f766e',
             background: useDarkMode 
               ? 'linear-gradient(135deg, #1e293b 0%, #293548 100%)' 
-              : 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+              : 'linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%)',
             padding: '0 1rem'
           }}
         >
-          {/* Nombre del Mes: blanco y grande en modo nocturno, oscuro y grande en diurno */}
           <h3 
             className="has-text-weight-bold mb-0" 
             style={{ 
@@ -355,7 +362,7 @@ const CalendarApp = () => {
         <div 
           className={`calendar-grid-${cols}`} 
           style={{ 
-            borderBottom: isExport ? '1.5px solid #60a5fa' : (useDarkMode ? '1px solid #334155' : '1px solid #bfdbfe'), 
+            borderBottom: useDarkMode ? '1.5px solid #334155' : '1.5px solid #cbd5e1', 
             backgroundColor: useDarkMode ? '#131b26' : '#f8fafc' 
           }}
         >
@@ -371,7 +378,7 @@ const CalendarApp = () => {
 
             let headerColor = isWeekend 
               ? (useDarkMode ? '#fb7185' : '#e11d48') 
-              : (useDarkMode ? '#93c5fd' : '#2563eb');
+              : (useDarkMode ? '#5eead4' : '#0f766e');
 
             return (
                 <div 
@@ -379,7 +386,7 @@ const CalendarApp = () => {
                     onClick={!isExport ? () => handleHeaderDayClick(targetYear, targetMonth, index) : undefined}
                     className="has-text-centered py-1.5 is-size-7 has-text-weight-bold"
                     style={{ 
-                      borderRight: index === cols - 1 ? 'none' : (isExport ? '1px solid #93c5fd' : (useDarkMode ? '1px solid #293548' : '1px solid #e2e8f0')),
+                      borderRight: (index === cols - 1) ? 'none' : (useDarkMode ? '1px solid #293548' : '1px solid #cbd5e1'),
                       cursor: !isExport ? 'pointer' : 'default',
                       userSelect: 'none',
                       backgroundColor: headerBg,
@@ -395,21 +402,20 @@ const CalendarApp = () => {
         </div>
         
         {/* Cuadrícula de días */}
-        <div className={`calendar-grid-${cols}`} style={{ backgroundColor: useDarkMode ? '#131b26' : '#f8fafc' }}>
+        <div className={`calendar-grid-${cols}`} style={{ backgroundColor: useDarkMode ? '#131b26' : '#ffffff' }}>
           {visibleDays.map((dayData, index) => {
             
-            // Si es un día fuera del mes (sobrantes antes del 1 o después del 30/31), casilla vacía / inexistente
+            // Si es un día fuera del mes (sobrantes antes del 1 o después del 30/31), casilla vacía sin romper bordes
             if (!dayData.isCurrentMonth) {
               return (
                 <div 
                   key={`${targetYear}-${targetMonth}-${index}`}
                   className="calendar-day-cell is-empty"
                   style={{
-                    backgroundColor: useDarkMode ? '#111620' : '#f1f5f9',
+                    backgroundColor: useDarkMode ? '#111620' : '#f8fafc',
                     borderRight: (index % cols === cols - 1) ? 'none' : cellBorder,
                     borderBottom: cellBorder,
-                    cursor: 'default',
-                    opacity: 0.3
+                    cursor: 'default'
                   }}
                 />
               );
@@ -420,18 +426,25 @@ const CalendarApp = () => {
             const assignedColor = legendColors.find(c => c.id === colorId)?.color;
             let finalBgColor = assignedColor;
             
-            // Si es fin de semana del mes actual y no tiene color manual, hereda el color de "Festivo" (ID '4')
+            // Color de fin de semana por defecto (se mantiene como estaba: tono salmón/coral suave #fca5a5)
+            const WEEKEND_DEFAULT_COLOR = '#fca5a5';
+            
+            // Si es fin de semana del mes actual y no tiene color manual, hereda el color de fin de semana
             if (!assignedColor && dayData.dayIndex >= 5 && dayData.isCurrentMonth) {
-                finalBgColor = legendColors.find(c => c.id === '4' || c.label.toLowerCase().includes('festivo'))?.color;
+                finalBgColor = WEEKEND_DEFAULT_COLOR;
             }
 
             // Color de fondo: en modo nocturno si no tiene color es oscuro (#1c2635), en diurno es blanco (#ffffff)
             let cellBg = finalBgColor ? finalBgColor : (useDarkMode ? '#1c2635' : '#ffffff');
             
-            // Color del texto
+            // Color del texto: para Festivo (#ef4444) texto blanco; para fin de semana (#fca5a5) y pasteles, texto oscuro
             let textColor = '#1e293b';
             if (finalBgColor) {
-              textColor = '#0f172a'; // Oscuro legible sobre colores pastel
+              if (finalBgColor === '#ef4444' || finalBgColor === '#dc2626') {
+                textColor = '#ffffff';
+              } else {
+                textColor = '#0f172a'; // Oscuro legible sobre colores pastel y fin de semana
+              }
             } else if (useDarkMode) {
               textColor = dayData.dayIndex >= 5 ? '#fda4af' : '#e2e8f0';
             } else {
@@ -483,6 +496,10 @@ const CalendarApp = () => {
 
   // Calcular elementos para la leyenda exportable (Solo colores/selecciones usados)
   const usedColorIds = new Set(Object.values(coloredDays));
+  if (showWeekends) {
+    const festivoItem = legendColors.find(c => c.id === '4' || c.label.toLowerCase().includes('festivo'));
+    if (festivoItem) usedColorIds.add(festivoItem.id);
+  }
   const usedLegends = legendColors.filter(color => usedColorIds.has(color.id));
   const hasWeeklySelections = presencialFirstMonday
     ? Object.values(weeklySelections).some(monthObj => 
@@ -1039,32 +1056,84 @@ const CalendarApp = () => {
 
       {/* Contenedor Oculto Formateado Específicamente para la Exportación (PNG) */}
       <div style={{ position: 'fixed', left: '-99999px', top: '0', pointerEvents: 'none', zIndex: -9999 }}>
-        <div ref={exportRef} className="p-8 bg-white is-flex is-flex-direction-column is-align-items-center" style={{ width: 'max-content', gap: '1.5rem', backgroundColor: '#ffffff' }}>
-          <h1 className="title is-3 has-text-grey-darker mb-0">Propuesta Vacaciones</h1>
+        <div 
+          ref={exportRef} 
+          style={{ 
+            width: 'max-content', 
+            backgroundColor: '#ffffff',
+            padding: '2.5rem 3rem',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '1.75rem',
+            fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+            borderRadius: '16px',
+            border: '1.5px solid #cbd5e1'
+          }}
+        >
+          {/* Cabecera elegante del documento */}
+          <div style={{ textAlign: 'center', width: '100%', paddingBottom: '0.75rem', borderBottom: '2px solid #e2e8f0' }}>
+            <h1 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', margin: 0 }}>
+              Propuesta Vacaciones
+            </h1>
+            <p style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500, margin: '4px 0 0 0' }}>
+              Organiza y planifica tu calendario laboral
+            </p>
+          </div>
           
-          <div className="is-flex" style={{ gap: '2rem', alignItems: 'flex-start' }}>
+          {/* Bloque de los dos calendarios */}
+          <div className="is-flex" style={{ gap: '2.5rem', alignItems: 'flex-start' }}>
             {renderMonth(leftYear, leftMonth, true)}
             {renderMonth(rightYear, rightMonth, true)}
           </div>
           
+          {/* Leyenda de Colores y Días Presenciales */}
           {(usedLegends.length > 0 || hasWeeklySelections) && (
-            <div className="mt-3 pt-4 is-flex is-flex-direction-column is-align-items-center" style={{ borderTop: '1px solid #dbdbdb', width: '100%', gap: '1rem' }}>
-              <h3 className="is-size-7 is-uppercase has-text-weight-bold has-text-grey">Leyenda</h3>
-              <div className="is-flex is-flex-wrap-wrap is-justify-content-center" style={{ gap: '1.5rem' }}>
+            <div 
+              style={{ 
+                width: '100%', 
+                backgroundColor: '#f8fafc',
+                border: '1.5px solid #cbd5e1',
+                borderRadius: '12px',
+                padding: '1rem 1.75rem',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.75rem'
+              }}
+            >
+              <h3 style={{ fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700, color: '#475569', letterSpacing: '0.06em', margin: 0 }}>
+                Leyenda de Colores
+              </h3>
+              <div className="is-flex is-flex-wrap-wrap is-justify-content-center" style={{ gap: '1.75rem' }}>
                 {usedLegends.map(color => (
-                  <div key={color.id} className="is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
-                    <span style={{ width: '20px', height: '20px', borderRadius: '4px', backgroundColor: color.color, border: '1px solid rgba(0,0,0,0.15)', display: 'inline-block' }} />
-                    <span className="is-size-7 has-text-weight-bold has-text-grey-darker">{color.fullName || color.label}</span>
+                  <div key={color.id} className="is-flex is-align-items-center" style={{ gap: '0.55rem' }}>
+                    <span 
+                      style={{ 
+                        width: '20px', 
+                        height: '20px', 
+                        borderRadius: '5px', 
+                        backgroundColor: color.color, 
+                        border: '1.5px solid rgba(0,0,0,0.18)', 
+                        display: 'inline-block',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
+                      }} 
+                    />
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b' }}>
+                      {color.fullName || color.label}
+                    </span>
                   </div>
                 ))}
                 
                 {hasWeeklySelections && (
-                  <div className="is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
-                    <div style={{ position: 'relative', width: '20px', height: '20px', borderRadius: '4px', border: '1px solid #bce8f1', backgroundColor: '#ebf3fe', boxShadow: 'inset 0 0 0 1.5px #3273dc' }}>
-                         <div style={{ position: 'absolute', top: '3px', right: '3px', width: '5px', height: '5px', backgroundColor: '#3273dc', borderRadius: '50%' }}></div>
-                         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '3px', backgroundColor: '#3273dc', opacity: 0.25 }}></div>
+                  <div className="is-flex is-align-items-center" style={{ gap: '0.55rem' }}>
+                    <div style={{ position: 'relative', width: '20px', height: '20px', borderRadius: '5px', border: '1.5px solid #2563eb', backgroundColor: '#eff6ff' }}>
+                      <div style={{ position: 'absolute', top: '3px', right: '3px', width: '5px', height: '5px', backgroundColor: '#2563eb', borderRadius: '50%' }}></div>
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '3px', backgroundColor: '#2563eb', opacity: 0.35 }}></div>
                     </div>
-                    <span className="is-size-7 has-text-weight-bold has-text-grey-darker">Días presenciales</span>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e293b' }}>
+                      Días presenciales
+                    </span>
                   </div>
                 )}
               </div>
