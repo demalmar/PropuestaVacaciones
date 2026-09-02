@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Download, Trash2, Info, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Download, Trash2, Info, X, Moon, Sun } from 'lucide-react';
 
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const DAYS_OF_WEEK = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -21,11 +21,31 @@ const CalendarApp = () => {
   
   const exportRef = useRef(null);
   
-  // Estado para confirmacin de limpieza
+  // Estado para confirmación de limpieza
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   
-  // Estado para mostrar/ocultar modal "Cmo funciona"
+  // Estado para mostrar/ocultar modal "¿Cómo funciona?"
   const [showHowItWorks, setShowHowItWorks] = useState(false);
+
+  // Estado para el modo nocturno (con Local Storage)
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    try {
+      const saved = localStorage.getItem('vacationApp_darkMode');
+      if (saved !== null) return JSON.parse(saved);
+    } catch (e) {}
+    return false;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('vacationApp_darkMode', JSON.stringify(isDarkMode));
+    if (isDarkMode) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'light');
+    }
+  }, [isDarkMode]);
+
+  const toggleDarkMode = () => setIsDarkMode(prev => !prev);
 
   // Cargar librera para exportar a PNG dinmicamente
   useEffect(() => {
@@ -375,258 +395,311 @@ const CalendarApp = () => {
     : Object.values(fixedWeeklySelections).some(isSelected => isSelected);
 
   return (
-    <section className="section py-4 px-3" style={{ minHeight: '100vh', backgroundColor: '#f0f4f8' }}>
+    <section className="section py-4 px-3" style={{ minHeight: '100vh', backgroundColor: isDarkMode ? '#0f141c' : '#f0f4f8', transition: 'background-color 0.2s ease' }}>
       
-      {/* Contenedor principal */}
-      <div className="container" style={{ maxWidth: '1280px' }}>
+      {/* Contenedor relativo para posicionar el widget de modo nocturno pegado a la derecha sin alterar el centrado */}
+      <div style={{ position: 'relative', maxWidth: '1280px', margin: '0 auto' }}>
 
-        {/* Barra superior con Título y Botones */}
-        <div className="box is-flex is-justify-content-space-between is-align-items-center mb-4 p-4 has-background-white" style={{ border: '1px solid #e2e8f0', borderRadius: '10px' }}>
-          <h1 className="title is-4 mb-0 has-text-grey-dark">Propuesta Vacaciones</h1>
-          <div className="buttons mb-0">
-            <button 
-                onClick={() => setShowHowItWorks(true)}
-                className="button is-info is-light is-small"
-                style={{ fontWeight: 600 }}
-                title="Ver instrucciones"
+        {/* Widget Modo Nocturno pegado a la derecha del contenedor Propuesta Vacaciones */}
+        <div className="dark-mode-widget-container">
+          <div 
+            className="box p-2.5 is-flex is-flex-direction-column is-align-items-center" 
+            style={{ 
+              minWidth: '86px', 
+              borderRadius: '10px', 
+              border: isDarkMode ? '1px solid #324054' : '1px solid #e2e8f0',
+              backgroundColor: isDarkMode ? '#1a222d' : '#ffffff',
+              boxShadow: '0 4px 14px rgba(0,0,0,0.1)'
+            }}
+          >
+            <span className="icon mb-1" style={{ color: isDarkMode ? '#ffd166' : '#4a5568' }}>
+              {isDarkMode ? <Moon size={20} /> : <Sun size={20} />}
+            </span>
+            <span 
+              className="is-size-7 has-text-weight-bold mb-1.5 has-text-centered" 
+              style={{ fontSize: '11px', color: isDarkMode ? '#e2e8f0' : '#2d3748' }}
             >
-                <span className="icon is-small"><Info size={16} /></span>
-                <span>¿Cómo funciona?</span>
-            </button>
+              {isDarkMode ? 'Nocturno' : 'Diurno'}
+            </span>
             <button 
-                onClick={handleExportPNG}
-                className="button is-link is-small"
-                style={{ fontWeight: 600 }}
+              onClick={toggleDarkMode}
+              className={`button is-small is-rounded ${isDarkMode ? 'is-warning is-light' : 'is-dark is-outlined'}`}
+              style={{ fontSize: '10px', height: '22px', padding: '0 8px', fontWeight: 600 }}
+              title={isDarkMode ? 'Cambiar a modo diurno' : 'Cambiar a modo nocturno'}
             >
-                <span className="icon is-small"><Download size={16} /></span>
-                <span>Descargar PNG</span>
+              {isDarkMode ? 'Desactivar' : 'Activar'}
             </button>
           </div>
         </div>
 
-        {/* Fila Principal: Panel Leyenda a la izquierda | Panel Calendarios en el centro con Acciones a su derecha */}
-        <div className="columns is-variable is-3 is-desktop">
+        {/* Contenedor principal de Propuesta Vacaciones (permanece exactamente centrado) */}
+        <div className="container" style={{ maxWidth: '1280px' }}>
 
-          {/* 1. Contenedor Propio Izquierdo: Leyenda de Colores + Añadir Etiqueta */}
-          <div className="column is-3-desktop is-4-tablet">
-            <div className="box p-4 has-background-white is-flex is-flex-direction-column" style={{ border: '1px solid #e2e8f0', borderRadius: '10px', height: '100%' }}>
-              <div className="is-flex is-justify-content-space-between is-align-items-center pb-2 mb-3" style={{ borderBottom: '1px solid #edf2f7' }}>
-                <h3 className="is-size-7 is-uppercase has-text-weight-bold has-text-grey">Leyenda de Colores</h3>
-                <span className="tag is-rounded is-light is-small">{legendColors.length} tipos</span>
-              </div>
+          {/* Barra superior con Título y Botones */}
+          <div className="box is-flex is-justify-content-space-between is-align-items-center mb-4 p-4" style={{ border: isDarkMode ? '1px solid #324054' : '1px solid #e2e8f0', borderRadius: '10px', backgroundColor: isDarkMode ? '#1a222d' : '#ffffff' }}>
+            <h1 className="title is-4 mb-0" style={{ color: isDarkMode ? '#f1f5f9' : '#1e293b' }}>Propuesta Vacaciones</h1>
+            <div className="buttons mb-0">
+              <button 
+                  onClick={() => setShowHowItWorks(true)}
+                  className="button is-info is-light is-small"
+                  style={{ fontWeight: 600 }}
+                  title="Ver instrucciones"
+              >
+                  <span className="icon is-small"><Info size={16} /></span>
+                  <span>¿Cómo funciona?</span>
+              </button>
+              <button 
+                  onClick={handleExportPNG}
+                  className="button is-link is-small"
+                  style={{ fontWeight: 600 }}
+              >
+                  <span className="icon is-small"><Download size={16} /></span>
+                  <span>Descargar PNG</span>
+              </button>
+            </div>
+          </div>
 
-              {/* Contenedor con scroll interno para la lista de etiquetas */}
-              <div className="custom-scrollbar pr-1 mb-3" style={{ maxHeight: '350px', overflowY: 'auto' }}>
-                {legendColors.map((item) => {
-                  const isSpecial = ['2', '3', '4'].includes(item.id);
-                  const limitConfig = limits[item.id];
-                  const usage = Object.values(coloredDays).filter(id => id === item.id).length;
-                  const remaining = (limitConfig?.max || 0) - usage;
+          {/* Fila Principal: Panel Leyenda a la izquierda | Panel Calendarios en el centro con Acciones a su derecha */}
+          <div className="columns is-variable is-3 is-desktop">
 
-                  return (
-                    <div 
-                      key={item.id} 
-                      className="box p-2 mb-2"
-                      style={{ 
-                        cursor: 'pointer', 
-                        border: activeColorId === item.id ? '2px solid #3273dc' : '1px solid #e2e8f0', 
-                        backgroundColor: activeColorId === item.id ? '#ebf3fe' : '#ffffff', 
-                        boxShadow: 'none',
-                        transition: 'all 0.15s ease'
-                      }}
-                    >
+            {/* 1. Contenedor Propio Izquierdo: Leyenda de Colores + Añadir nuevo color */}
+            <div className="column is-3-desktop is-4-tablet">
+              <div className="box p-4 is-flex is-flex-direction-column" style={{ border: isDarkMode ? '1px solid #324054' : '1px solid #e2e8f0', borderRadius: '10px', height: '100%', backgroundColor: isDarkMode ? '#1a222d' : '#ffffff' }}>
+                <div className="is-flex is-justify-content-space-between is-align-items-center pb-2 mb-3" style={{ borderBottom: isDarkMode ? '1px solid #2d3748' : '1px solid #edf2f7' }}>
+                  <h3 className="is-size-7 is-uppercase has-text-weight-bold has-text-grey">Leyenda de Colores</h3>
+                  <span className="tag is-rounded is-light is-small">{legendColors.length} tipos</span>
+                </div>
+
+                {/* Contenedor con scroll interno para la lista de etiquetas */}
+                <div className="custom-scrollbar pr-1 mb-3" style={{ maxHeight: '350px', overflowY: 'auto' }}>
+                  {legendColors.map((item) => {
+                    const isSpecial = ['2', '3', '4'].includes(item.id);
+                    const limitConfig = limits[item.id];
+                    const usage = Object.values(coloredDays).filter(id => id === item.id).length;
+                    const remaining = (limitConfig?.max || 0) - usage;
+
+                    const isActive = activeColorId === item.id;
+                    const itemBorder = isActive 
+                      ? (isDarkMode ? '2px solid #4880ed' : '2px solid #3273dc')
+                      : (isDarkMode ? '1px solid #2d3748' : '1px solid #e2e8f0');
+                    const itemBg = isActive
+                      ? (isDarkMode ? 'rgba(72, 128, 237, 0.2)' : '#ebf3fe')
+                      : (isDarkMode ? '#1e2633' : '#ffffff');
+
+                    return (
                       <div 
-                        title={item.fullName || item.label} 
-                        onClick={() => setActiveColorId(item.id)} 
-                        className="is-flex is-align-items-center mb-1"
-                        style={{ gap: '0.5rem' }}
+                        key={item.id} 
+                        className="box p-2 mb-2"
+                        style={{ 
+                          cursor: 'pointer', 
+                          border: itemBorder, 
+                          backgroundColor: itemBg, 
+                          boxShadow: 'none',
+                          transition: 'all 0.15s ease'
+                        }}
                       >
-                        <span 
-                          style={{ 
-                            width: '18px', 
-                            height: '18px', 
-                            borderRadius: '4px', 
-                            backgroundColor: item.color, 
-                            border: '1px solid rgba(0,0,0,0.15)', 
-                            display: 'inline-block', 
-                            flexShrink: 0 
-                          }} 
-                        />
-                        <span className="is-size-7 has-text-weight-semibold has-text-grey-dark is-flex-grow-1 is-clipped">
-                          {item.label}
-                        </span>
-                      </div>
-                      {isSpecial && (
-                        <div className="is-flex is-align-items-center is-justify-content-space-between pt-1 mt-1" style={{ borderTop: '1px solid #edf2f7' }}>
-                          <label className="checkbox is-size-7 has-text-grey is-flex is-align-items-center" style={{ gap: '0.35rem' }}>
-                            <input 
-                              type="checkbox" 
-                              checked={limitConfig?.enabled || false} 
-                              onChange={(e) => handleLimitToggle(item.id, e.target.checked)} 
-                            />
-                            <span style={{ fontSize: '11px' }}>Limitar</span>
-                          </label>
-                          {limitConfig?.enabled && (
-                            <div className="is-flex is-align-items-center" style={{ gap: '0.25rem' }}>
-                              <input 
-                                type="number" 
-                                min="0" 
-                                value={limitConfig.max} 
-                                onChange={(e) => handleLimitChange(item.id, parseInt(e.target.value) || 0)} 
-                                className="input is-small has-text-centered py-0 px-1"
-                                style={{ width: '42px', height: '22px', fontSize: '11px' }}
-                                title="Límite máximo de días" 
-                              />
-                              <span className={`tag is-small ${remaining <= 0 ? 'is-danger' : 'is-light'}`} style={{ fontSize: '10px', height: '20px', padding: '0 4px', fontWeight: 700 }}>
-                                {remaining}R
-                              </span>
-                            </div>
-                          )}
+                        <div 
+                          title={item.fullName || item.label} 
+                          onClick={() => setActiveColorId(item.id)} 
+                          className="is-flex is-align-items-center mb-1"
+                          style={{ gap: '0.5rem' }}
+                        >
+                          <span 
+                            style={{ 
+                              width: '18px', 
+                              height: '18px', 
+                              borderRadius: '4px', 
+                              backgroundColor: item.color, 
+                              border: '1px solid rgba(0,0,0,0.15)', 
+                              display: 'inline-block', 
+                              flexShrink: 0 
+                            }} 
+                          />
+                          <span className="is-size-7 has-text-weight-semibold is-flex-grow-1 is-clipped" style={{ color: isDarkMode ? '#e2e8f0' : '#2d3748' }}>
+                            {item.label}
+                          </span>
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                        {isSpecial && (
+                          <div className="is-flex is-align-items-center is-justify-content-space-between pt-1 mt-1" style={{ borderTop: isDarkMode ? '1px solid #2d3748' : '1px solid #edf2f7' }}>
+                            <label className="checkbox is-size-7 has-text-grey is-flex is-align-items-center" style={{ gap: '0.35rem' }}>
+                              <input 
+                                type="checkbox" 
+                                checked={limitConfig?.enabled || false} 
+                                onChange={(e) => handleLimitToggle(item.id, e.target.checked)} 
+                              />
+                              <span style={{ fontSize: '11px' }}>Limitar</span>
+                            </label>
+                            {limitConfig?.enabled && (
+                              <div className="is-flex is-align-items-center" style={{ gap: '0.25rem' }}>
+                                <input 
+                                  type="number" 
+                                  min="0" 
+                                  value={limitConfig.max} 
+                                  onChange={(e) => handleLimitChange(item.id, parseInt(e.target.value) || 0)} 
+                                  className="input is-small has-text-centered py-0 px-1"
+                                  style={{ width: '42px', height: '22px', fontSize: '11px' }}
+                                  title="Límite máximo de días" 
+                                />
+                                <span className={`tag is-small ${remaining <= 0 ? 'is-danger' : 'is-light'}`} style={{ fontSize: '10px', height: '20px', padding: '0 6px', fontWeight: 700 }}>
+                                  Restan {remaining}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
 
-              {/* Añadir Etiqueta */}
-              <div className="box has-background-white-ter p-3 mt-auto" style={{ border: '1px solid #e2e8f0', boxShadow: 'none' }}>
-                <label className="label is-size-7 is-uppercase has-text-grey mb-2">Añadir Etiqueta</label>
-                <div className="field has-addons mb-0">
-                  <div className="control">
-                    <input 
-                      type="color" 
-                      value={newColorHex} 
-                      onChange={(e) => setNewColorHex(e.target.value)} 
-                      className="input is-small" 
-                      style={{ width: '36px', padding: '2px', cursor: 'pointer' }}
-                      title="Seleccionar color" 
-                    />
-                  </div>
-                  <div className="control is-expanded">
-                    <input 
-                      type="text" 
-                      value={newLabel} 
-                      onChange={(e) => setNewLabel(e.target.value)} 
-                      placeholder="Nombre..." 
-                      className="input is-small" 
-                      onKeyDown={(e) => e.key === 'Enter' && handleAddColor()} 
-                    />
-                  </div>
-                  <div className="control">
-                    <button 
-                      onClick={handleAddColor} 
-                      className="button is-info is-small" 
-                      title="Añadir etiqueta"
-                    >
-                      <Plus size={14} />
-                    </button>
+                {/* Añadir nuevo color */}
+                <div className="box p-3 mt-auto" style={{ border: isDarkMode ? '1px solid #2d3748' : '1px solid #e2e8f0', boxShadow: 'none', backgroundColor: isDarkMode ? '#1e2633' : '#f8fafc' }}>
+                  <label className="label is-size-7 is-uppercase has-text-grey mb-2">Añadir nuevo color</label>
+                  <div className="field has-addons mb-0">
+                    <div className="control">
+                      <input 
+                        type="color" 
+                        value={newColorHex} 
+                        onChange={(e) => setNewColorHex(e.target.value)} 
+                        className="input is-small" 
+                        style={{ width: '36px', padding: '2px', cursor: 'pointer' }}
+                        title="Seleccionar color" 
+                      />
+                    </div>
+                    <div className="control is-expanded">
+                      <input 
+                        type="text" 
+                        value={newLabel} 
+                        onChange={(e) => setNewLabel(e.target.value)} 
+                        placeholder="Nombre..." 
+                        className="input is-small" 
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddColor()} 
+                      />
+                    </div>
+                    <div className="control">
+                      <button 
+                        onClick={handleAddColor} 
+                        className="button is-info is-small" 
+                        title="Añadir nuevo color"
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* 2. Contenedor de Calendarios + Acciones a la derecha */}
-          <div className="column is-9-desktop is-8-tablet">
-            <div className="box p-4 has-background-white-ter" style={{ border: '1px solid #e2e8f0', borderRadius: '10px' }}>
+            {/* 2. Contenedor de Calendarios + Acciones a la derecha */}
+            <div className="column is-9-desktop is-8-tablet">
+              <div className="box p-4" style={{ border: isDarkMode ? '1px solid #324054' : '1px solid #e2e8f0', borderRadius: '10px', backgroundColor: isDarkMode ? '#1a222d' : '#f8fafc' }}>
 
-              {/* Selector de meses encima */}
-              <div className="is-flex is-align-items-center is-justify-content-center mb-4" style={{ gap: '1rem' }}>
-                <button onClick={handlePrevMonth} className="button is-white is-rounded shadow-sm" title="Mes anterior">
-                  <ChevronLeft size={18} />
-                </button>
-                <h2 className="title is-4 mb-0 has-text-grey-dark has-text-weight-bold">
-                  <span className="mr-4">{MONTHS[leftMonth]} {leftYear}</span>
-                  <span>{MONTHS[rightMonth]} {rightYear}</span>
-                </h2>
-                <button onClick={handleNextMonth} className="button is-white is-rounded shadow-sm" title="Mes siguiente">
-                  <ChevronRight size={18} />
-                </button>
-              </div>
-
-              {/* Meses + Columna derecha de acciones */}
-              <div className="columns is-variable is-3 is-desktop">
-                <div className="column is-5-desktop is-6-tablet is-flex is-justify-content-center">
-                  {renderMonth(leftYear, leftMonth)}
-                </div>
-                <div className="column is-5-desktop is-6-tablet is-flex is-justify-content-center">
-                  {renderMonth(rightYear, rightMonth)}
-                </div>
-
-                {/* 3. Columna derecha estrecha: Mostrar fin de semana, Presencial cambia primer lunes, Limpiar calendario, Guardar imagen */}
-                <div className="column is-2-desktop is-12-tablet">
-                  <div className="is-flex is-flex-direction-column" style={{ gap: '0.65rem' }}>
-                    {/* Mostrar fin de semana */}
-                    <label className="checkbox box p-3 is-flex is-align-items-center mb-0" style={{ gap: '0.5rem', border: '1px solid #e2e8f0', boxShadow: 'none' }}>
-                      <input 
-                        type="checkbox" 
-                        checked={showWeekends} 
-                        onChange={(e) => setShowWeekends(e.target.checked)} 
-                      />
-                      <span className="is-size-7 has-text-weight-semibold has-text-grey-darker">Mostrar fin de semana</span>
-                    </label>
-
-                    {/* Presencial cambia primer lunes del mes */}
-                    <label className="checkbox box p-3 is-flex is-align-items-start mb-0" style={{ gap: '0.5rem', border: '1px solid #e2e8f0', boxShadow: 'none' }} title="Si está marcado, los días presenciales cambian a partir del primer lunes del mes. Si se desmarca, se seleccionan siempre esas columnas en todo el calendario.">
-                      <input 
-                        type="checkbox" 
-                        checked={presencialFirstMonday} 
-                        className="mt-1"
-                        onChange={(e) => {
-                          const val = e.target.checked;
-                          setPresencialFirstMonday(val);
-                          if (!val && Object.keys(fixedWeeklySelections).length === 0) {
-                            const current = weeklySelections[`${leftYear}-${leftMonth}`];
-                            if (current) setFixedWeeklySelections(current);
-                          }
-                        }} 
-                      />
-                      <span className="is-size-7 has-text-weight-semibold has-text-grey-darker">Presencial cambia primer lunes del mes</span>
-                    </label>
-
-                    {/* Limpiar calendario */}
-                    <div>
-                      {showClearConfirm ? (
-                        <div className="notification is-danger is-light p-3 mb-0" style={{ border: '1px solid #f87171' }}>
-                          <p className="is-size-7 has-text-weight-bold has-text-centered mb-2">¿Borrar todo lo marcado?</p>
-                          <div className="buttons are-small mb-0 is-flex">
-                            <button 
-                              onClick={() => { setColoredDays({}); setWeeklySelections({}); setFixedWeeklySelections({}); setShowClearConfirm(false); }} 
-                              className="button is-danger is-fullwidth"
-                            >
-                              Sí, borrar
-                            </button>
-                            <button 
-                              onClick={() => setShowClearConfirm(false)} 
-                              className="button is-light is-fullwidth"
-                            >
-                              Cancelar
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <button 
-                          onClick={() => setShowClearConfirm(true)} 
-                          className="button is-danger is-outlined is-fullwidth is-small"
-                          title="Limpiar todas las selecciones del calendario"
-                        >
-                          <span className="icon is-small"><Trash2 size={15} /></span>
-                          <span>Limpiar calendario</span>
-                        </button>
-                      )}
+                <div className="columns is-variable is-3 is-desktop">
+                  {/* Bloque de los dos calendarios con su cabecera centrada exactamente sobre los dos calendarios */}
+                  <div className="column is-10-desktop is-12-tablet">
+                    {/* Selector de meses centrado exactamente con los dos calendarios */}
+                    <div className="is-flex is-align-items-center is-justify-content-center mb-3" style={{ gap: '1rem' }}>
+                      <button onClick={handlePrevMonth} className={`button is-rounded shadow-sm ${isDarkMode ? 'is-dark' : 'is-white'}`} title="Mes anterior">
+                        <ChevronLeft size={18} />
+                      </button>
+                      <h2 className="title is-4 mb-0 has-text-weight-bold" style={{ color: isDarkMode ? '#f1f5f9' : '#1e293b' }}>
+                        <span className="mr-4">{MONTHS[leftMonth]} {leftYear}</span>
+                        <span>{MONTHS[rightMonth]} {rightYear}</span>
+                      </h2>
+                      <button onClick={handleNextMonth} className={`button is-rounded shadow-sm ${isDarkMode ? 'is-dark' : 'is-white'}`} title="Mes siguiente">
+                        <ChevronRight size={18} />
+                      </button>
                     </div>
 
-                    {/* Guardar imagen */}
-                    <button 
-                      onClick={handleExportPNG}
-                      className="button is-success is-fullwidth is-small"
-                      title="Descargar imagen de la propuesta en PNG"
-                    >
-                      <span className="icon is-small"><Download size={15} /></span>
-                      <span>Guardar imagen</span>
-                    </button>
+                    {/* Los dos calendarios lado a lado */}
+                    <div className="columns is-variable is-3 is-mobile">
+                      <div className="column is-6 is-flex is-justify-content-center">
+                        {renderMonth(leftYear, leftMonth)}
+                      </div>
+                      <div className="column is-6 is-flex is-justify-content-center">
+                        {renderMonth(rightYear, rightMonth)}
+                      </div>
+                    </div>
                   </div>
+
+                  {/* 3. Columna derecha estrecha: Mostrar fin de semana, Presencial cambia primer lunes, Limpiar calendario, Guardar imagen */}
+                  <div className="column is-2-desktop is-12-tablet">
+                    {/* Espaciador en desktop para alinear las acciones con el inicio de los calendarios */}
+                    <div className="is-hidden-touch mb-3" style={{ height: '36px' }} />
+                    
+                    <div className="is-flex is-flex-direction-column" style={{ gap: '0.65rem' }}>
+                      {/* Mostrar fin de semana */}
+                      <label className="checkbox box p-3 is-flex is-align-items-center mb-0" style={{ gap: '0.5rem', border: isDarkMode ? '1px solid #2d3748' : '1px solid #e2e8f0', backgroundColor: isDarkMode ? '#1e2633' : '#ffffff', boxShadow: 'none' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={showWeekends} 
+                          onChange={(e) => setShowWeekends(e.target.checked)} 
+                        />
+                        <span className="is-size-7 has-text-weight-semibold" style={{ color: isDarkMode ? '#e2e8f0' : '#2d3748' }}>Mostrar fin de semana</span>
+                      </label>
+
+                      {/* Presencial cambia primer lunes del mes */}
+                      <label className="checkbox box p-3 is-flex is-align-items-start mb-0" style={{ gap: '0.5rem', border: isDarkMode ? '1px solid #2d3748' : '1px solid #e2e8f0', backgroundColor: isDarkMode ? '#1e2633' : '#ffffff', boxShadow: 'none' }} title="Si está marcado, los días presenciales cambian a partir del primer lunes del mes. Si se desmarca, se seleccionan siempre esas columnas en todo el calendario.">
+                        <input 
+                          type="checkbox" 
+                          checked={presencialFirstMonday} 
+                          className="mt-1"
+                          onChange={(e) => {
+                            const val = e.target.checked;
+                            setPresencialFirstMonday(val);
+                            if (!val && Object.keys(fixedWeeklySelections).length === 0) {
+                              const current = weeklySelections[`${leftYear}-${leftMonth}`];
+                              if (current) setFixedWeeklySelections(current);
+                            }
+                          }} 
+                        />
+                        <span className="is-size-7 has-text-weight-semibold" style={{ color: isDarkMode ? '#e2e8f0' : '#2d3748' }}>Presencial cambia primer lunes del mes</span>
+                      </label>
+
+                      {/* Limpiar calendario */}
+                      <div>
+                        {showClearConfirm ? (
+                          <div className="notification is-danger is-light p-3 mb-0" style={{ border: '1px solid #f87171' }}>
+                            <p className="is-size-7 has-text-weight-bold has-text-centered mb-2">¿Borrar todo lo marcado?</p>
+                            <div className="buttons are-small mb-0 is-flex">
+                              <button 
+                                onClick={() => { setColoredDays({}); setWeeklySelections({}); setFixedWeeklySelections({}); setShowClearConfirm(false); }} 
+                                className="button is-danger is-fullwidth"
+                              >
+                                Sí, borrar
+                              </button>
+                              <button 
+                                onClick={() => setShowClearConfirm(false)} 
+                                className="button is-light is-fullwidth"
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button 
+                            onClick={() => setShowClearConfirm(true)} 
+                            className="button is-danger is-outlined is-fullwidth is-small"
+                            title="Limpiar todas las selecciones del calendario"
+                          >
+                            <span className="icon is-small"><Trash2 size={15} /></span>
+                            <span>Limpiar calendario</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Guardar imagen */}
+                      <button 
+                        onClick={handleExportPNG}
+                        className="button is-success is-fullwidth is-small"
+                        title="Descargar imagen de la propuesta en PNG"
+                      >
+                        <span className="icon is-small"><Download size={15} /></span>
+                        <span>Guardar imagen</span>
+                      </button>
+                    </div>
+                  </div>
+
                 </div>
 
               </div>
@@ -675,13 +748,34 @@ const CalendarApp = () => {
         </div>
       </div>
 
-      {/* Modal "¿Cómo funciona?" con diseño Bulma Modal */}
+      {/* Modal "¿Cómo funciona?" con diseño Bulma Modal limpio y sin franjas oscuras */}
       {showHowItWorks && (
         <div className="modal is-active">
           <div className="modal-background" onClick={() => setShowHowItWorks(false)} />
-          <div className="modal-card" style={{ maxWidth: '720px', width: '92%', maxHeight: '90vh' }}>
-            <header className="modal-card-head py-3 px-5">
-              <p className="modal-card-title is-size-5 has-text-weight-bold mb-0 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
+          <div 
+            className="modal-card" 
+            style={{ 
+              maxWidth: '720px', 
+              width: '92%', 
+              maxHeight: '90vh', 
+              borderRadius: '12px', 
+              overflow: 'hidden', 
+              backgroundColor: isDarkMode ? '#1e242c' : '#ffffff',
+              boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            <header 
+              className="modal-card-head py-3 px-5" 
+              style={{ 
+                backgroundColor: isDarkMode ? '#252e39' : '#f8fafc', 
+                borderBottom: isDarkMode ? '1px solid #324054' : '1px solid #e2e8f0',
+                borderTopLeftRadius: '12px',
+                borderTopRightRadius: '12px'
+              }}
+            >
+              <p className="modal-card-title is-size-5 has-text-weight-bold mb-0 is-flex is-align-items-center" style={{ gap: '0.5rem', color: isDarkMode ? '#f1f5f9' : '#1e293b' }}>
                 <span>💡</span>
                 <span>¿Cómo funciona?</span>
               </p>
@@ -693,13 +787,13 @@ const CalendarApp = () => {
               />
             </header>
             
-            <section className="modal-card-body content p-5" style={{ overflowY: 'auto' }}>
+            <section className="modal-card-body content p-5" style={{ overflowY: 'auto', backgroundColor: isDarkMode ? '#1e242c' : '#ffffff', color: isDarkMode ? '#cbd5e1' : '#334155', flexGrow: 1 }}>
               <section className="mb-4">
                 <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
                   <span>📌</span>
                   <span>¿Qué es?</span>
                 </h4>
-                <p className="has-text-grey-dark">
+                <p>
                   Es una pantalla que te permite jugar con tus días de vacaciones, organizarlos y ver cómo quedarían. Además, puedes descargar una imagen para presentar a tu superior en caso de necesitarlo.
                 </p>
               </section>
@@ -709,10 +803,10 @@ const CalendarApp = () => {
                   <span>🏢</span>
                   <span>Días presenciales y teletrabajo</span>
                 </h4>
-                <p className="has-text-grey-dark mb-2">
+                <p className="mb-2">
                   Si dispones de un régimen con días presenciales y teletrabajo, haciendo clic en los días semanales de la cabecera (<strong>L, M, X, J, V, S, D</strong>) se emplazan automáticamente los días de cada semana como <strong>Presenciales</strong> (señalizados con borde azul y punto indicador).
                 </p>
-                <div className="box has-background-white-ter p-3 mb-0" style={{ fontSize: '0.82rem', border: '1px solid #e8e8e8', boxShadow: 'none' }}>
+                <div className="box p-3 mb-0" style={{ fontSize: '0.82rem', border: isDarkMode ? '1px solid #324054' : '1px solid #e8e8e8', backgroundColor: isDarkMode ? '#252e39' : '#f8fafc', boxShadow: 'none' }}>
                   <p className="mb-1">
                     <strong>• Presencial cambia primer lunes del mes (marcado por defecto):</strong> El patrón presencial se adapta al mes y cambia a partir del primer lunes del mes.
                   </p>
@@ -727,7 +821,7 @@ const CalendarApp = () => {
                   <span>📅</span>
                   <span>Navegación de calendarios</span>
                 </h4>
-                <p className="has-text-grey-dark">
+                <p>
                   Se muestran dos meses consecutivos en pantalla. Utiliza los botones de flecha (<strong>‹</strong> y <strong>›</strong>) situados en la parte superior para avanzar o retroceder de mes.
                 </p>
               </section>
@@ -737,10 +831,10 @@ const CalendarApp = () => {
                   <span>🎨</span>
                   <span>Leyenda de colores</span>
                 </h4>
-                <p className="has-text-grey-dark mb-2">
+                <p className="mb-2">
                   El panel izquierdo contiene las categorías predeterminadas y las que tú añadas:
                 </p>
-                <ul className="has-text-grey-dark">
+                <ul>
                   <li><strong>Festivo:</strong> Días no laborales (los fines de semana se pintan automáticamente en este color si no se personalizan).</li>
                   <li><strong>Vac. por periodo:</strong> Vacaciones planificadas por temporadas o bloques continuos.</li>
                   <li><strong>Asuntos Propios:</strong> Días reservados para trámites y gestiones personales.</li>
@@ -754,7 +848,7 @@ const CalendarApp = () => {
                   <span>🖱️</span>
                   <span>Cómo interactuar</span>
                 </h4>
-                <ul className="has-text-grey-dark">
+                <ul>
                   <li><strong>Seleccionar categoría activa:</strong> Haz clic en cualquier etiqueta de la leyenda para seleccionarla como color activo de trabajo.</li>
                   <li><strong>Pintar días:</strong> Haz clic sobre cualquier día del calendario para aplicarle la categoría activa.</li>
                   <li><strong>Quitar color:</strong> Vuelve a hacer clic sobre un día ya coloreado con la misma categoría activa para desmarcarlo.</li>
@@ -767,23 +861,23 @@ const CalendarApp = () => {
                   <span>⏱️</span>
                   <span>Control de límites</span>
                 </h4>
-                <p className="has-text-grey-dark mb-2">
+                <p className="mb-2">
                   Puedes establecer un límite máximo de días en las categorías configurables:
                 </p>
-                <ul className="has-text-grey-dark">
+                <ul>
                   <li>Activa la casilla <strong>"Limitar"</strong> en la etiqueta deseada.</li>
                   <li>Introduce el número máximo de días permitidos.</li>
-                  <li>El contador <strong>"Restantes" (R)</strong> indicará cuántos días te quedan disponibles (se resaltará en rojo si alcanzas o superas el tope).</li>
+                  <li>El contador <strong>"Restan x"</strong> indicará cuántos días te quedan disponibles (se resaltará en rojo si alcanzas o superas el tope).</li>
                 </ul>
               </section>
 
               <section className="mb-4">
                 <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
                   <span>➕</span>
-                  <span>Añadir etiquetas</span>
+                  <span>Añadir nuevo color</span>
                 </h4>
-                <p className="has-text-grey-dark">
-                  En el formulario <strong>"Añadir Etiqueta"</strong> del panel izquierdo puedes crear nuevas categorías personalizadas: selecciona un color con la paleta, escribe su nombre y pulsa el botón <strong>+</strong> (o la tecla Enter).
+                <p>
+                  En el formulario <strong>"Añadir nuevo color"</strong> del panel izquierdo puedes crear nuevas categorías personalizadas: selecciona un color con la paleta, escribe su nombre y pulsa el botón <strong>+</strong> (o la tecla Enter).
                 </p>
               </section>
 
@@ -792,7 +886,7 @@ const CalendarApp = () => {
                   <span>👁️</span>
                   <span>Mostrar u ocultar fines de semana</span>
                 </h4>
-                <p className="has-text-grey-dark">
+                <p>
                   Marca o desmarca la opción <strong>"Mostrar fin de semana"</strong> en la columna derecha para alternar entre ver solo la semana laboral (Lunes a Viernes) o la semana completa (Lunes a Domingo).
                 </p>
               </section>
@@ -802,7 +896,7 @@ const CalendarApp = () => {
                   <span>📥</span>
                   <span>Guardar imagen (PNG)</span>
                 </h4>
-                <p className="has-text-grey-dark">
+                <p>
                   Pulsa el botón <strong>"Guardar imagen"</strong> o <strong>"Descargar PNG"</strong> para exportar un archivo PNG de alta resolución con los dos meses y la leyenda de categorías empleadas, listo para adjuntar, compartir o imprimir.
                 </p>
               </section>
@@ -812,19 +906,27 @@ const CalendarApp = () => {
                   <span>🗑️</span>
                   <span>Limpiar calendario</span>
                 </h4>
-                <p className="has-text-grey-dark">
+                <p>
                   El botón <strong>"Limpiar calendario"</strong> borra de golpe todos los días coloreados y selecciones presenciales para reiniciar tu propuesta. ¡Requiere confirmación previa para evitar borrados por error!
                 </p>
               </section>
 
-              <article className="message is-info is-small">
+              <article className="message is-info is-small mb-0">
                 <div className="message-body">
                   <strong>Nota:</strong> Todos tus datos (colores, selecciones, límites y etiquetas) se guardan automáticamente en tu navegador (Local Storage), por lo que no perderás tu planificación aunque recargues o cierres la página.
                 </div>
               </article>
             </section>
 
-            <footer className="modal-card-foot is-justify-content-flex-end py-2 px-5">
+            <footer 
+              className="modal-card-foot is-justify-content-flex-end py-3 px-5" 
+              style={{ 
+                backgroundColor: isDarkMode ? '#252e39' : '#f8fafc', 
+                borderTop: isDarkMode ? '1px solid #324054' : '1px solid #e2e8f0',
+                borderBottomLeftRadius: '12px',
+                borderBottomRightRadius: '12px'
+              }}
+            >
               <button onClick={() => setShowHowItWorks(false)} className="button is-info is-small">
                 Entendido
               </button>
