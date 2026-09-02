@@ -90,10 +90,10 @@ const CalendarApp = () => {
         if (saved) return JSON.parse(saved);
     } catch (e) { console.error("Error cargando colores"); }
     return [
-      { id: '1', label: 'Festivo', fullName: 'Festivo', color: '#fca5a5' },
+      { id: '1', label: 'Vac. días independientes', fullName: 'Vacaciones días independientes', color: '#bbf7d0' }, 
       { id: '2', label: 'Vac. por periodo', fullName: 'Vacaciones por periodo', color: '#fef08a' }, 
       { id: '3', label: 'Asuntos Propios', fullName: 'Asuntos Propios', color: '#bae6fd' }, 
-      { id: '4', label: 'Vac. días independientes', fullName: 'Vacaciones días independientes', color: '#bbf7d0' }, 
+      { id: '4', label: 'Festivo', fullName: 'Festivo', color: '#fca5a5' },
     ];
   });
   
@@ -666,7 +666,7 @@ const CalendarApp = () => {
                       <div 
                         key={item.id} 
                         onClick={() => setActiveColorId(item.id)}
-                        className="box mb-1.5 is-flex is-align-items-center is-justify-content-space-between"
+                        className="box mb-1 is-flex is-align-items-center is-justify-content-space-between"
                         style={{ 
                           cursor: 'pointer', 
                           border: itemBorder, 
@@ -936,7 +936,7 @@ const CalendarApp = () => {
                     {/* Espaciador en desktop para alinear las acciones con el inicio de los calendarios */}
                     <div className="is-hidden-touch mb-3" style={{ height: '40px' }} />
                     
-                    <div className="is-flex is-flex-direction-column" style={{ gap: '0.65rem' }}>
+                    <div className="is-flex is-flex-direction-column" style={{ gap: '0.65rem', transform: 'translateZ(0)', willChange: 'transform' }}>
                       {/* Mostrar fin de semana */}
                       <label 
                         className="checkbox box p-3 is-flex is-align-items-center mb-0" 
@@ -1015,7 +1015,9 @@ const CalendarApp = () => {
                               border: '1px solid #fecdd3', 
                               color: '#e11d48', 
                               backgroundColor: isDarkMode ? 'rgba(225, 29, 72, 0.12)' : '#fff1f2', 
-                              fontWeight: 600 
+                              fontWeight: 600,
+                              transform: 'translateZ(0)',
+                              backfaceVisibility: 'hidden'
                             }}
                             title="Limpiar todas las selecciones del calendario"
                           >
@@ -1180,10 +1182,10 @@ const CalendarApp = () => {
                   El panel izquierdo contiene las categorías predeterminadas y las que tú añadas:
                 </p>
                 <ul>
-                  <li><strong>Festivo:</strong> Días no laborales (los fines de semana se pintan automáticamente en este color si no se personalizan).</li>
+                  <li><strong>Vac. días independientes:</strong> Vacaciones disfrutadas por días sueltos.</li>
                   <li><strong>Vac. por periodo:</strong> Vacaciones planificadas por temporadas o bloques continuos.</li>
                   <li><strong>Asuntos Propios:</strong> Días reservados para trámites y gestiones personales.</li>
-                  <li><strong>Vac. días independientes:</strong> Vacaciones disfrutadas por días sueltos.</li>
+                  <li><strong>Festivo:</strong> Días no laborales (los fines de semana se pintan automáticamente en este color si no se personalizan).</li>
                   <li><strong>Personalizadas:</strong> Puedes crear tus propias categorías con nombre y color libre.</li>
                 </ul>
               </section>

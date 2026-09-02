@@ -1,4 +1,4 @@
-﻿/* Estilos complementarios para la cuadrícula del calendario con Bulma */
+/* Estilos complementarios para la cuadrícula del calendario con Bulma */
 .calendar-grid-7 {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -18,12 +18,11 @@
   font-weight: 600;
   cursor: pointer;
   user-select: none;
-  transition: all 0.15s ease;
+  transition: opacity 0.12s ease;
 }
 
 .calendar-day-cell:not(.is-empty):hover {
-  opacity: 0.88;
-  filter: brightness(0.97);
+  opacity: 0.82;
 }
 
 .calendar-day-cell.is-empty {
