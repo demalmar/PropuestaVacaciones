@@ -527,7 +527,8 @@ const CalendarApp = () => {
               className="is-size-7 has-text-weight-bold mt-1.5 select-none" 
               style={{ fontSize: '10px', letterSpacing: '0.04em', color: isDarkMode ? '#94a3b8' : '#475569' }}
             >
-              {isDarkMode ? 'NOCHE' : 'DÍA'}
+              {/*isDarkMode ? 'NOCHE' : 'DÍA'}*/}
+              
             </span>
           </div>
         </div>
@@ -796,63 +797,23 @@ const CalendarApp = () => {
                   {/* Bloque de los dos calendarios con su cabecera centrada exactamente sobre los dos calendarios */}
                   <div className="column is-10-desktop is-12-tablet">
                     {/* Selector de meses centrado exactamente con los dos calendarios */}
-                    <div className="is-flex is-align-items-center is-justify-content-center mb-3.5" style={{ gap: '1rem' }}>
+                    <div className="is-flex is-align-items-center is-justify-content-center mb-4" style={{ gap: '1rem' }}>
                       <button 
                         onClick={handlePrevMonth} 
-                        className="button is-rounded shadow-sm" 
-                        style={{ 
-                          width: '34px', 
-                          height: '34px', 
-                          borderRadius: '50%',
-                          border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1',
-                          backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
-                          color: isDarkMode ? '#93c5fd' : '#1d4ed8'
-                        }}
+                        className={`button is-rounded shadow-sm ${isDarkMode ? 'is-dark' : 'is-white'}`}
                         title="Mes anterior"
                       >
                         <ChevronLeft size={18} />
                       </button>
 
-                      <h2 className="title is-4 mb-0 has-text-weight-bold is-flex is-align-items-center" style={{ gap: '0.65rem' }}>
-                        <span 
-                          className="tag is-medium" 
-                          style={{ 
-                            background: isDarkMode ? '#1e293b' : '#ffffff', 
-                            color: isDarkMode ? '#93c5fd' : '#1e40af', 
-                            border: isDarkMode ? '1px solid #334155' : '1px solid #bfdbfe', 
-                            fontWeight: 700, 
-                            borderRadius: '8px',
-                            boxShadow: isDarkMode ? 'none' : '0 2px 6px rgba(30,41,59,0.06)'
-                          }}
-                        >
-                          {MONTHS[leftMonth]} {leftYear}
-                        </span>
-                        <span 
-                          className="tag is-medium" 
-                          style={{ 
-                            background: isDarkMode ? '#1e293b' : '#ffffff', 
-                            color: isDarkMode ? '#93c5fd' : '#1e40af', 
-                            border: isDarkMode ? '1px solid #334155' : '1px solid #bfdbfe', 
-                            fontWeight: 700, 
-                            borderRadius: '8px',
-                            boxShadow: isDarkMode ? 'none' : '0 2px 6px rgba(30,41,59,0.06)'
-                          }}
-                        >
-                          {MONTHS[rightMonth]} {rightYear}
-                        </span>
+                      <h2 className="title is-4 mb-0 has-text-weight-bold" style={{ color: isDarkMode ? '#f8fafc' : '#1e293b' }}>
+                        <span className="mr-5">{MONTHS[leftMonth]} {leftYear}</span>
+                        <span>{MONTHS[rightMonth]} {rightYear}</span>
                       </h2>
 
                       <button 
                         onClick={handleNextMonth} 
-                        className="button is-rounded shadow-sm" 
-                        style={{ 
-                          width: '34px', 
-                          height: '34px', 
-                          borderRadius: '50%',
-                          border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1',
-                          backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
-                          color: isDarkMode ? '#93c5fd' : '#1d4ed8'
-                        }}
+                        className={`button is-rounded shadow-sm ${isDarkMode ? 'is-dark' : 'is-white'}`}
                         title="Mes siguiente"
                       >
                         <ChevronRight size={18} />
