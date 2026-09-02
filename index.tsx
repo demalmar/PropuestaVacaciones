@@ -796,28 +796,35 @@ const CalendarApp = () => {
                 <div className="columns is-variable is-3 is-desktop">
                   {/* Bloque de los dos calendarios con su cabecera centrada exactamente sobre los dos calendarios */}
                   <div className="column is-10-desktop is-12-tablet">
-                    {/* Selector de meses centrado exactamente con los dos calendarios */}
-                    <div className="is-flex is-align-items-center is-justify-content-center mb-4" style={{ gap: '1rem' }}>
-                      <button 
-                        onClick={handlePrevMonth} 
-                        className={`button is-rounded shadow-sm ${isDarkMode ? 'is-dark' : 'is-white'}`}
-                        title="Mes anterior"
-                      >
-                        <ChevronLeft size={18} />
-                      </button>
+                    {/* Fila de selectores y títulos alineados con cada calendario */}
+                    <div className="columns is-variable is-3 is-mobile mb-3">
+                      {/* Primer mes y selector izquierdo: justificado a la derecha del primer calendario */}
+                      <div className="column is-6 is-flex is-align-items-center is-justify-content-flex-end" style={{ gap: '0.75rem' }}>
+                        <button 
+                          onClick={handlePrevMonth} 
+                          className={`button is-rounded shadow-sm ${isDarkMode ? 'is-dark' : 'is-white'}`}
+                          title="Mes anterior"
+                        >
+                          <ChevronLeft size={18} />
+                        </button>
+                        <h2 className="title is-4 mb-0 has-text-weight-bold" style={{ color: isDarkMode ? '#f8fafc' : '#1e293b' }}>
+                          {MONTHS[leftMonth]} {leftYear}
+                        </h2>
+                      </div>
 
-                      <h2 className="title is-4 mb-0 has-text-weight-bold" style={{ color: isDarkMode ? '#f8fafc' : '#1e293b' }}>
-                        <span className="mr-5">{MONTHS[leftMonth]} {leftYear}</span>
-                        <span>{MONTHS[rightMonth]} {rightYear}</span>
-                      </h2>
-
-                      <button 
-                        onClick={handleNextMonth} 
-                        className={`button is-rounded shadow-sm ${isDarkMode ? 'is-dark' : 'is-white'}`}
-                        title="Mes siguiente"
-                      >
-                        <ChevronRight size={18} />
-                      </button>
+                      {/* Segundo mes y selector derecho: justificado a la izquierda del segundo calendario */}
+                      <div className="column is-6 is-flex is-align-items-center is-justify-content-flex-start" style={{ gap: '0.75rem' }}>
+                        <h2 className="title is-4 mb-0 has-text-weight-bold" style={{ color: isDarkMode ? '#f8fafc' : '#1e293b' }}>
+                          {MONTHS[rightMonth]} {rightYear}
+                        </h2>
+                        <button 
+                          onClick={handleNextMonth} 
+                          className={`button is-rounded shadow-sm ${isDarkMode ? 'is-dark' : 'is-white'}`}
+                          title="Mes siguiente"
+                        >
+                          <ChevronRight size={18} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Los dos calendarios lado a lado */}
