@@ -320,19 +320,33 @@ const CalendarApp = () => {
           boxShadow: isExport ? 'none' : (useDarkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 20px -2px rgba(37,99,235,0.08)')
         }}
       >
-        {/* Cabecera del Mes */}
+        {/* Cabecera del Mes con estilo blanco y grande */}
         <div 
-          className="has-text-weight-bold has-text-centered py-2.5 is-size-6" 
           style={{ 
+            height: '46px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             borderBottom: isExport ? '1.5px solid #60a5fa' : (useDarkMode ? '1px solid #334155' : '1px solid #bfdbfe'),
             background: useDarkMode 
               ? 'linear-gradient(135deg, #1e293b 0%, #293548 100%)' 
               : 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-            color: useDarkMode ? '#93c5fd' : '#1e40af',
-            letterSpacing: '0.02em'
+            padding: '0 1rem'
           }}
         >
-          {MONTHS[targetMonth]} {targetYear}
+          {/* Nombre del Mes: blanco y grande en modo nocturno, oscuro y grande en diurno */}
+          <h3 
+            className="has-text-weight-bold mb-0" 
+            style={{ 
+              color: useDarkMode ? '#ffffff' : '#0f172a',
+              fontSize: '1.25rem',
+              letterSpacing: '0.01em',
+              textAlign: 'center',
+              userSelect: 'none'
+            }}
+          >
+            {MONTHS[targetMonth]} {targetYear}
+          </h3>
         </div>
         
         {/* Días de la semana (Cabecera interactiva) */}
@@ -784,93 +798,79 @@ const CalendarApp = () => {
               >
 
                 <div className="columns is-variable is-3 is-desktop">
-                  {/* Bloque de los dos calendarios con su cabecera centrada exactamente sobre los dos calendarios */}
+                  {/* Bloque de los dos calendarios con navegación unida en óvalo (< >) en el centro */}
                   <div className="column is-10-desktop is-12-tablet">
-                    
-                    {/* Fila de navegación << >> al inicio y títulos de meses */}
-                    <div style={{ position: 'relative', width: '100%', marginBottom: '0.85rem' }}>
-                      
-                      {/* Selectores << >> al inicio de la línea sin influir en el desplazamiento del texto */}
+                    <div style={{ position: 'relative' }}>
+                      <div className="columns is-variable is-3 is-mobile mb-0">
+                        <div className="column is-6 is-flex is-justify-content-center">
+                          {renderMonth(leftYear, leftMonth)}
+                        </div>
+                        <div className="column is-6 is-flex is-justify-content-center">
+                          {renderMonth(rightYear, rightMonth)}
+                        </div>
+                      </div>
+
+                      {/* Óvalo (< >) que sobresale entre ambos calendarios en el centro */}
                       <div 
                         style={{ 
                           position: 'absolute', 
-                          left: 0, 
-                          top: '50%', 
-                          transform: 'translateY(-50%)', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: '6px', 
-                          zIndex: 10 
+                          left: '50%', 
+                          top: '23px', 
+                          transform: 'translate(-50%, -50%)', 
+                          zIndex: 20 
                         }}
                       >
-                        <button 
-                          onClick={handlePrevMonth} 
-                          className="button is-small is-rounded"
-                          style={{ 
-                            width: '32px', 
-                            height: '32px', 
-                            padding: 0,
+                        <div 
+                          className="is-flex is-align-items-center"
+                          style={{
                             backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
-                            color: '#ffffff',
-                            border: 'none',
-                            boxShadow: '0 3px 10px rgba(15, 118, 110, 0.35)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer'
+                            borderRadius: '9999px',
+                            boxShadow: '0 4px 14px rgba(15, 118, 110, 0.45)',
+                            overflow: 'hidden',
+                            border: isDarkMode ? '1.5px solid #14b8a6' : '1.5px solid #115e59',
+                            height: '46px'
                           }}
-                          title="Mes anterior"
                         >
-                          <ChevronLeft size={18} strokeWidth={2.5} />
-                        </button>
-                        <button 
-                          onClick={handleNextMonth} 
-                          className="button is-small is-rounded"
-                          style={{ 
-                            width: '32px', 
-                            height: '32px', 
-                            padding: 0,
-                            backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
-                            color: '#ffffff',
-                            border: 'none',
-                            boxShadow: '0 3px 10px rgba(15, 118, 110, 0.35)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer'
-                          }}
-                          title="Mes siguiente"
-                        >
-                          <ChevronRight size={18} strokeWidth={2.5} />
-                        </button>
-                      </div>
-
-                      {/* Fila de los dos meses: mes 1 a la derecha del primer calendario, mes 2 a la izquierda del segundo */}
-                      <div className="columns is-variable is-3 is-mobile mb-0">
-                        {/* Primer mes justificado a la derecha del primer calendario */}
-                        <div className="column is-6 is-flex is-align-items-center is-justify-content-flex-end py-1">
-                          <h2 className="title is-4 mb-0 has-text-weight-bold" style={{ color: isDarkMode ? '#f8fafc' : '#1e293b' }}>
-                            {MONTHS[leftMonth]} {leftYear}
-                          </h2>
+                          <button
+                            onClick={handlePrevMonth}
+                            className="button is-small p-0 oval-nav-btn"
+                            style={{
+                              width: '52px',
+                              height: '100%',
+                              backgroundColor: 'transparent',
+                              border: 'none',
+                              borderRight: isDarkMode ? '1.5px solid rgba(255, 255, 255, 0.3)' : '1.5px solid rgba(255, 255, 255, 0.4)',
+                              borderRadius: 0,
+                              color: '#ffffff',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer'
+                            }}
+                            title="Mes anterior"
+                          >
+                            <ChevronLeft size={21} strokeWidth={2.8} />
+                          </button>
+                          <button
+                            onClick={handleNextMonth}
+                            className="button is-small p-0 oval-nav-btn"
+                            style={{
+                              width: '52px',
+                              height: '100%',
+                              backgroundColor: 'transparent',
+                              border: 'none',
+                              borderRadius: 0,
+                              color: '#ffffff',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer'
+                            }}
+                            title="Mes siguiente"
+                          >
+                            <ChevronRight size={21} strokeWidth={2.8} />
+                          </button>
                         </div>
-
-                        {/* Segundo mes justificado a la izquierda del segundo calendario */}
-                        <div className="column is-6 is-flex is-align-items-center is-justify-content-flex-start py-1">
-                          <h2 className="title is-4 mb-0 has-text-weight-bold" style={{ color: isDarkMode ? '#f8fafc' : '#1e293b' }}>
-                            {MONTHS[rightMonth]} {rightYear}
-                          </h2>
-                        </div>
-                      </div>
-
-                    </div>
-
-                    {/* Los dos calendarios lado a lado */}
-                    <div className="columns is-variable is-3 is-mobile">
-                      <div className="column is-6 is-flex is-justify-content-center">
-                        {renderMonth(leftYear, leftMonth)}
-                      </div>
-                      <div className="column is-6 is-flex is-justify-content-center">
-                        {renderMonth(rightYear, rightMonth)}
                       </div>
                     </div>
                   </div>
@@ -986,13 +986,14 @@ const CalendarApp = () => {
                         )}
                       </div>
 
-                      {/* 5. Descargar PNG: ocupa toda la altura disponible con icono grande centrado y texto debajo */}
+                      {/* 5. Descargar PNG: altura fija y max-height para que no cambie de tamaño según las semanas del mes */}
                       <button 
                         onClick={handleExportPNG}
                         className="button is-fullwidth"
                         style={{ 
-                          flex: 1,
-                          minHeight: '64px',
+                          height: '74px',
+                          maxHeight: '74px',
+                          minHeight: '74px',
                           borderRadius: '10px', 
                           background: 'linear-gradient(135deg, #0e7490 0%, #0f766e 100%)', 
                           color: '#ffffff', 
@@ -1004,7 +1005,7 @@ const CalendarApp = () => {
                           alignItems: 'center',
                           justifyContent: 'center',
                           gap: '0.45rem',
-                          padding: '0.75rem 0.5rem',
+                          padding: '0.65rem 0.5rem',
                           transition: 'all 0.15s ease'
                         }}
                         title="Descargar propuesta en formato PNG"
