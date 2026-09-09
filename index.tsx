@@ -30,6 +30,39 @@ const CalendarApp = () => {
   // Estado para modal "¿Qué es esto?" de la regla 40-60
   const [showWhatIs4060Modal, setShowWhatIs4060Modal] = useState(false);
 
+  // Estado para modo de visualización: 'semestral' (2 meses) o 'anual' (12 meses en cuadrícula 4x3)
+  const [viewMode, setViewMode] = useState<'semestral' | 'anual'>(() => {
+    try {
+      const saved = localStorage.getItem('vacationApp_viewMode');
+      if (saved === 'semestral' || saved === 'anual') return saved;
+    } catch (e) {}
+    return 'semestral';
+  });
+
+  // Guardar preferencia de vista en localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('vacationApp_viewMode', viewMode);
+    } catch (e) {}
+  }, [viewMode]);
+
+  // Referencia y altura reactiva animada para el contenedor del calendario (Semestral / Anual)
+  const calendarAreaRef = useRef<HTMLDivElement>(null);
+  const [calendarHeight, setCalendarHeight] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (!calendarAreaRef.current) return;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.height > 0) {
+          setCalendarHeight(Math.round(entry.contentRect.height));
+        }
+      }
+    });
+    ro.observe(calendarAreaRef.current);
+    return () => ro.disconnect();
+  }, []);
+
   // Estado para el menú lateral en móvil (Off-canvas Drawer)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMenuClosing, setIsMenuClosing] = useState(false);
@@ -477,6 +510,14 @@ const CalendarApp = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   };
 
+  const handlePrevYear = () => {
+    setCurrentDate(prev => new Date(prev.getFullYear() - 1, prev.getMonth(), 1));
+  };
+
+  const handleNextYear = () => {
+    setCurrentDate(prev => new Date(prev.getFullYear() + 1, prev.getMonth(), 1));
+  };
+
   const handleDayClick = (year, month, day) => {
     const dateStr = dateToString(year, month, day);
     setColoredDays(prev => {
@@ -531,7 +572,7 @@ const CalendarApp = () => {
     }
   };
 
-  const renderMonth = (targetYear, targetMonth, isExport = false) => {
+  const renderMonth = (targetYear, targetMonth, isExport = false, isCompact = false) => {
     const startDate = new Date(targetYear, targetMonth, 1);
     const startDayIndex = getFirstDayOfMonth(targetYear, targetMonth); // 0=Lunes
     
@@ -590,11 +631,13 @@ const CalendarApp = () => {
       <div 
         className="box p-0 mb-0" 
         style={{ 
-          border: useDarkMode ? '2px solid #0d9488' : '2px solid #0f766e', 
-          borderRadius: '12px', 
+          border: useDarkMode 
+            ? (isCompact ? '1.5px solid #0d9488' : '2px solid #0d9488') 
+            : (isCompact ? '1.5px solid #0f766e' : '2px solid #0f766e'), 
+          borderRadius: isCompact ? '8px' : '12px', 
           overflow: 'hidden', 
-          minWidth: isExport ? (showWeekends ? '350px' : '260px') : (showWeekends ? '220px' : '170px'),
-          width: isExport ? (showWeekends ? '350px' : '260px') : '100%',
+          minWidth: isCompact ? '0' : (isExport ? (showWeekends ? '350px' : '260px') : (showWeekends ? '220px' : '170px')),
+          width: isCompact ? '100%' : (isExport ? (showWeekends ? '350px' : '260px') : '100%'),
           backgroundColor: useDarkMode ? '#17202e' : '#ffffff',
           boxShadow: isExport ? '0 4px 20px rgba(0,0,0,0.08)' : (useDarkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 20px -2px rgba(15,118,110,0.1)'),
           alignSelf: 'flex-start',
@@ -604,28 +647,30 @@ const CalendarApp = () => {
         {/* Cabecera del Mes con color secundario para destacar los botones de navegación centrales */}
         <div 
           style={{ 
-            height: '46px',
+            height: isCompact ? '28px' : '46px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            borderBottom: useDarkMode ? '2px solid #0d9488' : '2px solid #0f766e',
+            borderBottom: useDarkMode 
+              ? (isCompact ? '1.5px solid #0d9488' : '2px solid #0d9488') 
+              : (isCompact ? '1.5px solid #0f766e' : '2px solid #0f766e'),
             background: useDarkMode 
               ? 'linear-gradient(135deg, #1e293b 0%, #293548 100%)' 
               : 'linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%)',
-            padding: '0 1rem'
+            padding: isCompact ? '0 0.5rem' : '0 1rem'
           }}
         >
           <h3 
             className="has-text-weight-bold mb-0" 
             style={{ 
               color: useDarkMode ? '#ffffff' : '#0f172a',
-              fontSize: '1.25rem',
+              fontSize: isCompact ? '0.85rem' : '1.25rem',
               letterSpacing: '0.01em',
               textAlign: 'center',
               userSelect: 'none'
             }}
           >
-            {MONTHS[targetMonth]} {targetYear}
+            {isCompact ? MONTHS[targetMonth] : `${MONTHS[targetMonth]} ${targetYear}`}
           </h3>
         </div>
         
@@ -655,9 +700,10 @@ const CalendarApp = () => {
                 <div 
                     key={day} 
                     onClick={!isExport ? () => handleHeaderDayClick(targetYear, targetMonth, index) : undefined}
-                    className="has-text-centered calendar-header-day is-size-7 has-text-weight-bold"
+                    className={`has-text-centered calendar-header-day ${isCompact ? 'is-compact' : 'is-size-7'} has-text-weight-bold`}
                     style={{ 
-                      minHeight: '38px',
+                      minHeight: isCompact ? '22px' : '38px',
+                      height: isCompact ? '22px' : undefined,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -666,7 +712,8 @@ const CalendarApp = () => {
                       userSelect: 'none',
                       backgroundColor: headerBg,
                       color: headerColor,
-                      transition: 'background-color 0.15s ease'
+                      transition: 'background-color 0.15s ease',
+                      fontSize: isCompact ? '10.5px' : undefined
                     }}
                     title={presencialFirstMonday ? `Seleccionar todos los ${day} de este mes` : `Seleccionar todos los ${day} del calendario`}
                 >
@@ -685,8 +732,10 @@ const CalendarApp = () => {
               return (
                 <div 
                   key={`${targetYear}-${targetMonth}-${index}`}
-                  className="calendar-day-cell is-empty"
+                  className={`calendar-day-cell is-empty ${isCompact ? 'is-compact' : ''}`}
                   style={{
+                    height: isCompact ? '24px' : undefined,
+                    minHeight: isCompact ? '24px' : undefined,
                     backgroundColor: useDarkMode ? '#111620' : '#f8fafc',
                     borderRight: (index % cols === cols - 1) ? 'none' : cellBorder,
                     borderBottom: cellBorder,
@@ -735,8 +784,10 @@ const CalendarApp = () => {
               <div 
                 key={`${targetYear}-${targetMonth}-${index}`}
                 onClick={!isExport ? () => handleDayClick(dayData.dateStr.split('-')[0], parseInt(dayData.dateStr.split('-')[1])-1, parseInt(dayData.dateStr.split('-')[2])) : undefined}
-                className={`calendar-day-cell ${isColumnSelected ? 'is-presencial' : ''}`}
+                className={`calendar-day-cell ${isCompact ? 'is-compact' : ''} ${isColumnSelected ? 'is-presencial' : ''}`}
                 style={{
+                  height: isCompact ? '24px' : undefined,
+                  minHeight: isCompact ? '24px' : undefined,
                   backgroundColor: cellBg,
                   color: textColor,
                   fontWeight: (dayData.dayIndex >= 5 || finalBgColor) ? 700 : 600,
@@ -752,7 +803,7 @@ const CalendarApp = () => {
                     </>
                 )}
                 
-                <span style={{ position: 'relative', zIndex: 1, fontSize: '0.84rem' }}>{dayData.day}</span>
+                <span style={{ position: 'relative', zIndex: 1, fontSize: isCompact ? '0.70rem' : '0.84rem' }}>{dayData.day}</span>
               </div>
             );
           })}
@@ -761,6 +812,7 @@ const CalendarApp = () => {
     );
   };
 
+  const currentYear = currentDate.getFullYear();
   const leftYear = currentDate.getFullYear();
   const leftMonth = currentDate.getMonth();
   
@@ -776,15 +828,23 @@ const CalendarApp = () => {
     if (parts.length === 3) {
       const y = parseInt(parts[0], 10);
       const m = parseInt(parts[1], 10) - 1; // 0-indexed
-      if ((y === leftYear && m === leftMonth) || (y === rightYear && m === rightMonth)) {
+      const isVisible = viewMode === 'anual'
+        ? (y === currentYear)
+        : ((y === leftYear && m === leftMonth) || (y === rightYear && m === rightMonth));
+      if (isVisible) {
         usedColorIds.add(colorId as string);
       }
     }
   });
   const usedLegends = legendColors.filter(color => usedColorIds.has(color.id));
   const hasWeeklySelections = presencialFirstMonday
-    ? [`${leftYear}-${leftMonth}`, `${rightYear}-${rightMonth}`].some(mKey => 
-        weeklySelections[mKey] && Object.values(weeklySelections[mKey]).some(isSelected => isSelected)
+    ? (viewMode === 'anual'
+        ? Array.from({ length: 12 }, (_, i) => `${currentYear}-${i}`).some(mKey => 
+            weeklySelections[mKey] && Object.values(weeklySelections[mKey]).some(isSelected => isSelected)
+          )
+        : [`${leftYear}-${leftMonth}`, `${rightYear}-${rightMonth}`].some(mKey => 
+            weeklySelections[mKey] && Object.values(weeklySelections[mKey]).some(isSelected => isSelected)
+          )
       )
     : Object.values(fixedWeeklySelections).some(isSelected => isSelected);
 
@@ -872,7 +932,7 @@ const CalendarApp = () => {
 
     return (
       <div 
-        className="box mt-4 p-4"
+        className="box mt-4 p-4 view-transition-content"
         style={{
           border: useDark ? '1.5px solid #334155' : '1.5px solid #cbd5e1',
           borderRadius: '14px',
@@ -1394,7 +1454,7 @@ const CalendarApp = () => {
     <section className="section px-4" style={{ minHeight: '100vh', paddingTop: '2.25rem', paddingBottom: '3rem', backgroundColor: isDarkMode ? '#0b0f17' : '#f8fafc', transition: 'background-color 0.25s ease' }}>
       
       {/* Contenedor principal de Propuesta Vacaciones */}
-      <div className="container" style={{ maxWidth: '1280px' }}>
+      <div className="container" style={{ maxWidth: '1440px' }}>
 
         {/* ===== VISTA DE ESCRITORIO (>= 769px) ===== */}
         <div className="is-hidden-mobile">
@@ -1721,85 +1781,189 @@ const CalendarApp = () => {
               >
 
                 <div className="columns is-variable is-3 is-desktop">
-                  {/* Bloque de los dos calendarios con navegación unida en óvalo (< >) en el centro */}
-                  <div className="column is-10-desktop is-12-tablet">
-                    <div style={{ position: 'relative' }}>
-                      <div className="is-flex is-justify-content-center" style={{ gap: '1rem', alignItems: 'flex-start' }}>
-                        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 0 }}>
-                          {renderMonth(leftYear, leftMonth)}
-                        </div>
-                        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 0 }}>
-                          {renderMonth(rightYear, rightMonth)}
-                        </div>
-                      </div>
+                  {/* Bloque de Calendarios (Semestral de 2 meses o Anual de 12 meses en cuadrícula 4x3) */}
+                  <div className="column is-flex-grow-1" style={{ minWidth: 0 }}>
+                    <div 
+                      style={{ 
+                        height: calendarHeight !== undefined ? `${calendarHeight}px` : 'auto',
+                        transition: 'height 0.38s cubic-bezier(0.4, 0, 0.2, 1)',
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <div ref={calendarAreaRef}>
+                        {viewMode === 'semestral' ? (
+                          <div key="view-semestral" className="view-transition-content" style={{ position: 'relative' }}>
+                            <div className="is-flex is-justify-content-center" style={{ gap: '1rem', alignItems: 'flex-start' }}>
+                              <div style={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+                                {renderMonth(leftYear, leftMonth)}
+                              </div>
+                              <div style={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+                                {renderMonth(rightYear, rightMonth)}
+                              </div>
+                            </div>
 
-                      {/* Óvalo (< >) estilizado: menos alto y más alargado horizontalmente */}
-                      <div 
-                        style={{ 
-                          position: 'absolute', 
-                          left: '50%', 
-                          top: '23px', 
-                          transform: 'translate(-50%, -50%)', 
-                          zIndex: 20 
-                        }}
-                      >
-                        <div 
-                          className="is-flex is-align-items-center"
-                          style={{
-                            backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
-                            borderRadius: '9999px',
-                            boxShadow: '0 3px 12px rgba(15, 118, 110, 0.4)',
-                            overflow: 'hidden',
-                            border: isDarkMode ? '1.5px solid #14b8a6' : '1.5px solid #115e59',
-                            height: '34px'
-                          }}
-                        >
-                          <button
-                            onClick={handlePrevMonth}
-                            className="button is-small p-0 oval-nav-btn"
-                            style={{
-                              width: '60px',
-                              height: '100%',
-                              backgroundColor: 'transparent',
-                              border: 'none',
-                              borderRight: isDarkMode ? '1.5px solid rgba(255, 255, 255, 0.3)' : '1.5px solid rgba(255, 255, 255, 0.4)',
-                              borderRadius: 0,
-                              color: '#ffffff',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              cursor: 'pointer'
-                            }}
-                            title="Mes anterior"
-                          >
-                            <ChevronLeft size={19} strokeWidth={2.8} />
-                          </button>
-                          <button
-                            onClick={handleNextMonth}
-                            className="button is-small p-0 oval-nav-btn"
-                            style={{
-                              width: '60px',
-                              height: '100%',
-                              backgroundColor: 'transparent',
-                              border: 'none',
-                              borderRadius: 0,
-                              color: '#ffffff',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              cursor: 'pointer'
-                            }}
-                            title="Mes siguiente"
-                          >
-                            <ChevronRight size={19} strokeWidth={2.8} />
-                          </button>
-                        </div>
+                            {/* Óvalo (< >) estilizado: menos alto y más alargado horizontalmente */}
+                            <div 
+                              style={{ 
+                                position: 'absolute', 
+                                left: '50%', 
+                                top: '23px', 
+                                transform: 'translate(-50%, -50%)', 
+                                zIndex: 20 
+                              }}
+                            >
+                              <div 
+                                className="is-flex is-align-items-center"
+                                style={{
+                                  backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
+                                  borderRadius: '9999px',
+                                  boxShadow: '0 3px 12px rgba(15, 118, 110, 0.4)',
+                                  overflow: 'hidden',
+                                  border: isDarkMode ? '1.5px solid #14b8a6' : '1.5px solid #115e59',
+                                  height: '34px'
+                                }}
+                              >
+                                <button
+                                  onClick={handlePrevMonth}
+                                  className="button is-small p-0 oval-nav-btn"
+                                  style={{
+                                    width: '60px',
+                                    height: '100%',
+                                    backgroundColor: 'transparent',
+                                    border: 'none',
+                                    borderRight: isDarkMode ? '1.5px solid rgba(255, 255, 255, 0.3)' : '1.5px solid rgba(255, 255, 255, 0.4)',
+                                    borderRadius: 0,
+                                    color: '#ffffff',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer'
+                                  }}
+                                  title="Mes anterior"
+                                >
+                                  <ChevronLeft size={19} strokeWidth={2.8} />
+                                </button>
+                                <button
+                                  onClick={handleNextMonth}
+                                  className="button is-small p-0 oval-nav-btn"
+                                  style={{
+                                    width: '60px',
+                                    height: '100%',
+                                    backgroundColor: 'transparent',
+                                    border: 'none',
+                                    borderRadius: 0,
+                                    color: '#ffffff',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer'
+                                  }}
+                                  title="Mes siguiente"
+                                >
+                                  <ChevronRight size={19} strokeWidth={2.8} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div key="view-anual" className="view-transition-content">
+                            {/* Barra de navegación de año centrada */}
+                            <div 
+                              className="is-flex is-align-items-center is-justify-content-center mb-3"
+                              style={{ gap: '0.75rem' }}
+                            >
+                              <button
+                                type="button"
+                                onClick={handlePrevYear}
+                                className="button is-small"
+                                style={{
+                                  backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
+                                  color: '#ffffff',
+                                  border: 'none',
+                                  borderRadius: '8px',
+                                  height: '32px',
+                                  padding: '0 10px',
+                                  fontWeight: 700,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem',
+                                  boxShadow: '0 2px 8px rgba(15, 118, 110, 0.3)',
+                                  cursor: 'pointer'
+                                }}
+                                title="Año anterior"
+                              >
+                                <ChevronLeft size={16} strokeWidth={2.8} />
+                                <span style={{ fontSize: '12px' }}>{currentYear - 1}</span>
+                              </button>
+
+                              <div 
+                                className="px-4 py-1"
+                                style={{
+                                  backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+                                  border: isDarkMode ? '1.5px solid #0d9488' : '1.5px solid #0f766e',
+                                  borderRadius: '10px',
+                                  boxShadow: isDarkMode ? '0 2px 10px rgba(0,0,0,0.3)' : '0 2px 8px rgba(15,118,110,0.12)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  minWidth: '90px'
+                                }}
+                              >
+                                <span 
+                                  key={currentYear}
+                                  className="view-transition-badge"
+                                  style={{ 
+                                    color: isDarkMode ? '#f8fafc' : '#0f172a', 
+                                    fontWeight: 800,
+                                    fontSize: '1.2rem',
+                                    letterSpacing: '0.03em'
+                                  }}
+                                >
+                                  {currentYear}
+                                </span>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={handleNextYear}
+                                className="button is-small"
+                                style={{
+                                  backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
+                                  color: '#ffffff',
+                                  border: 'none',
+                                  borderRadius: '8px',
+                                  height: '32px',
+                                  padding: '0 10px',
+                                  fontWeight: 700,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem',
+                                  boxShadow: '0 2px 8px rgba(15, 118, 110, 0.3)',
+                                  cursor: 'pointer'
+                                }}
+                                title="Año siguiente"
+                              >
+                                <span style={{ fontSize: '12px' }}>{currentYear + 1}</span>
+                                <ChevronRight size={16} strokeWidth={2.8} />
+                              </button>
+                            </div>
+
+                            {/* Cuadrícula Anual: 4 columnas x 3 filas (12 meses) */}
+                            <div key={`annual-grid-${currentYear}`} className="annual-calendar-grid">
+                              {Array.from({ length: 12 }, (_, monthIdx) => (
+                                <div key={monthIdx} style={{ minWidth: 0, width: '100%' }}>
+                                  {renderMonth(currentYear, monthIdx, false, true)}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
 
-                  {/* 3. Columna derecha estrecha: Cómo funciona, Mostrar fin de semana, Presencial cambia primer lunes, Limpiar calendario, Descargar PNG */}
-                  <div className="column is-2-desktop is-12-tablet is-flex is-flex-direction-column">
+                  {/* 3. Columna derecha estrecha: Cómo funciona, Selector de Vista, Mostrar fin de semana, Presencial cambia primer lunes, Limpiar calendario, Descargar PNG */}
+                  <div className="column is-narrow is-flex is-flex-direction-column" style={{ width: '205px', minWidth: '205px' }}>
                     <div className="is-flex is-flex-direction-column is-flex-grow-1" style={{ gap: '0.65rem', transform: 'translateZ(0)', willChange: 'transform', height: '100%' }}>
                       {/* 1. ¿Cómo funciona? como primera opción */}
                       <button 
@@ -1818,6 +1982,82 @@ const CalendarApp = () => {
                         <span className="icon is-small"><Info size={15} /></span>
                         <span>¿Cómo funciona?</span>
                       </button>
+
+                      {/* 2. Selector de Modo de Vista (Semestral / Anual) debajo de ¿Cómo funciona? */}
+                      <div 
+                        className="box p-2 mb-0" 
+                        style={{ 
+                          border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', 
+                          backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', 
+                          boxShadow: 'none',
+                          borderRadius: '10px'
+                        }}
+                      >
+                        <div className="is-flex is-align-items-center mb-1" style={{ gap: '0.35rem' }}>
+                          <span style={{ fontSize: '13px' }}>👁️</span>
+                          <span className="is-size-7 has-text-weight-bold" style={{ color: isDarkMode ? '#e2e8f0' : '#334155' }}>
+                            Modo de Vista
+                          </span>
+                        </div>
+                        <div 
+                          className="is-flex" 
+                          style={{ 
+                            backgroundColor: isDarkMode ? '#0f172a' : '#f1f5f9', 
+                            borderRadius: '8px', 
+                            padding: '3px',
+                            gap: '3px'
+                          }}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => setViewMode('semestral')}
+                            className="button is-small is-flex-grow-1"
+                            style={{
+                              border: 'none',
+                              borderRadius: '6px',
+                              height: '28px',
+                              fontSize: '11px',
+                              fontWeight: viewMode === 'semestral' ? 700 : 500,
+                              backgroundColor: viewMode === 'semestral' 
+                                ? (isDarkMode ? '#0d9488' : '#0f766e') 
+                                : 'transparent',
+                              color: viewMode === 'semestral' ? '#ffffff' : (isDarkMode ? '#94a3b8' : '#64748b'),
+                              boxShadow: viewMode === 'semestral' ? '0 1px 4px rgba(0,0,0,0.2)' : 'none',
+                              transition: 'all 0.15s ease',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap',
+                              padding: '0 6px'
+                            }}
+                            title="Vista semestral: 2 meses consecutivos con desplazamiento mensual"
+                          >
+                            Semestral
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setViewMode('anual')}
+                            className="button is-small is-flex-grow-1"
+                            style={{
+                              border: 'none',
+                              borderRadius: '6px',
+                              height: '28px',
+                              fontSize: '11px',
+                              fontWeight: viewMode === 'anual' ? 700 : 500,
+                              backgroundColor: viewMode === 'anual' 
+                                ? (isDarkMode ? '#0d9488' : '#0f766e') 
+                                : 'transparent',
+                              color: viewMode === 'anual' ? '#ffffff' : (isDarkMode ? '#94a3b8' : '#64748b'),
+                              boxShadow: viewMode === 'anual' ? '0 1px 4px rgba(0,0,0,0.2)' : 'none',
+                              transition: 'all 0.15s ease',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap',
+                              padding: '0 6px'
+                            }}
+                            title="Vista anual: los 12 meses en cuadrícula 4x3 con desplazamiento anual"
+                          >
+                            Anual
+                          </button>
+                        </div>
+                      </div>
 
                       {/* 2. Mostrar fin de semana */}
                       <label 
@@ -3044,15 +3284,32 @@ const CalendarApp = () => {
           {/* Cabecera elegante del documento */}
           <div style={{ textAlign: 'center', width: '100%', paddingBottom: '0.75rem', borderBottom: '2px solid #e2e8f0' }}>
             <h1 style={{ fontSize: '1.85rem', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em', margin: 0 }}>
-              Propuesta Vacaciones
+              Propuesta Vacaciones {viewMode === 'anual' ? `- Año ${currentYear}` : ''}
             </h1>
           </div>
           
-          {/* Bloque de los dos calendarios */}
-          <div className="is-flex" style={{ gap: '2.5rem', alignItems: 'flex-start' }}>
-            {renderMonth(leftYear, leftMonth, true)}
-            {renderMonth(rightYear, rightMonth, true)}
-          </div>
+          {/* Bloque de calendarios según modo de vista */}
+          {viewMode === 'anual' ? (
+            <div 
+              style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(4, 280px)', 
+                gap: '1rem', 
+                width: '100%' 
+              }}
+            >
+              {Array.from({ length: 12 }, (_, monthIdx) => (
+                <div key={monthIdx}>
+                  {renderMonth(currentYear, monthIdx, true, true)}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="is-flex" style={{ gap: '2.5rem', alignItems: 'flex-start' }}>
+              {renderMonth(leftYear, leftMonth, true)}
+              {renderMonth(rightYear, rightMonth, true)}
+            </div>
+          )}
           
           {/* Leyenda de Colores y Días Presenciales */}
           {(usedLegends.length > 0 || hasWeeklySelections) && (
@@ -3256,6 +3513,16 @@ const CalendarApp = () => {
                 </h4>
                 <p>
                   Marca o desmarca la opción <strong>"Mostrar fin de semana"</strong> en la columna derecha para alternar entre ver solo la semana laboral (Lunes a Viernes) o la semana completa (Lunes a Domingo).
+                </p>
+              </section>
+
+              <section className="mb-4">
+                <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
+                  <span>🗓️</span>
+                  <span>Modo de Vista: Semestral y Anual</span>
+                </h4>
+                <p>
+                  En ordenadores y tablets, puedes alternar en el selector <strong>"Modo de Vista"</strong> entre la <strong>Vista Semestral</strong> (los 2 meses consecutivos tradicionales con desplazamiento mensual) y la <strong>Vista Anual</strong> (los 12 meses organizados en una cuadrícula compacta de 4 columnas por 3 filas con navegación año a año). En dispositivos móviles se mantiene la vista semestral para una experiencia táctil óptima.
                 </p>
               </section>
 
