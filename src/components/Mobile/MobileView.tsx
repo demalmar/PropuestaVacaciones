@@ -133,24 +133,24 @@ export const MobileView: React.FC<MobileViewProps> = ({ app }) => {
       </div>
 
       {/* 6. Panel de Balance y Proporción 40-60 en Móvil */}
-      {app.show4060 && (
-        <div style={{ width: '100%' }}>
-          <BalancePanelsWrapper
-            table4060={app.table4060}
-            calendarStats={app.calendarStats}
-            legendColors={app.legendColors}
-            isDarkMode={app.isDarkMode}
-            onUpdateCant={app.handleUpdateCant}
-            onUpdatePastDisfrutadas={app.handleUpdatePastDisfrutadas}
-            onUpdatePastPresenc={app.handleUpdatePastPresenc}
-            onUpdatePastTT={app.handleUpdatePastTT}
-            onClearTable={app.handleClearTable4060}
-            showClearConfirm={app.showClearTableConfirm}
-            setShowClearConfirm={app.setShowClearTableConfirm}
-            onOpenHelpModal={() => app.setShowWhatIs4060Modal(true)}
-          />
-        </div>
-      )}
+      <div style={{ width: '100%' }}>
+        <BalancePanelsWrapper
+          includeBalance={true}
+          include4060={app.show4060}
+          table4060={app.table4060}
+          calendarStats={app.calendarStats}
+          legendColors={app.legendColors}
+          isDarkMode={app.isDarkMode}
+          onUpdateCant={app.handleUpdateCant}
+          onUpdatePastDisfrutadas={app.handleUpdatePastDisfrutadas}
+          onUpdatePastPresenc={app.handleUpdatePastPresenc}
+          onUpdatePastTT={app.handleUpdatePastTT}
+          onClearTable={app.handleClearTable4060}
+          showClearConfirm={app.showClearTableConfirm}
+          setShowClearConfirm={app.setShowClearTableConfirm}
+          onOpenHelpModal={() => app.setShowWhatIs4060Modal(true)}
+        />
+      </div>
 
     </div>
   );

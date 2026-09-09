@@ -29,35 +29,36 @@ export const AddColorModal: React.FC<AddColorModalProps> = ({
   return (
     <div className="modal is-active" style={{ zIndex: 1150 }}>
       <div className="modal-background" onClick={onClose} />
-      <div className="modal-card" style={{ maxWidth: '340px', width: '92%', margin: 'auto' }}>
+      <div className="modal-card" style={{ maxWidth: '330px', width: '92%', margin: 'auto' }}>
         <div 
-          className="modal-card-body p-4" 
+          className="modal-card-body" 
           style={{ 
-            borderRadius: '16px', 
+            borderRadius: '14px', 
             backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
             border: isDarkMode ? '1.5px solid #334155' : '1.5px solid #cbd5e1',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
+            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+            padding: '12px 16px'
           }}
         >
           {/* Cabecera */}
-          <div className="is-flex is-align-items-center is-justify-content-space-between pb-3 mb-3" style={{ borderBottom: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0' }}>
-            <div className="is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
-              <span style={{ fontSize: '18px' }}>🎨</span>
-              <h3 className="title is-6 mb-0" style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontWeight: 800 }}>
+          <div className="is-flex is-align-items-center is-justify-content-space-between pb-2 mb-2" style={{ borderBottom: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0' }}>
+            <div className="is-flex is-align-items-center" style={{ gap: '0.45rem' }}>
+              <span style={{ fontSize: '16px' }}>🎨</span>
+              <h6 className="title is-6 mb-0" style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontWeight: 800, fontSize: '14px' }}>
                 Añadir nuevo color
-              </h3>
+              </h6>
             </div>
             <button 
               onClick={onClose} 
-              className="delete is-medium"
+              className="delete is-small"
               aria-label="Cerrar"
             />
           </div>
 
           {/* Formulario */}
-          <div className="is-flex is-flex-direction-column" style={{ gap: '1rem' }}>
+          <div className="is-flex is-flex-direction-column" style={{ gap: '0.65rem' }}>
             <div>
-              <label className="label is-size-7 mb-1.5" style={{ color: isDarkMode ? '#e2e8f0' : '#1e293b' }}>
+              <label className="label is-size-7 mb-1" style={{ color: isDarkMode ? '#e2e8f0' : '#1e293b', fontSize: '12px' }}>
                 Nombre de la etiqueta:
               </label>
               <input 
@@ -66,7 +67,7 @@ export const AddColorModal: React.FC<AddColorModalProps> = ({
                 onChange={(e) => setLabel(e.target.value)} 
                 placeholder="Ej: Formación, Guardia..." 
                 className="input is-small" 
-                style={{ height: '38px', borderRadius: '8px', fontSize: '13.5px' }}
+                style={{ height: '30px', borderRadius: '6px', fontSize: '13px' }}
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -77,29 +78,29 @@ export const AddColorModal: React.FC<AddColorModalProps> = ({
             </div>
 
             <div>
-              <label className="label is-size-7 mb-1.5" style={{ color: isDarkMode ? '#e2e8f0' : '#1e293b' }}>
+              <label className="label is-size-7 mb-1" style={{ color: isDarkMode ? '#e2e8f0' : '#1e293b', fontSize: '12px' }}>
                 Color de la etiqueta:
               </label>
-              <div className="is-flex is-align-items-center" style={{ gap: '0.75rem' }}>
+              <div className="is-flex is-align-items-center" style={{ gap: '0.6rem' }}>
                 <input 
                   type="color" 
                   value={color} 
                   onChange={(e) => setColor(e.target.value)} 
-                  style={{ width: '48px', height: '36px', padding: '2px', cursor: 'pointer', borderRadius: '8px', border: '1px solid #cbd5e1' }}
+                  style={{ width: '42px', height: '28px', padding: '1px', cursor: 'pointer', borderRadius: '6px', border: '1px solid #cbd5e1' }}
                   title="Seleccionar color" 
                 />
-                <span className="font-monospace" style={{ color: isDarkMode ? '#94a3b8' : '#64748b', fontWeight: 700, fontSize: '13px' }}>
+                <span className="font-monospace" style={{ color: isDarkMode ? '#94a3b8' : '#64748b', fontWeight: 700, fontSize: '12px' }}>
                   {color.toUpperCase()}
                 </span>
               </div>
             </div>
 
             {/* Botones */}
-            <div className="buttons is-flex is-justify-content-flex-end mt-2 mb-0" style={{ gap: '0.5rem' }}>
+            <div className="buttons is-flex is-justify-content-flex-end mt-1 mb-0" style={{ gap: '0.45rem' }}>
               <button 
                 onClick={onClose}
                 className="button is-small is-light"
-                style={{ borderRadius: '8px', height: '36px', fontSize: '13px' }}
+                style={{ borderRadius: '6px', height: '28px', fontSize: '12.5px', padding: '0 12px' }}
               >
                 Cancelar
               </button>
@@ -111,11 +112,11 @@ export const AddColorModal: React.FC<AddColorModalProps> = ({
                   background: 'linear-gradient(135deg, #0e7490, #0f766e)', 
                   color: '#ffffff', 
                   border: 'none', 
-                  borderRadius: '8px',
+                  borderRadius: '6px',
                   fontWeight: 700,
-                  padding: '0 16px',
-                  height: '36px',
-                  fontSize: '13.5px'
+                  padding: '0 14px',
+                  height: '28px',
+                  fontSize: '12.5px'
                 }}
               >
                 Crear etiqueta

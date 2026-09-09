@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { X, Moon, Sun, Info, Download, Upload, Trash2 } from 'lucide-react';
-import { PlanningMode } from '../../types/calendar.ts';
+import { X, Moon, Sun, Info, Download, Upload, Trash2, SlidersHorizontal } from 'lucide-react';
 import './MobileDrawer.css';
 
 interface MobileDrawerProps {
@@ -11,10 +10,10 @@ interface MobileDrawerProps {
   onOpenHowItWorks: () => void;
   showWeekends: boolean;
   setShowWeekends: (show: boolean) => void;
+  show4060: boolean;
+  setShow4060: (show: boolean) => void;
   presencialFirstMonday: boolean;
   onPresencialFirstMondayToggle: (val: boolean) => void;
-  planningMode: PlanningMode;
-  setPlanningMode: (mode: PlanningMode) => void;
   onExportData: () => void;
   onTriggerImport: () => void;
   onClearCalendar: () => void;
@@ -31,10 +30,10 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   onOpenHowItWorks,
   showWeekends,
   setShowWeekends,
+  show4060,
+  setShow4060,
   presencialFirstMonday,
   onPresencialFirstMondayToggle,
-  planningMode,
-  setPlanningMode,
   onExportData,
   onTriggerImport,
   onClearCalendar,
@@ -165,147 +164,134 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             <span>¿Cómo funciona?</span>
           </button>
 
-          {/* 3. Mostrar fines de semana */}
-          <label 
-            className="checkbox box p-3 is-flex is-align-items-center mb-0" 
-            style={{ 
-              gap: '0.65rem', 
-              border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
-              backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', 
-              boxShadow: 'none',
-              borderRadius: '10px',
-              cursor: 'pointer'
-            }}
-          >
-            <input 
-              type="checkbox" 
-              checked={showWeekends} 
-              onChange={(e) => setShowWeekends(e.target.checked)} 
-              style={{ width: '18px', height: '18px' }}
-            />
-            <span className="has-text-weight-bold" style={{ color: isDarkMode ? '#e2e8f0' : '#334155', fontSize: 'var(--font-size-label)' }}>
-              Mostrar fines de semana
-            </span>
-          </label>
-
-          {/* 4. Presencial cambia primer lunes del mes */}
-          <label 
-            className="checkbox box p-3 is-flex is-align-items-start mb-0" 
-            style={{ 
-              gap: '0.65rem', 
-              border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
-              backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', 
-              boxShadow: 'none',
-              borderRadius: '10px',
-              cursor: 'pointer'
-            }}
-          >
-            <input 
-              type="checkbox" 
-              checked={presencialFirstMonday} 
-              className="mt-1"
-              style={{ width: '18px', height: '18px' }}
-              onChange={(e) => onPresencialFirstMondayToggle(e.target.checked)} 
-            />
-            <div>
-              <span className="has-text-weight-bold is-block section-header" style={{ color: isDarkMode ? '#e2e8f0' : '#334155', lineHeight: 1.25, fontSize: 'var(--font-size-header-section)' }}>
-                Presencial por mes
-              </span>
-              <span className="is-block subtext-helper" style={{ fontSize: 'var(--font-size-subtext)', fontWeight: 'var(--font-weight-medium)', color: isDarkMode ? '#94a3b8' : '#64748b', marginTop: '2px', lineHeight: 1.25 }}>
-                Cambia a partir del 1.ᵉʳ lunes
-              </span>
-              <span className="is-block subtext-helper" style={{ fontSize: 'var(--font-size-subtext)', color: isDarkMode ? '#7dd3fc' : '#0369a1', marginTop: '2px', lineHeight: 1.25, fontWeight: 'var(--font-weight-semibold)' }}>
-                Desmarcado: fijo todo el año
-              </span>
-            </div>
-          </label>
-
-          {/* 5. Selector de Modo: Selección libre o Balance (Radio) */}
+          {/* Panel Unificado: Opciones */}
           <div 
             className="box p-3 mb-0" 
             style={{ 
               border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
               backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', 
               boxShadow: 'none',
-              borderRadius: '10px'
+              borderRadius: '10px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem'
             }}
           >
-            <div className="is-flex is-align-items-center mb-2" style={{ gap: '0.4rem' }}>
-              <span style={{ fontSize: '15px' }}>⚖️</span>
+            {/* Cabecera del Panel Opciones */}
+            <div className="is-flex is-align-items-center" style={{ gap: '0.5rem', borderBottom: isDarkMode ? '1px solid #334155' : '1px solid #f1f5f9', paddingBottom: '0.5rem' }}>
+              <SlidersHorizontal size={16} style={{ color: isDarkMode ? '#0d9488' : '#0f766e' }} strokeWidth={2.4} />
               <span className="has-text-weight-bold section-header" style={{ color: isDarkMode ? '#e2e8f0' : '#334155', fontSize: 'var(--font-size-header-section)' }}>
-                Modo de Selección
+                Opciones
               </span>
             </div>
-            <div className="is-flex is-flex-direction-column" style={{ gap: '0.35rem' }}>
-              <label 
-                className="radio is-flex is-align-items-center mb-0 px-2 py-1.5" 
-                style={{ 
-                  cursor: 'pointer',
-                  borderRadius: '8px',
-                  backgroundColor: planningMode === 'libre' 
-                    ? (isDarkMode ? 'rgba(15, 118, 110, 0.25)' : '#f0fdfa') 
-                    : 'transparent',
-                  border: planningMode === 'libre'
-                    ? (isDarkMode ? '1px solid #0d9488' : '1px solid #99f6e4')
-                    : '1px solid transparent',
-                  transition: 'all 0.15s ease',
-                  gap: '0.5rem'
-                }}
-              >
-                <input 
-                  type="radio" 
-                  name="planningMode_mobile" 
-                  value="libre" 
-                  checked={planningMode === 'libre'} 
-                  onChange={() => setPlanningMode('libre')} 
-                  style={{ margin: 0, cursor: 'pointer' }}
-                />
-                <div className="is-flex is-flex-direction-column" style={{ minWidth: 0, lineHeight: 1.25 }}>
-                  <span className="has-text-weight-bold" style={{ color: isDarkMode ? '#f1f5f9' : '#1e293b', fontSize: 'var(--font-size-label)' }}>
-                    Selección libre
-                  </span>
-                  <span className="subtext-helper" style={{ fontSize: 'var(--font-size-subtext)', color: isDarkMode ? '#94a3b8' : '#64748b' }}>
-                    Selecciona días ilimitados
-                  </span>
-                </div>
-              </label>
 
-              <label 
-                className="radio is-flex is-align-items-center mb-0 px-2 py-1.5" 
-                style={{ 
-                  cursor: 'pointer',
-                  borderRadius: '8px',
-                  backgroundColor: planningMode === 'balance' 
-                    ? (isDarkMode ? 'rgba(15, 118, 110, 0.25)' : '#f0fdfa') 
-                    : 'transparent',
-                  border: planningMode === 'balance'
-                    ? (isDarkMode ? '1px solid #0d9488' : '1px solid #99f6e4')
-                    : '1px solid transparent',
-                  transition: 'all 0.15s ease',
-                  gap: '0.5rem'
-                }}
-              >
-                <input 
-                  type="radio" 
-                  name="planningMode_mobile" 
-                  value="balance" 
-                  checked={planningMode === 'balance'} 
-                  onChange={() => setPlanningMode('balance')} 
-                  style={{ margin: 0, cursor: 'pointer' }}
-                />
-                <div className="is-flex is-flex-direction-column" style={{ minWidth: 0, lineHeight: 1.25 }}>
-                  <span className="has-text-weight-bold" style={{ color: isDarkMode ? '#f1f5f9' : '#1e293b', fontSize: 'var(--font-size-label)' }}>
-                    Balance
+            {/* 1. Mostrar fines de semana */}
+            <label 
+              className="checkbox is-flex is-align-items-center mb-0" 
+              style={{ gap: '0.65rem', cursor: 'pointer' }}
+            >
+              <input 
+                type="checkbox" 
+                checked={showWeekends} 
+                onChange={(e) => setShowWeekends(e.target.checked)} 
+                style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#0f766e' }}
+              />
+              <span className="has-text-weight-bold" style={{ color: isDarkMode ? '#e2e8f0' : '#334155', fontSize: 'var(--font-size-label)' }}>
+                Mostrar fines de semana
+              </span>
+            </label>
+
+            <hr style={{ margin: '0.1rem 0', backgroundColor: isDarkMode ? '#334155' : '#f1f5f9', height: '1px' }} />
+
+            {/* 2. Checkbox Mostrar panel 40-60 */}
+            <label 
+              className="checkbox is-flex is-align-items-start mb-0" 
+              style={{ gap: '0.65rem', cursor: 'pointer' }}
+            >
+              <input 
+                type="checkbox" 
+                checked={show4060} 
+                className="mt-1"
+                style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#0f766e' }}
+                onChange={(e) => setShow4060(e.target.checked)} 
+              />
+              <div>
+                <span className="has-text-weight-bold is-block section-header" style={{ color: isDarkMode ? '#e2e8f0' : '#334155', lineHeight: 1.25, fontSize: 'var(--font-size-header-section)' }}>
+                  Mostrar panel 40-60
+                </span>
+                <span className="is-block subtext-helper" style={{ fontSize: 'var(--font-size-subtext)', fontWeight: 'var(--font-weight-medium)', color: isDarkMode ? '#94a3b8' : '#64748b', marginTop: '2px', lineHeight: 1.25 }}>
+                  (Funcionarios AEAT)
+                </span>
+              </div>
+            </label>
+
+            <hr style={{ margin: '0.1rem 0', backgroundColor: isDarkMode ? '#334155' : '#f1f5f9', height: '1px' }} />
+
+            {/* 3. Comportamiento Presenciales */}
+            <div>
+              <div className="mb-2">
+                <span className="has-text-weight-bold is-block section-header" style={{ color: isDarkMode ? '#e2e8f0' : '#334155', lineHeight: 1.25, fontSize: 'var(--font-size-header-section)' }}>
+                  Comportamiento Presenciales
+                </span>
+              </div>
+              <div className="is-flex is-flex-direction-column" style={{ gap: '0.45rem' }}>
+                <label 
+                  className="radio is-flex is-align-items-center mb-0 px-2 py-2" 
+                  style={{ 
+                    cursor: 'pointer',
+                    borderRadius: '6px',
+                    backgroundColor: !presencialFirstMonday 
+                      ? (isDarkMode ? 'rgba(15, 118, 110, 0.2)' : '#f0fdfa') 
+                      : 'transparent',
+                    border: !presencialFirstMonday
+                      ? (isDarkMode ? '1px solid #0d9488' : '1px solid #99f6e4')
+                      : '1px solid transparent',
+                    transition: 'all 0.15s ease',
+                    gap: '0.65rem'
+                  }}
+                >
+                  <input 
+                    type="radio" 
+                    name="presencialMode_mobile" 
+                    checked={!presencialFirstMonday} 
+                    onChange={() => onPresencialFirstMondayToggle(false)} 
+                    style={{ margin: 0, width: '18px', height: '18px', cursor: 'pointer', accentColor: '#0f766e' }}
+                  />
+                  <span className="section-header" style={{ color: isDarkMode ? '#f1f5f9' : '#1e293b', fontSize: 'var(--font-size-header-section)', fontWeight: !presencialFirstMonday ? 600 : 500 }}>
+                    Siempre día seleccionado
                   </span>
-                  <span className="subtext-helper" style={{ fontSize: 'var(--font-size-subtext)', color: isDarkMode ? '#94a3b8' : '#64748b', lineHeight: 1.3 }}>
-                    Establece días totales
-                    <br />
-                    Regla 40-60
+                </label>
+
+                <label 
+                  className="radio is-flex is-align-items-center mb-0 px-2 py-2" 
+                  style={{ 
+                    cursor: 'pointer',
+                    borderRadius: '6px',
+                    backgroundColor: presencialFirstMonday 
+                      ? (isDarkMode ? 'rgba(15, 118, 110, 0.2)' : '#f0fdfa') 
+                      : 'transparent',
+                    border: presencialFirstMonday
+                      ? (isDarkMode ? '1px solid #0d9488' : '1px solid #99f6e4')
+                      : '1px solid transparent',
+                    transition: 'all 0.15s ease',
+                    gap: '0.65rem'
+                  }}
+                >
+                  <input 
+                    type="radio" 
+                    name="presencialMode_mobile" 
+                    checked={presencialFirstMonday} 
+                    onChange={() => onPresencialFirstMondayToggle(true)} 
+                    style={{ margin: 0, width: '18px', height: '18px', cursor: 'pointer', accentColor: '#0f766e' }}
+                  />
+                  <span className="section-header" style={{ color: isDarkMode ? '#f1f5f9' : '#1e293b', fontSize: 'var(--font-size-header-section)', fontWeight: presencialFirstMonday ? 600 : 500 }}>
+                    Desde el 1<sup>er</sup> lunes del mes
                   </span>
-                </div>
-              </label>
+                </label>
+              </div>
             </div>
           </div>
+
 
           <hr style={{ margin: '0.5rem 0', backgroundColor: isDarkMode ? '#334155' : '#e2e8f0' }} />
 
@@ -415,33 +401,28 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             )}
           </div>
 
-          {/* 7. Descargar PNG */}
+          {/* 7. Botón Guardar PNG */}
           <button 
             onClick={() => { onExportPNG(); handleClose(); }}
             className="button is-fullwidth"
             style={{ 
-              height: '52px',
+              height: '44px',
               borderRadius: '10px', 
               background: 'linear-gradient(135deg, #0e7490 0%, #0f766e 100%)', 
               color: '#ffffff', 
               border: 'none', 
               boxShadow: '0 4px 14px rgba(15, 118, 110, 0.35)',
               display: 'flex',
-              flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               marginTop: '0.25rem',
+              gap: '0.5rem',
               padding: '4px 8px'
             }}
-            title={planningMode === 'balance' ? "Descargar imagen PNG (incluye calendario, leyenda y balance)" : "Descargar imagen PNG (solo calendario y leyenda)"}
+            title="Guardar imagen PNG"
           >
-            <div className="is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
-              <Download size={18} strokeWidth={2.3} />
-              <span style={{ fontWeight: 800 }}>Descargar PNG</span>
-            </div>
-            <span style={{ fontSize: '11px', fontWeight: 600, opacity: 0.88, lineHeight: 1, marginTop: '2px' }}>
-              {planningMode === 'balance' ? '• Con Balance y 40-60' : '• Solo Calendario'}
-            </span>
+            <Download size={18} strokeWidth={2.3} />
+            <span style={{ fontWeight: 800 }}>Guardar PNG</span>
           </button>
 
         </div>

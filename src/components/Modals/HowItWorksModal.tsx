@@ -68,14 +68,14 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
               <span>Días presenciales y teletrabajo</span>
             </h4>
             <p className="mb-2">
-              Si dispones de un régimen con días presenciales y teletrabajo, haciendo clic en los días semanales de la cabecera (<strong>L, M, X, J, V, S, D</strong>) se emplazan automáticamente los días de cada semana como <strong>Presenciales</strong> (señalizados con borde azul y punto indicador).
+              Si dispones de un régimen con días presenciales y teletrabajo, haciendo clic en los días semanales de la cabecera (<strong>L, M, X, J, V, S, D</strong>) de cualquier mes se seleccionan automáticamente los días como <strong>Presenciales</strong> (señalizados con borde azul y punto indicador). Cada mes se gestiona de manera independiente.
             </p>
             <div className="box p-3 mb-0" style={{ fontSize: 'var(--font-size-modal-note)', border: isDarkMode ? '1px solid #324054' : '1px solid #e8e8e8', backgroundColor: isDarkMode ? '#252e39' : '#f8fafc', boxShadow: 'none' }}>
               <p className="mb-1">
-                <strong>• Presencial por mes (marcado por defecto):</strong> El patrón presencial se adapta a cada mes de forma independiente y entra en vigor a partir del primer lunes del mes.
+                <strong>• Día semanal en todo el mes:</strong> Marca como presenciales todos los días correspondientes dentro de cada mes (de principio a fin de mes).
               </p>
               <p className="mb-0">
-                <strong>• Si se desmarca esta opción (fijo todo el año):</strong> Se seleccionarán siempre esas columnas de forma continua en todos los meses. Por ejemplo, si seleccionas <strong>L</strong> y <strong>M</strong> (martes), quedarán siempre seleccionados todos los lunes y martes del calendario anual.
+                <strong>• Desde el 1<sup>er</sup> lunes del mes:</strong> El patrón presencial de cada mes entra en vigor a partir de su primer lunes. Los días del mes anteriores a ese primer lunes se rigen por la semana del mes previo.
               </p>
             </div>
           </section>
@@ -116,17 +116,17 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
               <li><strong>Seleccionar categoría activa:</strong> Haz clic en cualquier etiqueta de la leyenda para seleccionarla como color activo de trabajo.</li>
               <li><strong>Pintar días:</strong> Haz clic sobre cualquier día del calendario para aplicarle la categoría activa.</li>
               <li><strong>Quitar color:</strong> Vuelve a hacer clic sobre un día ya coloreado con la misma categoría activa para desmarcarlo.</li>
-              <li><strong>Marcar días presenciales por columna:</strong> Haz clic en la cabecera de cualquier día (L, M, X, J, V, S, D) para marcar o desmarcar todos los días de esa columna en el mes como días presenciales.</li>
+              <li><strong>Marcar días presenciales por columna:</strong> Haz clic en la cabecera de cualquier día (L, M, X, J, V, S, D) de un mes para marcar o desmarcar todos los días de esa columna en dicho mes como días presenciales.</li>
             </ul>
           </section>
 
           <section className="mb-4">
             <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
               <span>➕</span>
-              <span>Añadir nuevo color</span>
+              <span>Añadir etiquetas</span>
             </h4>
             <p>
-              En el formulario <strong>"Añadir nuevo color"</strong> del panel izquierdo puedes crear nuevas categorías personalizadas: selecciona un color con la paleta, escribe su nombre y pulsa el botón <strong>+</strong> (o la tecla Enter).
+              En el formulario <strong>"Añadir etiqueta..."</strong> del panel izquierdo puedes crear nuevas categorías personalizadas: selecciona un color con la paleta, escribe su nombre y pulsa el botón <strong>+</strong> (o la tecla Enter).
             </p>
           </section>
 
@@ -152,27 +152,14 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
 
           <section className="mb-4">
             <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
-              <span>⚖️</span>
-              <span>Modo de Selección: Selección libre o Balance</span>
+              <span>📥</span>
+              <span>Guardar PNG</span>
             </h4>
             <p>
-              En el selector puedes elegir entre:
+              Pulsa el botón <strong>"Guardar PNG"</strong> para exportar una imagen de alta resolución. Una ventana modal te permite elegir qué partes capturar: el Calendario (marcado siempre), el panel de Balance y la Proporción 40-60.
             </p>
-            <ul>
-              <li><strong>Selección libre (por defecto):</strong> Marca días en el calendario con total libertad, sin importar cuántos marques y sin restricciones.</li>
-              <li><strong>Balance:</strong> Despliega los paneles de <strong>Balance</strong> (cómputo de días disponibles, disfrutados y restantes) y de <strong>Proporción 40-60</strong> (control en tiempo real del 40% presencial y 60% teletrabajo).</li>
-            </ul>
           </section>
 
-          <section className="mb-4">
-            <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
-              <span>📥</span>
-              <span>Guardar imagen (PNG)</span>
-            </h4>
-            <p>
-              Pulsa el botón <strong>"Guardar imagen"</strong> o <strong>"Descargar PNG"</strong> para exportar un archivo PNG de alta resolución con los dos meses y la leyenda de categorías empleadas, listo para adjuntar, compartir o imprimir.
-            </p>
-          </section>
 
           <section className="mb-4">
             <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>

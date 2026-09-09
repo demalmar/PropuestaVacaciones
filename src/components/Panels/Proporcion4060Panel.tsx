@@ -77,7 +77,8 @@ export const Proporcion4060Panel: React.FC<Proporcion4060PanelProps> = ({
         boxShadow: useDark ? 'none' : '0 4px 20px -2px rgba(15, 118, 110, 0.08)',
         width: '100%',
         height: 'auto',
-        minHeight: 'auto'
+        minHeight: 'auto',
+        paddingBottom: '1.25rem'
       }}
     >
       {/* Cabecera del Panel Proporción 40-60 */}
@@ -113,19 +114,20 @@ export const Proporcion4060Panel: React.FC<Proporcion4060PanelProps> = ({
       </div>
 
       <div 
-        className="p-3 is-flex is-flex-direction-column is-justify-content-space-between is-flex-grow-1" 
+        className="is-flex is-flex-direction-column is-flex-grow-1" 
         style={{ 
           backgroundColor: useDark ? '#1e293b' : '#f8fafc',
           borderRadius: '12px',
           border: useDark ? '1px solid #334155' : '1px solid #e2e8f0',
-          height: 'auto',
-          gap: '0.5rem'
+          padding: '12px',
+          boxSizing: 'border-box',
+          height: 'auto'
         }}
       >
         <div>
           {/* Tabla de Presencial vs TT */}
           <table 
-            className="table is-bordered is-fullwidth is-narrow mb-2 has-text-centered" 
+            className="table is-bordered is-fullwidth is-narrow mb-0 has-text-centered" 
             style={{ 
               backgroundColor: 'transparent',
               color: useDark ? '#e2e8f0' : '#1e293b',
@@ -133,6 +135,20 @@ export const Proporcion4060Panel: React.FC<Proporcion4060PanelProps> = ({
             }}
           >
             <thead>
+              <tr style={{ backgroundColor: useDark ? '#1e293b' : '#f1f5f9' }}>
+                <th 
+                  colSpan={2} 
+                  className="has-text-centered table-header py-1" 
+                  style={{ 
+                    color: useDark ? '#cbd5e1' : '#334155', 
+                    fontWeight: 800, 
+                    fontSize: 'var(--font-size-header-table)',
+                    letterSpacing: '0.01em'
+                  }}
+                >
+                  Vacaciones
+                </th>
+              </tr>
               <tr style={{ backgroundColor: useDark ? '#141d2b' : '#f1f5f9' }}>
                 <th className="has-text-centered table-header" style={{ width: '50%', color: presencColor, fontWeight: 'var(--font-weight-extrabold)', fontSize: 'var(--font-size-header-section)' }}>
                   🏢 Presencial
@@ -144,13 +160,13 @@ export const Proporcion4060Panel: React.FC<Proporcion4060PanelProps> = ({
             </thead>
             <tbody>
               {/* Fila Días Previos */}
-              <tr style={{ backgroundColor: useDark ? 'rgba(255, 255, 255, 0.03)' : '#ffffff' }}>
-                <td style={{ verticalAlign: 'middle', padding: '6px 8px' }}>
-                  <div className="is-flex is-align-items-center is-justify-content-center" style={{ gap: '0.45rem' }}>
-                    <span style={{ fontSize: 'var(--font-size-note)', fontWeight: 'var(--font-weight-bold)', color: useDark ? '#94a3b8' : '#64748b' }}>
-                      Previos:
-                    </span>
-                    {!isExport ? (
+              {!isExport && (
+                <tr style={{ backgroundColor: useDark ? 'rgba(255, 255, 255, 0.03)' : '#ffffff' }}>
+                  <td style={{ verticalAlign: 'middle', padding: '6px 8px' }}>
+                    <div className="is-flex is-align-items-center is-justify-content-center" style={{ gap: '0.45rem' }}>
+                      <span style={{ fontSize: 'var(--font-size-note)', fontWeight: 'var(--font-weight-bold)', color: useDark ? '#94a3b8' : '#64748b' }}>
+                        Previos:
+                      </span>
                       <input 
                         type="number" 
                         min="0"
@@ -163,17 +179,13 @@ export const Proporcion4060Panel: React.FC<Proporcion4060PanelProps> = ({
                         style={{ width: '52px', height: '28px', padding: '2px', borderRadius: '5px', fontSize: 'var(--font-size-input)' }}
                         title="Días presenciales disfrutados previamente fuera de este calendario"
                       />
-                    ) : (
-                      <span style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--font-size-header-table)' }}>{pastPresenc}</span>
-                    )}
-                  </div>
-                </td>
-                <td style={{ verticalAlign: 'middle', padding: '6px 8px' }}>
-                  <div className="is-flex is-align-items-center is-justify-content-center" style={{ gap: '0.45rem' }}>
-                    <span style={{ fontSize: 'var(--font-size-note)', fontWeight: 'var(--font-weight-bold)', color: useDark ? '#94a3b8' : '#64748b' }}>
-                      Previos:
-                    </span>
-                    {!isExport ? (
+                    </div>
+                  </td>
+                  <td style={{ verticalAlign: 'middle', padding: '6px 8px' }}>
+                    <div className="is-flex is-align-items-center is-justify-content-center" style={{ gap: '0.45rem' }}>
+                      <span style={{ fontSize: 'var(--font-size-note)', fontWeight: 'var(--font-weight-bold)', color: useDark ? '#94a3b8' : '#64748b' }}>
+                        Previos:
+                      </span>
                       <input 
                         type="number" 
                         min="0"
@@ -186,152 +198,162 @@ export const Proporcion4060Panel: React.FC<Proporcion4060PanelProps> = ({
                         style={{ width: '52px', height: '28px', padding: '2px', borderRadius: '5px', fontSize: 'var(--font-size-input)' }}
                         title="Días en teletrabajo disfrutados previamente fuera de este calendario"
                       />
-                    ) : (
-                      <span style={{ fontWeight: 'var(--font-weight-bold)', fontSize: 'var(--font-size-header-table)' }}>{pastTT}</span>
-                    )}
-                  </div>
-                </td>
-              </tr>
+                    </div>
+                  </td>
+                </tr>
+              )}
 
               {/* Fila Total Días (Previos + Calendario) */}
               <tr>
-                <td style={{ verticalAlign: 'middle', padding: '8px 8px', backgroundColor: presencBgTint }}>
+                <td style={{ verticalAlign: 'middle', padding: isExport ? '10px 8px' : '8px 8px', backgroundColor: presencBgTint }}>
                   <span className="kpi-large" style={{ fontSize: 'var(--font-size-kpi-large)', fontWeight: 'var(--font-weight-black)', color: presencColor }}>
                     {presencDays}
                   </span>
-                  <div className="subtext-helper" style={{ fontSize: 'var(--font-size-subtext)', fontWeight: 'var(--font-weight-semibold)', color: presencColor, marginTop: '-2px' }}>
-                    ({pastPresenc} prev. + {calendarStats.presencial} cal.)
-                  </div>
+                  {!isExport && (
+                    <div className="subtext-helper" style={{ fontSize: 'var(--font-size-subtext)', fontWeight: 'var(--font-weight-semibold)', color: presencColor, marginTop: '-2px' }}>
+                      ({pastPresenc} prev. + {calendarStats.presencial} cal.)
+                    </div>
+                  )}
                 </td>
-                <td style={{ verticalAlign: 'middle', padding: '8px 8px', backgroundColor: ttBgTint }}>
+                <td style={{ verticalAlign: 'middle', padding: isExport ? '10px 8px' : '8px 8px', backgroundColor: ttBgTint }}>
                   <span className="kpi-large" style={{ fontSize: 'var(--font-size-kpi-large)', fontWeight: 'var(--font-weight-black)', color: ttColor }}>
                     {ttDays}
                   </span>
-                  <div className="subtext-helper" style={{ fontSize: 'var(--font-size-subtext)', fontWeight: 'var(--font-weight-semibold)', color: ttColor, marginTop: '-2px' }}>
-                    ({pastTT} prev. + {calendarStats.tt} cal.)
+                  {!isExport && (
+                    <div className="subtext-helper" style={{ fontSize: 'var(--font-size-subtext)', fontWeight: 'var(--font-weight-semibold)', color: ttColor, marginTop: '-2px' }}>
+                      ({pastTT} prev. + {calendarStats.tt} cal.)
+                    </div>
+                  )}
+                </td>
+              </tr>
+
+              {/* Fila de Proporción y Barra integrada en la tabla */}
+              <tr style={{ backgroundColor: useDark ? '#141d2b' : '#ffffff' }}>
+                <td 
+                  colSpan={2} 
+                  style={{ 
+                    padding: '10px 14px', 
+                    verticalAlign: 'middle'
+                  }}
+                >
+                  {/* Números grandes de un vistazo y metas */}
+                  <div className="is-flex is-justify-content-space-between is-align-items-flex-start mb-2">
+                    {/* Presencial */}
+                    <div>
+                      <div className="is-flex is-align-items-center" style={{ gap: '0.4rem' }}>
+                        <span style={{ fontSize: '15px' }}>🏢</span>
+                        <span className="kpi-huge" style={{ fontSize: 'var(--font-size-kpi-huge)', fontWeight: 'var(--font-weight-black)', color: presencColor, lineHeight: 1 }}>
+                          {presencPctStr}
+                        </span>
+                      </div>
+                      <div className="mt-1">
+                        <span 
+                          className="tag py-0 px-2" 
+                          style={{ 
+                            fontSize: 'var(--font-size-badge)', 
+                            height: '22px', 
+                            fontWeight: 'var(--font-weight-bold)', 
+                            borderRadius: '4px',
+                            backgroundColor: presencTagBg,
+                            color: presencTagColor,
+                            border: `1px solid ${useDark ? 'rgba(96, 165, 250, 0.3)' : 'rgba(50, 115, 220, 0.25)'}`
+                          }}
+                        >
+                          Meta: 40%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Teletrabajo */}
+                    <div className="has-text-right">
+                      <div className="is-flex is-align-items-center is-justify-content-flex-end" style={{ gap: '0.4rem' }}>
+                        <span className="kpi-huge" style={{ fontSize: 'var(--font-size-kpi-huge)', fontWeight: 'var(--font-weight-black)', color: ttColor, lineHeight: 1 }}>
+                          {ttPctStr}
+                        </span>
+                        <span style={{ fontSize: '15px' }}>💻</span>
+                      </div>
+                      <div className="mt-1 is-flex is-justify-content-flex-end">
+                        <span 
+                          className="tag py-0 px-2" 
+                          style={{ 
+                            fontSize: 'var(--font-size-badge)', 
+                            height: '22px', 
+                            fontWeight: 'var(--font-weight-bold)', 
+                            borderRadius: '4px',
+                            backgroundColor: ttTagBg,
+                            color: ttTagColor,
+                            border: `1px solid ${useDark ? 'rgba(74, 222, 128, 0.3)' : 'rgba(22, 163, 74, 0.25)'}`
+                          }}
+                        >
+                          Meta: 60%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Barra de distribución de color */}
+                  <div 
+                    style={{ 
+                      width: '100%', 
+                      height: '14px', 
+                      backgroundColor: useDark ? '#334155' : '#e2e8f0', 
+                      borderRadius: '9999px', 
+                      overflow: 'hidden',
+                      display: 'flex',
+                      boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)',
+                      marginTop: '6px'
+                    }}
+                  >
+                    <div 
+                      style={{ 
+                        width: `${presencBarWidth}%`, 
+                        backgroundColor: presencBarColor, 
+                        transition: 'width 0.25s ease' 
+                      }} 
+                      title={`Presencial: ${presencPctStr}`}
+                    />
+                    <div 
+                      style={{ 
+                        width: `${ttBarWidth}%`, 
+                        backgroundColor: ttBarColor, 
+                        transition: 'width 0.25s ease' 
+                      }} 
+                      title={`Teletrabajo: ${ttPctStr}`}
+                    />
                   </div>
                 </td>
               </tr>
             </tbody>
           </table>
-
-          {/* Bloque unificado: Proporciones 40/60 y Barra con Meta */}
-          <div 
-            className="p-3 my-2" 
-            style={{ 
-              backgroundColor: useDark ? '#141d2b' : '#ffffff',
-              borderRadius: '10px',
-              border: useDark ? '1px solid #334155' : '1px solid #cbd5e1',
-              boxShadow: useDark ? 'none' : '0 1px 3px rgba(0,0,0,0.04)'
-            }}
-          >
-            {/* Números grandes de un vistazo y metas */}
-            <div className="is-flex is-justify-content-space-between is-align-items-flex-start mb-2">
-              {/* Presencial */}
-              <div>
-                <div className="is-flex is-align-items-center" style={{ gap: '0.4rem' }}>
-                  <span style={{ fontSize: '15px' }}>🏢</span>
-                  <span className="kpi-huge" style={{ fontSize: 'var(--font-size-kpi-huge)', fontWeight: 'var(--font-weight-black)', color: presencColor, lineHeight: 1 }}>
-                    {presencPctStr}
-                  </span>
-                </div>
-                <div className="mt-1">
-                  <span 
-                    className="tag py-0 px-2" 
-                    style={{ 
-                      fontSize: 'var(--font-size-badge)', 
-                      height: '22px', 
-                      fontWeight: 'var(--font-weight-bold)', 
-                      borderRadius: '4px',
-                      backgroundColor: presencTagBg,
-                      color: presencTagColor,
-                      border: `1px solid ${useDark ? 'rgba(96, 165, 250, 0.3)' : 'rgba(50, 115, 220, 0.25)'}`
-                    }}
-                  >
-                    Meta: 40%
-                  </span>
-                </div>
-              </div>
-
-              {/* Teletrabajo */}
-              <div className="has-text-right">
-                <div className="is-flex is-align-items-center is-justify-content-flex-end" style={{ gap: '0.4rem' }}>
-                  <span className="kpi-huge" style={{ fontSize: 'var(--font-size-kpi-huge)', fontWeight: 'var(--font-weight-black)', color: ttColor, lineHeight: 1 }}>
-                    {ttPctStr}
-                  </span>
-                  <span style={{ fontSize: '15px' }}>💻</span>
-                </div>
-                <div className="mt-1 is-flex is-justify-content-flex-end">
-                  <span 
-                    className="tag py-0 px-2" 
-                    style={{ 
-                      fontSize: 'var(--font-size-badge)', 
-                      height: '22px', 
-                      fontWeight: 'var(--font-weight-bold)', 
-                      borderRadius: '4px',
-                      backgroundColor: ttTagBg,
-                      color: ttTagColor,
-                      border: `1px solid ${useDark ? 'rgba(74, 222, 128, 0.3)' : 'rgba(22, 163, 74, 0.25)'}`
-                    }}
-                  >
-                    Meta: 60%
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Barra de distribución de color */}
-            <div 
-              style={{ 
-                width: '100%', 
-                height: '14px', 
-                backgroundColor: useDark ? '#334155' : '#e2e8f0', 
-                borderRadius: '9999px', 
-                overflow: 'hidden',
-                display: 'flex',
-                boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)',
-                marginTop: '6px'
-              }}
-            >
-              <div 
-                style={{ 
-                  width: `${presencBarWidth}%`, 
-                  backgroundColor: presencBarColor, 
-                  transition: 'width 0.25s ease' 
-                }} 
-                title={`Presencial: ${presencPctStr}`}
-              />
-              <div 
-                style={{ 
-                  width: `${ttBarWidth}%`, 
-                  backgroundColor: ttBarColor, 
-                  transition: 'width 0.25s ease' 
-                }} 
-                title={`Teletrabajo: ${ttPctStr}`}
-              />
-            </div>
-          </div>
         </div>
 
         {/* Sugerencia para cumplir la regla */}
         <div 
-          className="p-2.5 mt-2"
           style={{
-            backgroundColor: useDark ? '#141d2b' : '#ffffff',
-            borderRadius: '8px',
-            fontSize: 'var(--font-size-note)',
-            border: useDark ? '1px solid #334155' : '1px solid #cbd5e1',
-            color: useDark ? '#cbd5e1' : '#475569',
-            lineHeight: 1.45
+            marginTop: 'auto',
+            paddingTop: '12px'
           }}
         >
-          {totalVacaciones4060 === 0 ? (
-            <span>Establece los días de vacaciones en la tabla de Balance para calcular la proporción 40/60.</span>
-          ) : (
-            <span>
-              Del total de <strong>{totalVacaciones4060}</strong> días de vacaciones, <strong>{cantIndep}</strong> individuales y <strong>{cantPeriodo}</strong> por periodo, para alcanzar la meta 40/60 restan <strong>{presencRemainingGoal}</strong> días presenciales y <strong>{ttRemainingGoal}</strong> días en teletrabajo.
-            </span>
-          )}
+          <div 
+            style={{
+              backgroundColor: useDark ? '#141d2b' : '#ffffff',
+              borderRadius: '8px',
+              fontSize: 'var(--font-size-note)',
+              border: useDark ? '1px solid #334155' : '1px solid #cbd5e1',
+              color: useDark ? '#cbd5e1' : '#475569',
+              lineHeight: 1.55,
+              padding: '11px 14px',
+              boxSizing: 'border-box'
+            }}
+          >
+            {totalVacaciones4060 === 0 ? (
+              <span>Establece los días de vacaciones en la tabla de Balance para calcular la proporción 40/60.</span>
+            ) : (
+              <span>
+                Del total de <strong>{totalVacaciones4060}</strong> días de vacaciones, <strong>{cantIndep}</strong> individuales y <strong>{cantPeriodo}</strong> por periodo, para alcanzar la meta 40/60 restan <strong>{presencRemainingGoal}</strong> días presenciales y <strong>{ttRemainingGoal}</strong> días en teletrabajo.
+              </span>
+            )}
+          </div>
         </div>
 
       </div>

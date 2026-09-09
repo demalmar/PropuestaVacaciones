@@ -51,64 +51,98 @@ export const BalancePanel: React.FC<BalancePanelProps> = ({
   const colorAsuntos = legendColors.find(c => c.id === '3')?.color || '#bae6fd';
 
   const useDark = isDarkMode && !isExport;
-  const hasAnyExcess = totalQuedan < 0 || quedanPeriodo < 0 || quedanIndep < 0 || quedanAsuntos < 0;
+  const hasCategoryExcess = 
+    (cantPeriodo > 0 && quedanPeriodo < 0) || 
+    (cantIndep > 0 && quedanIndep < 0) || 
+    (cantAsuntos > 0 && quedanAsuntos < 0);
+  const hasAnyExcess = totalCant > 0 && (totalQuedan < 0 || hasCategoryExcess);
   const totalExcessDays = Math.max(0, -totalQuedan);
 
   const renderBoxes = (total: number, enjoyed: number, color: string) => {
-    const boxes = [];
-    const safeTotal = Math.max(0, Math.min(total, 45));
-    const excess = Math.max(0, enjoyed - safeTotal);
-
-    // Cajas dentro del cupo
-    for (let i = 0; i < safeTotal; i++) {
-      const isFilled = i < enjoyed;
-      boxes.push(
-        <span
-          key={`box-${i}`}
-          style={{
-            width: '13px',
-            height: '13px',
-            backgroundColor: isFilled ? color : 'transparent',
-            border: isFilled 
-              ? '1px solid rgba(0, 0, 0, 0.35)' 
-              : (useDark ? '1px dashed #475569' : '1px solid #cbd5e1'),
-            borderRadius: '2px',
-            display: 'inline-block',
-            boxShadow: isFilled ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
-            flexShrink: 0
-          }}
-          title={isFilled ? `Día ${i + 1} disfrutado` : `Día ${i + 1} pendiente`}
-        />
-      );
+    if (total === 0) {
+      return <span style={{ color: useDark ? '#64748b' : '#94a3b8', fontSize: 'var(--font-size-subtext)' }}>-</span>;
     }
 
-    // Cajas adicionales que exceden el cupo
-    for (let j = 0; j < Math.min(excess, 20); j++) {
-      boxes.push(
-        <span
-          key={`excess-${j}`}
-          style={{
-            width: '13px',
-            height: '13px',
-            backgroundColor: 'rgba(239, 68, 68, 0.2)',
-            border: '1.5px dashed #ef4444',
-            borderRadius: '2px',
-            display: 'inline-block',
-            boxShadow: '0 1px 3px rgba(239, 68, 68, 0.15)',
-            flexShrink: 0
-          }}
-          title={`Día ${safeTotal + j + 1} (Exceso sobre el cupo permitido)`}
-        />
+    const safeTotal = Math.max(0, Math.min(total, 45));
+    const excess = Math.max(0, enjoyed - safeTotal);
+    const allDaysCount = safeTotal + Math.min(excess, 20);
+
+    if (allDaysCount === 0) {
+      return <span style={{ color: useDark ? '#64748b' : '#94a3b8', fontSize: 'var(--font-size-subtext)' }}>-</span>;
+    }
+
+    const rows: React.ReactNode[] = [];
+    const boxSize = '13px';
+    const totalRows = Math.ceil(allDaysCount / 5);
+
+    for (let r = 0; r < totalRows; r++) {
+      const rowBoxes = [];
+      const startIndex = r * 5;
+      const endIndex = Math.min(startIndex + 5, allDaysCount);
+      const rowLength = endIndex - startIndex;
+
+      for (let col = 0; col < rowLength; col++) {
+        const dayIndex = startIndex + col;
+        const isExcess = dayIndex >= safeTotal;
+        const isFilled = isExcess ? false : dayIndex < enjoyed;
+
+        if (isExcess) {
+          rowBoxes.push(
+            <span
+              key={`day-${dayIndex}`}
+              style={{
+                width: boxSize,
+                height: boxSize,
+                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                border: '1.5px dashed #ef4444',
+                borderRadius: '2px',
+                display: 'inline-block',
+                boxShadow: '0 1px 3px rgba(239, 68, 68, 0.15)',
+                flexShrink: 0
+              }}
+              title={`Día ${dayIndex + 1} (Exceso sobre el cupo permitido)`}
+            />
+          );
+        } else {
+          rowBoxes.push(
+            <span
+              key={`day-${dayIndex}`}
+              style={{
+                width: boxSize,
+                height: boxSize,
+                backgroundColor: isFilled ? color : 'transparent',
+                border: isFilled 
+                  ? '1px solid rgba(0, 0, 0, 0.35)' 
+                  : (useDark ? '1px dashed #475569' : '1px solid #cbd5e1'),
+                borderRadius: '2px',
+                display: 'inline-block',
+                boxShadow: isFilled ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
+                flexShrink: 0
+              }}
+              title={isFilled ? `Día ${dayIndex + 1} disfrutado` : `Día ${dayIndex + 1} pendiente`}
+            />
+          );
+        }
+      }
+
+      rows.push(
+        <div 
+          key={`row-${r}`} 
+          className="is-flex is-align-items-center"
+          style={{ gap: '3px' }}
+        >
+          {rowBoxes}
+        </div>
       );
     }
 
     return (
-      <div className="is-flex is-flex-wrap-wrap is-align-items-center" style={{ gap: '2px', maxWidth: '280px' }}>
-        {boxes}
+      <div className="is-flex is-flex-direction-column is-align-items-flex-start" style={{ gap: '3px', width: 'fit-content' }}>
+        {rows}
         {excess > 0 && (
           <span 
-            className="tag is-danger is-light ml-1 py-0 px-2" 
-            style={{ fontSize: 'var(--font-size-badge)', height: '22px', fontWeight: 800, borderRadius: '4px' }}
+            className="tag is-danger is-light mt-1 py-0 px-2" 
+            style={{ fontSize: 'var(--font-size-badge)', height: '20px', fontWeight: 800, borderRadius: '4px' }}
             title={`Has superado en ${excess} días esta categoría`}
           >
             +{excess} exceso
@@ -228,9 +262,11 @@ export const BalancePanel: React.FC<BalancePanelProps> = ({
         >
           <thead>
             <tr style={{ backgroundColor: useDark ? '#1e293b' : '#f1f5f9' }}>
-              <th style={{ color: useDark ? '#cbd5e1' : '#334155', fontWeight: 800, fontSize: 'var(--font-size-header-table)' }}>Vacaciones</th>
+              <th style={{ color: useDark ? '#cbd5e1' : '#334155', fontWeight: 800, fontSize: 'var(--font-size-header-table)' }}>Tipo de día libre</th>
               <th className="has-text-centered" style={{ width: '64px', color: useDark ? '#cbd5e1' : '#334155', fontWeight: 800, fontSize: 'var(--font-size-header-table)' }}>Cant.</th>
-              <th className="has-text-centered" style={{ minWidth: '130px', color: useDark ? '#cbd5e1' : '#334155', fontWeight: 800, fontSize: 'var(--font-size-header-table)' }}>Progreso</th>
+              {!isExport && (
+                <th className="has-text-left" style={{ width: '96px', paddingLeft: '10px', color: useDark ? '#cbd5e1' : '#334155', fontWeight: 800, fontSize: 'var(--font-size-header-table)' }}>Progreso</th>
+              )}
               <th className="has-text-centered" style={{ width: '70px', color: useDark ? '#cbd5e1' : '#334155', fontWeight: 800, fontSize: 'var(--font-size-header-table)' }}>Disfrutadas</th>
               <th className="has-text-centered" style={{ width: '66px', color: useDark ? '#cbd5e1' : '#334155', fontWeight: 800, fontSize: 'var(--font-size-header-table)' }}>Quedan</th>
             </tr>
@@ -241,12 +277,13 @@ export const BalancePanel: React.FC<BalancePanelProps> = ({
               <td 
                 style={{ 
                   backgroundColor: useDark ? 'rgba(187, 247, 208, 0.15)' : '#dcfce7', 
-                  fontWeight: 600,
                   verticalAlign: 'middle',
                   padding: '6px 8px'
                 }}
               >
-                Independientes (rellena anuales)
+                <div style={{ fontWeight: 700, fontSize: 'var(--font-size-table-cell)', color: useDark ? '#f8fafc' : '#0f172a' }}>
+                  Vac. Independientes
+                </div>
               </td>
               <td className="has-text-centered p-1" style={{ verticalAlign: 'middle' }}>
                 {!isExport ? (
@@ -262,9 +299,11 @@ export const BalancePanel: React.FC<BalancePanelProps> = ({
                   <span style={{ fontWeight: 700, fontSize: 'var(--font-size-table-cell)' }}>{cantIndep}</span>
                 )}
               </td>
-              <td className="p-1" style={{ verticalAlign: 'middle' }}>
-                {renderBoxes(cantIndep, disfIndep, colorIndep)}
-              </td>
+              {!isExport && (
+                <td className="p-1" style={{ verticalAlign: 'middle', paddingLeft: '10px' }}>
+                  {renderBoxes(cantIndep, disfIndep, colorIndep)}
+                </td>
+              )}
               <td className="has-text-centered p-1" style={{ verticalAlign: 'middle' }}>
                 {!isExport ? (
                   <input 
@@ -288,7 +327,7 @@ export const BalancePanel: React.FC<BalancePanelProps> = ({
                   style={{ 
                     fontWeight: 800, 
                     fontSize: 'var(--font-size-kpi-medium)',
-                    color: quedanIndep < 0 ? '#ef4444' : (useDark ? '#f8fafc' : '#0f172a') 
+                    color: (cantIndep > 0 && quedanIndep < 0) ? '#ef4444' : (useDark ? '#f8fafc' : '#0f172a') 
                   }}
                 >
                   {quedanIndep}
@@ -301,12 +340,24 @@ export const BalancePanel: React.FC<BalancePanelProps> = ({
               <td 
                 style={{ 
                   backgroundColor: useDark ? 'rgba(254, 240, 138, 0.15)' : '#fef9c3', 
-                  fontWeight: 600,
                   verticalAlign: 'middle',
                   padding: '6px 8px'
                 }}
               >
-                Por periodo / anuales (5 mínimo)
+                <div style={{ fontWeight: 700, fontSize: 'var(--font-size-table-cell)', color: useDark ? '#f8fafc' : '#0f172a', lineHeight: 1.25 }}>
+                  Vac. por periodo / anuales
+                </div>
+                <div 
+                  style={{ 
+                    fontSize: 'var(--font-size-subtext)', 
+                    fontWeight: 500, 
+                    color: useDark ? '#94a3b8' : '#475569', 
+                    marginTop: '2px',
+                    lineHeight: 1.2
+                  }}
+                >
+                  (5 mínimo)
+                </div>
               </td>
               <td className="has-text-centered p-1" style={{ verticalAlign: 'middle' }}>
                 {!isExport ? (
@@ -322,9 +373,11 @@ export const BalancePanel: React.FC<BalancePanelProps> = ({
                   <span style={{ fontWeight: 700, fontSize: 'var(--font-size-table-cell)' }}>{cantPeriodo}</span>
                 )}
               </td>
-              <td className="p-1" style={{ verticalAlign: 'middle' }}>
-                {renderBoxes(cantPeriodo, disfPeriodo, colorPeriodo)}
-              </td>
+              {!isExport && (
+                <td className="p-1" style={{ verticalAlign: 'middle', paddingLeft: '10px' }}>
+                  {renderBoxes(cantPeriodo, disfPeriodo, colorPeriodo)}
+                </td>
+              )}
               <td className="has-text-centered p-1" style={{ verticalAlign: 'middle' }}>
                 {!isExport ? (
                   <input 
@@ -348,7 +401,7 @@ export const BalancePanel: React.FC<BalancePanelProps> = ({
                   style={{ 
                     fontWeight: 800, 
                     fontSize: 'var(--font-size-kpi-medium)',
-                    color: quedanPeriodo < 0 ? '#ef4444' : (useDark ? '#f8fafc' : '#0f172a') 
+                    color: (cantPeriodo > 0 && quedanPeriodo < 0) ? '#ef4444' : (useDark ? '#f8fafc' : '#0f172a') 
                   }}
                 >
                   {quedanPeriodo}
@@ -361,12 +414,24 @@ export const BalancePanel: React.FC<BalancePanelProps> = ({
               <td 
                 style={{ 
                   backgroundColor: useDark ? 'rgba(186, 230, 253, 0.15)' : '#e0f2fe', 
-                  fontWeight: 600,
                   verticalAlign: 'middle',
                   padding: '6px 8px'
                 }}
               >
-                Asuntos Particulares / Moscosos
+                <div style={{ fontWeight: 700, fontSize: 'var(--font-size-table-cell)', color: useDark ? '#f8fafc' : '#0f172a', lineHeight: 1.25 }}>
+                  Asuntos Particulares
+                </div>
+                <div 
+                  style={{ 
+                    fontSize: 'var(--font-size-subtext)', 
+                    fontWeight: 500, 
+                    color: useDark ? '#94a3b8' : '#475569', 
+                    marginTop: '2px',
+                    lineHeight: 1.2
+                  }}
+                >
+                  Moscosos
+                </div>
               </td>
               <td className="has-text-centered p-1" style={{ verticalAlign: 'middle' }}>
                 {!isExport ? (
@@ -382,9 +447,11 @@ export const BalancePanel: React.FC<BalancePanelProps> = ({
                   <span style={{ fontWeight: 700, fontSize: 'var(--font-size-table-cell)' }}>{cantAsuntos}</span>
                 )}
               </td>
-              <td className="p-1" style={{ verticalAlign: 'middle' }}>
-                {renderBoxes(cantAsuntos, disfAsuntos, colorAsuntos)}
-              </td>
+              {!isExport && (
+                <td className="p-1" style={{ verticalAlign: 'middle', paddingLeft: '10px' }}>
+                  {renderBoxes(cantAsuntos, disfAsuntos, colorAsuntos)}
+                </td>
+              )}
               <td className="has-text-centered p-1" style={{ verticalAlign: 'middle' }}>
                 {!isExport ? (
                   <input 
@@ -408,7 +475,7 @@ export const BalancePanel: React.FC<BalancePanelProps> = ({
                   style={{ 
                     fontWeight: 800, 
                     fontSize: 'var(--font-size-kpi-medium)',
-                    color: quedanAsuntos < 0 ? '#ef4444' : (useDark ? '#f8fafc' : '#0f172a') 
+                    color: (cantAsuntos > 0 && quedanAsuntos < 0) ? '#ef4444' : (useDark ? '#f8fafc' : '#0f172a') 
                   }}
                 >
                   {quedanAsuntos}
@@ -420,13 +487,18 @@ export const BalancePanel: React.FC<BalancePanelProps> = ({
             <tr style={{ backgroundColor: useDark ? '#1e293b' : '#f8fafc', fontWeight: 800 }}>
               <td style={{ verticalAlign: 'middle', padding: '6px 8px', fontSize: 'var(--font-size-label)' }}>Total</td>
               <td className="has-text-centered" style={{ verticalAlign: 'middle', fontSize: 'var(--font-size-header-section)' }}>{totalCant}</td>
-              <td className="p-1 has-text-centered" style={{ verticalAlign: 'middle' }}>
-                <span className="has-text-weight-bold font-monospace" style={{ fontSize: 'var(--font-size-header-table)', color: useDark ? '#94a3b8' : '#64748b' }}>
-                  {totalDisfrutadas} / {totalCant} ({totalCant > 0 ? Math.round((totalDisfrutadas / totalCant) * 100) : 0}%)
-                </span>
-              </td>
+              {!isExport && (
+                <td className="p-1 has-text-centered" style={{ verticalAlign: 'middle' }}>
+                  <span className="has-text-weight-bold font-monospace" style={{ fontSize: 'var(--font-size-header-table)', color: useDark ? '#94a3b8' : '#64748b' }}>
+                    {totalDisfrutadas} / {totalCant}
+                  </span>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: useDark ? '#94a3b8' : '#64748b' }}>
+                    ({totalCant > 0 ? Math.round((totalDisfrutadas / totalCant) * 100) : 0}%)
+                  </div>
+                </td>
+              )}
               <td className="has-text-centered" style={{ verticalAlign: 'middle', fontSize: 'var(--font-size-header-section)', color: useDark ? '#5eead4' : '#0f766e' }}>{totalDisfrutadas}</td>
-              <td className="has-text-centered" style={{ verticalAlign: 'middle', fontSize: 'var(--font-size-header-section)', color: totalQuedan < 0 ? '#ef4444' : (useDark ? '#f8fafc' : '#0f172a') }}>{totalQuedan}</td>
+              <td className="has-text-centered" style={{ verticalAlign: 'middle', fontSize: 'var(--font-size-header-section)', color: (totalCant > 0 && totalQuedan < 0) ? '#ef4444' : (useDark ? '#f8fafc' : '#0f172a') }}>{totalQuedan}</td>
             </tr>
           </tbody>
         </table>

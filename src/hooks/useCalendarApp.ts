@@ -66,6 +66,15 @@ export interface UseCalendarAppReturn {
   planningMode: PlanningMode;
   setPlanningMode: React.Dispatch<React.SetStateAction<PlanningMode>>;
   show4060: boolean;
+  setShow4060: (show: boolean) => void;
+
+  showExportModal: boolean;
+  setShowExportModal: React.Dispatch<React.SetStateAction<boolean>>;
+  exportIncludeBalance: boolean;
+  setExportIncludeBalance: React.Dispatch<React.SetStateAction<boolean>>;
+  exportInclude4060: boolean;
+  setExportInclude4060: React.Dispatch<React.SetStateAction<boolean>>;
+  handleConfirmExportPNG: () => void;
 
   table4060: Table4060Data;
   setTable4060: React.Dispatch<React.SetStateAction<Table4060Data>>;
@@ -217,19 +226,32 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
 
   const [presencialFirstMonday, setPresencialFirstMonday] = useState<boolean>(() => {
     try {
+      const match = document.cookie.match(/(?:^|; )vacationApp_presencialFirstMonday=([^;]*)/);
+      if (match) return JSON.parse(decodeURIComponent(match[1]));
       const saved = localStorage.getItem('vacationApp_presencialFirstMonday');
       if (saved !== null) return JSON.parse(saved);
     } catch (e) {}
-    return true;
+    return false;
   });
 
   const [fixedWeeklySelections, setFixedWeeklySelections] = useState<FixedWeeklySelections>(() => {
     try {
       const saved = localStorage.getItem('vacationApp_fixedWeeklySelections');
-      if (saved) return JSON.parse(saved);
+      if (saved !== null) return JSON.parse(saved);
     } catch (e) {}
     return {};
   });
+
+  // Persistir cambios
+  useEffect(() => { localStorage.setItem('vacationApp_coloredDays', JSON.stringify(coloredDays)); }, [coloredDays]);
+  useEffect(() => { localStorage.setItem('vacationApp_weeklySelections', JSON.stringify(weeklySelections)); }, [weeklySelections]);
+  useEffect(() => { localStorage.setItem('vacationApp_fixedWeeklySelections', JSON.stringify(fixedWeeklySelections)); }, [fixedWeeklySelections]);
+  useEffect(() => {
+    try {
+      localStorage.setItem('vacationApp_presencialFirstMonday', JSON.stringify(presencialFirstMonday));
+      document.cookie = `vacationApp_presencialFirstMonday=${encodeURIComponent(JSON.stringify(presencialFirstMonday))}; path=/; max-age=31536000; SameSite=Lax`;
+    } catch (e) {}
+  }, [presencialFirstMonday]);
 
   const [limits, setLimits] = useState<LimitsData>(() => {
     try {
@@ -257,17 +279,52 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
       const oldShow4060 = localStorage.getItem('vacationApp_show4060');
       if (oldShow4060 !== null && JSON.parse(oldShow4060) === true) return 'balance';
     } catch (e) {}
-    return 'libre';
+    return 'balance';
   });
 
-  const show4060 = planningMode === 'balance';
-
-  useEffect(() => { 
+  // Panel 40-60 (Funcionarios AEAT) desactivado por defecto
+  const [show4060, setShow4060] = useState<boolean>(() => {
     try {
-      localStorage.setItem('vacationApp_planningMode', planningMode); 
-      localStorage.setItem('vacationApp_show4060', JSON.stringify(planningMode === 'balance'));
+      const saved = localStorage.getItem('vacationApp_show4060');
+      if (saved !== null) return JSON.parse(saved);
     } catch (e) {}
-  }, [planningMode]);
+    return false;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('vacationApp_show4060', JSON.stringify(show4060));
+    } catch (e) {}
+  }, [show4060]);
+
+  // Estados para el mini-modal de exportación y opciones de captura
+  const [showExportModal, setShowExportModal] = useState<boolean>(false);
+  const [exportIncludeBalance, setExportIncludeBalance] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('vacationApp_exportIncludeBalance');
+      if (saved !== null) return JSON.parse(saved);
+    } catch (e) {}
+    return true;
+  });
+  const [exportInclude4060, setExportInclude4060] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('vacationApp_exportInclude4060');
+      if (saved !== null) return JSON.parse(saved);
+    } catch (e) {}
+    return true;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('vacationApp_exportIncludeBalance', JSON.stringify(exportIncludeBalance));
+    } catch (e) {}
+  }, [exportIncludeBalance]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('vacationApp_exportInclude4060', JSON.stringify(exportInclude4060));
+    } catch (e) {}
+  }, [exportInclude4060]);
 
   const [table4060, setTable4060] = useState<Table4060Data>(() => {
     try {
@@ -342,7 +399,8 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
             const owningKey = `${monDate.getFullYear()}-${monDate.getMonth()}`;
             isPres = Boolean(weeklySelections[owningKey]?.[dayIndex]);
           } else {
-            isPres = Boolean(fixedWeeklySelections[dayIndex]);
+            const currentMonthKey = `${y}-${m}`;
+            isPres = Boolean(weeklySelections[currentMonthKey]?.[dayIndex]);
           }
 
           if (isPres) presencial++;
@@ -352,7 +410,7 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
     });
 
     return { periodo, independientes, asuntos, presencial, tt };
-  }, [coloredDays, weeklySelections, fixedWeeklySelections, presencialFirstMonday]);
+  }, [coloredDays, weeklySelections, presencialFirstMonday]);
 
   const handlePrevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
@@ -389,36 +447,22 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
   };
 
   const handleHeaderDayClick = (year: number, month: number, dayIndex: number) => {
-    if (presencialFirstMonday) {
-      const monthKey = `${year}-${month}`;
-      setWeeklySelections(prev => {
-        const currentMonthSelections = prev[monthKey] || {};
-        const isCurrentlySelected = currentMonthSelections[dayIndex];
-        return {
-          ...prev,
-          [monthKey]: {
-            ...currentMonthSelections,
-            [dayIndex]: !isCurrentlySelected
-          }
-        };
-      });
-    } else {
-      setFixedWeeklySelections(prev => {
-        const isCurrentlySelected = prev[dayIndex];
-        return {
-          ...prev,
+    const monthKey = `${year}-${month}`;
+    setWeeklySelections(prev => {
+      const currentMonthSelections = prev[monthKey] || {};
+      const isCurrentlySelected = currentMonthSelections[dayIndex];
+      return {
+        ...prev,
+        [monthKey]: {
+          ...currentMonthSelections,
           [dayIndex]: !isCurrentlySelected
-        };
-      });
-    }
+        }
+      };
+    });
   };
 
   const handlePresencialFirstMondayToggle = (val: boolean) => {
     setPresencialFirstMonday(val);
-    if (!val && Object.keys(fixedWeeklySelections).length === 0) {
-      const current = weeklySelections[`${currentDate.getFullYear()}-${currentDate.getMonth()}`];
-      if (current) setFixedWeeklySelections(current);
-    }
   };
 
   const handleAddColor = (label: string, color: string) => {
@@ -489,7 +533,14 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
   };
 
   const handleExportPNG = () => {
-    exportToPNG(exportRef.current);
+    setShowExportModal(true);
+  };
+
+  const handleConfirmExportPNG = () => {
+    setShowExportModal(false);
+    setTimeout(() => {
+      exportToPNG(exportRef.current);
+    }, 100);
   };
 
   const handleExportData = () => {
@@ -584,7 +635,10 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
       }
       if (typeof d.presencialFirstMonday === 'boolean') {
         setPresencialFirstMonday(d.presencialFirstMonday);
-        try { localStorage.setItem('vacationApp_presencialFirstMonday', JSON.stringify(d.presencialFirstMonday)); } catch (e) {}
+        try {
+          localStorage.setItem('vacationApp_presencialFirstMonday', JSON.stringify(d.presencialFirstMonday));
+          document.cookie = `vacationApp_presencialFirstMonday=${encodeURIComponent(JSON.stringify(d.presencialFirstMonday))}; path=/; max-age=31536000; SameSite=Lax`;
+        } catch (e) {}
       }
       if (Array.isArray(d.legendColors) && d.legendColors.length > 0) {
         setLegendColors(d.legendColors);
@@ -602,16 +656,13 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
           document.cookie = `vacationApp_table4060=${encodeURIComponent(str)}; path=/; max-age=31536000; SameSite=Lax`;
         } catch (e) {}
       }
-      if (typeof d.showWeekends === 'boolean') {
-        setShowWeekends(d.showWeekends);
+      if (typeof d.show4060 === 'boolean') {
+        setShow4060(d.show4060);
+        try { localStorage.setItem('vacationApp_show4060', JSON.stringify(d.show4060)); } catch (e) {}
       }
       if (d.planningMode === 'libre' || d.planningMode === 'balance') {
         setPlanningMode(d.planningMode);
         try { localStorage.setItem('vacationApp_planningMode', d.planningMode); } catch (e) {}
-      } else if (typeof d.show4060 === 'boolean') {
-        const mode = d.show4060 ? 'balance' : 'libre';
-        setPlanningMode(mode);
-        try { localStorage.setItem('vacationApp_planningMode', mode); } catch (e) {}
       }
       if (d.viewMode === 'bimestral' || d.viewMode === 'anual') {
         setViewMode(d.viewMode);
@@ -719,6 +770,7 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
     planningMode,
     setPlanningMode,
     show4060,
+    setShow4060,
 
     table4060,
     setTable4060,
@@ -751,6 +803,13 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
     handleClearCalendar,
 
     handleExportPNG,
+    handleConfirmExportPNG,
+    showExportModal,
+    setShowExportModal,
+    exportIncludeBalance,
+    setExportIncludeBalance,
+    exportInclude4060,
+    setExportInclude4060,
     handleExportData,
     handleTriggerImport,
     handleFileChange,

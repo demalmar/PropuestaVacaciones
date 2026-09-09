@@ -222,58 +222,73 @@ export const ColorPalette: React.FC<ColorPaletteProps> = ({
               </div>
             );
           })}
-        </div>
 
-        {/* Añadir nuevo color */}
-        <div 
-          className="box p-2.5 mt-auto" 
-          style={{ 
-            border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
-            boxShadow: 'none', 
-            backgroundColor: isDarkMode ? '#141d2b' : '#f8fafc',
-            borderRadius: '10px'
-          }}
-        >
-          <label className="label is-uppercase mb-1.5" style={{ color: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 'var(--font-size-subtext)', fontWeight: 700, letterSpacing: '0.04em' }}>
-            Añadir nuevo color
-          </label>
-          <div className="field has-addons mb-0">
-            <div className="control">
-              <input 
-                type="color" 
-                value={newColorHex} 
-                onChange={(e) => setNewColorHex(e.target.value)} 
-                className="input is-small" 
-                style={{ width: '40px', height: '32px', padding: '2px', cursor: 'pointer', borderRadius: '6px 0 0 6px' }}
-                title="Seleccionar color" 
-              />
-            </div>
-            <div className="control is-expanded">
-              <input 
-                type="text" 
-                value={newLabel} 
-                onChange={(e) => setNewLabel(e.target.value)} 
-                placeholder="Nombre..." 
-                className="input is-small" 
-                style={{ height: '32px', borderRadius: 0, fontSize: 'var(--font-size-input)' }}
-                onKeyDown={(e) => e.key === 'Enter' && handleAdd()} 
-              />
-            </div>
-            <div className="control">
-              <button 
-                onClick={handleAdd} 
-                className="button is-small" 
-                style={{ 
-                  height: '32px', 
-                  background: 'linear-gradient(135deg, #0e7490, #0f766e)', 
-                  color: '#ffffff', 
-                  border: 'none', 
-                  borderRadius: '0 6px 6px 0'
-                }}
-                title="Añadir nuevo color"
-              >
-                <Plus size={15} />
-              </button>
+          {/* Añadir nuevo color - Integrado con el mismo ancho que el resto de etiquetas */}
+          <div 
+            className="box mt-1.5 mb-1" 
+            style={{ 
+              border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
+              boxShadow: 'none', 
+              backgroundColor: isDarkMode ? '#141d2b' : '#f8fafc',
+              borderRadius: '8px',
+              padding: '4px 6px',
+              minHeight: '36px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            <div className="field has-addons mb-0" style={{ width: '100%' }}>
+              <div className="control">
+                <input 
+                  type="color" 
+                  value={newColorHex} 
+                  onChange={(e) => setNewColorHex(e.target.value)} 
+                  className="input is-small" 
+                  style={{ 
+                    width: '32px', 
+                    height: '28px', 
+                    padding: '2px', 
+                    cursor: 'pointer', 
+                    borderRadius: '6px 0 0 6px',
+                    border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1',
+                    borderRight: 'none'
+                  }} 
+                  title="Seleccionar color" 
+                />
+              </div>
+              <div className="control is-expanded">
+                <input 
+                  type="text" 
+                  value={newLabel} 
+                  onChange={(e) => setNewLabel(e.target.value)} 
+                  placeholder="Añadir etiqueta..." 
+                  className="input is-small" 
+                  style={{ 
+                    height: '28px', 
+                    borderRadius: 0, 
+                    fontSize: 'var(--font-size-subtext)',
+                    borderColor: isDarkMode ? '#334155' : '#cbd5e1'
+                  }} 
+                  onKeyDown={(e) => e.key === 'Enter' && handleAdd()} 
+                />
+              </div>
+              <div className="control">
+                <button 
+                  onClick={handleAdd} 
+                  className="button is-small" 
+                  style={{ 
+                    height: '28px', 
+                    background: 'linear-gradient(135deg, #0e7490, #0f766e)', 
+                    color: '#ffffff', 
+                    border: 'none', 
+                    borderRadius: '0 6px 6px 0',
+                    padding: '0 10px'
+                  }}
+                  title="Añadir etiqueta"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
             </div>
           </div>
         </div>

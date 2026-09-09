@@ -94,10 +94,10 @@ export const DesktopView: React.FC<DesktopViewProps> = ({ app }) => {
       setViewMode={app.setViewMode}
       showWeekends={app.showWeekends}
       setShowWeekends={app.setShowWeekends}
+      show4060={app.show4060}
+      setShow4060={app.setShow4060}
       presencialFirstMonday={app.presencialFirstMonday}
       onPresencialFirstMondayToggle={app.handlePresencialFirstMondayToggle}
-      planningMode={app.planningMode}
-      setPlanningMode={app.setPlanningMode}
       onOpenHowItWorks={() => app.setShowHowItWorks(true)}
       onExportData={app.handleExportData}
       onTriggerImport={app.handleTriggerImport}
@@ -117,22 +117,22 @@ export const DesktopView: React.FC<DesktopViewProps> = ({ app }) => {
 
   // Renderiza los paneles de balance y proporción 40-60
   const renderBalancePanels = () => (
-    app.show4060 ? (
-      <BalancePanelsWrapper
-        table4060={app.table4060}
-        calendarStats={app.calendarStats}
-        legendColors={app.legendColors}
-        isDarkMode={app.isDarkMode}
-        onUpdateCant={app.handleUpdateCant}
-        onUpdatePastDisfrutadas={app.handleUpdatePastDisfrutadas}
-        onUpdatePastPresenc={app.handleUpdatePastPresenc}
-        onUpdatePastTT={app.handleUpdatePastTT}
-        onClearTable={app.handleClearTable4060}
-        showClearConfirm={app.showClearTableConfirm}
-        setShowClearConfirm={app.setShowClearTableConfirm}
-        onOpenHelpModal={() => app.setShowWhatIs4060Modal(true)}
-      />
-    ) : null
+    <BalancePanelsWrapper
+      includeBalance={true}
+      include4060={app.show4060}
+      table4060={app.table4060}
+      calendarStats={app.calendarStats}
+      legendColors={app.legendColors}
+      isDarkMode={app.isDarkMode}
+      onUpdateCant={app.handleUpdateCant}
+      onUpdatePastDisfrutadas={app.handleUpdatePastDisfrutadas}
+      onUpdatePastPresenc={app.handleUpdatePastPresenc}
+      onUpdatePastTT={app.handleUpdatePastTT}
+      onClearTable={app.handleClearTable4060}
+      showClearConfirm={app.showClearTableConfirm}
+      setShowClearConfirm={app.setShowClearTableConfirm}
+      onOpenHelpModal={() => app.setShowWhatIs4060Modal(true)}
+    />
   );
 
   return (
@@ -185,7 +185,7 @@ export const DesktopView: React.FC<DesktopViewProps> = ({ app }) => {
                 borderRadius: '14px', 
                 backgroundColor: app.isDarkMode ? '#182230' : '#f8fafc',
                 boxShadow: app.isDarkMode ? 'none' : '0 4px 24px -4px rgba(30, 41, 59, 0.06)',
-                marginBottom: app.show4060 ? '1.5rem' : '0'
+                marginBottom: '1.5rem'
               }}
             >
               {renderCalendarOnly()}
@@ -239,7 +239,7 @@ export const DesktopView: React.FC<DesktopViewProps> = ({ app }) => {
                     borderRadius: '14px', 
                     backgroundColor: app.isDarkMode ? '#182230' : '#f8fafc',
                     boxShadow: app.isDarkMode ? 'none' : '0 4px 24px -4px rgba(30, 41, 59, 0.06)',
-                    marginBottom: app.show4060 ? '1.5rem' : '0'
+                    marginBottom: '1.5rem'
                   }}
                 >
                   {renderCalendarOnly()}

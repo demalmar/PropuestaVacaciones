@@ -25,7 +25,9 @@ interface ExportCanvasProps {
   presencialFirstMonday: boolean;
   weeklySelections: WeeklySelections;
   fixedWeeklySelections: FixedWeeklySelections;
-  show4060: boolean;
+  show4060?: boolean;
+  exportIncludeBalance?: boolean;
+  exportInclude4060?: boolean;
   table4060: Table4060Data;
   calendarStats: CalendarStats;
 }
@@ -45,6 +47,8 @@ export const ExportCanvas: React.FC<ExportCanvasProps> = ({
   weeklySelections,
   fixedWeeklySelections,
   show4060,
+  exportIncludeBalance = true,
+  exportInclude4060 = true,
   table4060,
   calendarStats
 }) => {
@@ -65,16 +69,13 @@ export const ExportCanvas: React.FC<ExportCanvasProps> = ({
   });
 
   const usedLegends = legendColors.filter(color => usedColorIds.has(color.id));
-  const hasWeeklySelections = presencialFirstMonday
-    ? (viewMode === 'anual'
-        ? Array.from({ length: 12 }, (_, i) => `${currentYear}-${i}`).some(mKey => 
-            weeklySelections[mKey] && Object.values(weeklySelections[mKey]).some(isSelected => isSelected)
-          )
-        : [`${leftYear}-${leftMonth}`, `${rightYear}-${rightMonth}`].some(mKey => 
-            weeklySelections[mKey] && Object.values(weeklySelections[mKey]).some(isSelected => isSelected)
-          )
+  const hasWeeklySelections = viewMode === 'anual'
+    ? Array.from({ length: 12 }, (_, i) => `${currentYear}-${i}`).some(mKey => 
+        weeklySelections[mKey] && Object.values(weeklySelections[mKey]).some(isSelected => isSelected)
       )
-    : Object.values(fixedWeeklySelections).some(isSelected => isSelected);
+    : [`${leftYear}-${leftMonth}`, `${rightYear}-${rightMonth}`].some(mKey => 
+        weeklySelections[mKey] && Object.values(weeklySelections[mKey]).some(isSelected => isSelected)
+      );
 
   // Funciones dummy requeridas por la firma de BalancePanelsWrapper pero inactivas en export
   const noop = () => {};
@@ -224,10 +225,12 @@ export const ExportCanvas: React.FC<ExportCanvasProps> = ({
           )}
         </div>
 
-        {/* Si Balance / 40-60 está activo, lo incluimos en la exportación PNG */}
-        {show4060 && (
+        {/* Si Balance o 40-60 están activos para exportar, los incluimos en la exportación PNG */}
+        {(exportIncludeBalance || exportInclude4060) && (
           <div style={{ width: '100%' }}>
             <BalancePanelsWrapper
+              includeBalance={exportIncludeBalance}
+              include4060={exportInclude4060}
               table4060={table4060}
               calendarStats={calendarStats}
               legendColors={legendColors}

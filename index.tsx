@@ -48,6 +48,8 @@ const CalendarApp: React.FC = () => {
         weeklySelections={app.weeklySelections}
         fixedWeeklySelections={app.fixedWeeklySelections}
         show4060={app.show4060}
+        exportIncludeBalance={app.exportIncludeBalance}
+        exportInclude4060={app.exportInclude4060}
         table4060={app.table4060}
         calendarStats={app.calendarStats}
       />

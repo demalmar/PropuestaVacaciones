@@ -82,9 +82,7 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
 
   const monthKey = `${targetYear}-${targetMonth}`;
   const isHeaderDaySelected = (dayIdx: number) => {
-    return presencialFirstMonday 
-      ? Boolean(weeklySelections[monthKey]?.[dayIdx])
-      : Boolean(fixedWeeklySelections[dayIdx]);
+    return Boolean(weeklySelections[monthKey]?.[dayIdx]);
   };
 
   const [hoveredDayIndex, setHoveredDayIndex] = useState<number | null>(null);
@@ -193,7 +191,7 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
                 fontSize: isCompact ? 'var(--font-size-header-weekday-annual)' : 'var(--font-size-header-weekday-bimestral)',
                 fontWeight: 800
               }}
-              title={presencialFirstMonday ? `Seleccionar todos los ${day} de este mes (Presencial)` : `Seleccionar todos los ${day} del año (Presencial)`}
+              title={`Seleccionar todos los ${day} de este mes (Presencial)`}
             >
               {day}
             </div>
@@ -254,8 +252,8 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
           
           // --- LÓGICA DE SELECCIÓN POR COLUMNA (PRESENCIAL) ---
           const isColumnSelected = presencialFirstMonday
-            ? weeklySelections[dayData.owningMonthKey]?.[dayData.dayIndex]
-            : Boolean(fixedWeeklySelections[dayData.dayIndex]);
+            ? Boolean(weeklySelections[dayData.owningMonthKey]?.[dayData.dayIndex])
+            : Boolean(weeklySelections[monthKey]?.[dayData.dayIndex]);
 
           const isPreview = !isExport && hoveredDayIndex !== null && dayData.dayIndex === hoveredDayIndex;
 

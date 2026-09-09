@@ -5,6 +5,7 @@ import { AddColorModal } from './AddColorModal.tsx';
 import { HowItWorksModal } from './HowItWorksModal.tsx';
 import { WhatIs4060Modal } from './WhatIs4060Modal.tsx';
 import { ImportConfirmModal } from './ImportConfirmModal.tsx';
+import { ExportModal } from './ExportModal.tsx';
 import { UseCalendarAppReturn } from '../../hooks/useCalendarApp.ts';
 
 interface AppModalsProps {
@@ -23,10 +24,10 @@ export const AppModals: React.FC<AppModalsProps> = ({ app }) => {
         onOpenHowItWorks={() => app.setShowHowItWorks(true)}
         showWeekends={app.showWeekends}
         setShowWeekends={app.setShowWeekends}
+        show4060={app.show4060}
+        setShow4060={app.setShow4060}
         presencialFirstMonday={app.presencialFirstMonday}
         onPresencialFirstMondayToggle={app.handlePresencialFirstMondayToggle}
-        planningMode={app.planningMode}
-        setPlanningMode={app.setPlanningMode}
         onExportData={app.handleExportData}
         onTriggerImport={app.handleTriggerImport}
         onClearCalendar={() => {
@@ -74,6 +75,18 @@ export const AppModals: React.FC<AppModalsProps> = ({ app }) => {
         isOpen={app.showImportConfirm}
         onConfirm={app.handleConfirmImport}
         onCancel={app.handleCancelImport}
+        isDarkMode={app.isDarkMode}
+      />
+
+      {/* Mini-modal Guardar PNG */}
+      <ExportModal
+        isOpen={app.showExportModal}
+        onClose={() => app.setShowExportModal(false)}
+        onConfirm={app.handleConfirmExportPNG}
+        includeBalance={app.exportIncludeBalance}
+        setIncludeBalance={app.setExportIncludeBalance}
+        include4060={app.exportInclude4060}
+        setInclude4060={app.setExportInclude4060}
         isDarkMode={app.isDarkMode}
       />
     </>
