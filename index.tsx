@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus, Download, Trash2, Info, X, Moon, Sun, Menu } from 'lucide-react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { ChevronLeft, ChevronRight, Plus, Download, Trash2, Info, X, Moon, Sun, Menu, RefreshCw } from 'lucide-react';
 
 const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const DAYS_OF_WEEK = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -257,6 +257,145 @@ const CalendarApp = () => {
   useEffect(() => { localStorage.setItem('vacationApp_fixedWeeklySelections', JSON.stringify(fixedWeeklySelections)); }, [fixedWeeklySelections]);
   useEffect(() => { localStorage.setItem('vacationApp_presencialFirstMonday', JSON.stringify(presencialFirstMonday)); }, [presencialFirstMonday]);
   useEffect(() => { localStorage.setItem('vacationApp_limits', JSON.stringify(limits)); }, [limits]);
+
+  // Estado para el checkbox "Mostrar 40-60"
+  const [show4060, setShow4060] = useState(() => {
+    try {
+      const saved = localStorage.getItem('vacationApp_show4060');
+      if (saved !== null) return JSON.parse(saved);
+    } catch (e) {}
+    return false;
+  });
+
+  // Estado para la tabla de vacaciones y proporciones 40-60 (persistente en localStorage y cookies)
+  // Si no hay cookies ni datos almacenados, todos los inputs se inician estrictamente a 0
+  const [table4060, setTable4060] = useState(() => {
+    try {
+      let saved = localStorage.getItem('vacationApp_table4060');
+      if (!saved && typeof document !== 'undefined') {
+        const match = document.cookie.match(/(?:^|; )vacationApp_table4060=([^;]*)/);
+        if (match) saved = decodeURIComponent(match[1]);
+      }
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          cant: {
+            periodo: parsed.cant?.periodo ?? 0,
+            independientes: parsed.cant?.independientes ?? 0,
+            asuntos: parsed.cant?.asuntos ?? 0,
+          },
+          pastDisfrutadas: {
+            periodo: parsed.pastDisfrutadas?.periodo ?? 0,
+            independientes: parsed.pastDisfrutadas?.independientes ?? 0,
+            asuntos: parsed.pastDisfrutadas?.asuntos ?? 0,
+          },
+          pastPresenc: parsed.pastPresenc ?? 0,
+          pastTT: parsed.pastTT ?? 0
+        };
+      }
+    } catch (e) {}
+    return {
+      cant: { periodo: 0, independientes: 0, asuntos: 0 },
+      pastDisfrutadas: { periodo: 0, independientes: 0, asuntos: 0 },
+      pastPresenc: 0,
+      pastTT: 0
+    };
+  });
+
+  // Estado para confirmación de limpieza exclusiva de la tabla 40-60
+  const [showClearTableConfirm, setShowClearTableConfirm] = useState(false);
+
+  useEffect(() => { 
+    localStorage.setItem('vacationApp_show4060', JSON.stringify(show4060)); 
+  }, [show4060]);
+
+  useEffect(() => { 
+    try {
+      const str = JSON.stringify(table4060);
+      localStorage.setItem('vacationApp_table4060', str);
+      document.cookie = `vacationApp_table4060=${encodeURIComponent(str)}; path=/; max-age=31536000; SameSite=Lax`;
+    } catch (e) {}
+  }, [table4060]);
+
+  // Cálculo automático y reactivo de días marcados en el calendario por categoría y modalidad (Presencial / TT)
+  const calendarStats = useMemo(() => {
+    let periodo = 0;
+    let independientes = 0;
+    let asuntos = 0;
+    let presencial = 0;
+    let tt = 0;
+
+    Object.entries(coloredDays).forEach(([dateStr, colorId]) => {
+      if (!['1', '2', '3'].includes(colorId as string)) return;
+
+      if (colorId === '2') periodo++;
+      else if (colorId === '1') independientes++;
+      else if (colorId === '3') asuntos++;
+
+      // Los asuntos propios y otras etiquetas NO cuentan para la dinámica 40-60 (solo Vac. independientes y por periodo)
+      if (colorId !== '1' && colorId !== '2') return;
+
+      const parts = (dateStr as string).split('-');
+      if (parts.length === 3) {
+        const y = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1;
+        const d = parseInt(parts[2], 10);
+        const dateObj = new Date(y, m, d);
+        const dayIndex = dateObj.getDay() === 0 ? 6 : dateObj.getDay() - 1;
+
+        // Solo consideramos días de lunes a viernes (jornada laboral)
+        if (dayIndex < 5) {
+          let isPres = false;
+          if (presencialFirstMonday) {
+            const monDate = new Date(dateObj);
+            monDate.setDate(dateObj.getDate() - dayIndex);
+            const owningKey = `${monDate.getFullYear()}-${monDate.getMonth()}`;
+            isPres = Boolean(weeklySelections[owningKey]?.[dayIndex]);
+          } else {
+            isPres = Boolean(fixedWeeklySelections[dayIndex]);
+          }
+
+          if (isPres) presencial++;
+          else tt++;
+        }
+      }
+    });
+
+    return { periodo, independientes, asuntos, presencial, tt };
+  }, [coloredDays, weeklySelections, fixedWeeklySelections, presencialFirstMonday]);
+
+  // Actualizar Cant. de la tabla y sincronizar con los límites de la paleta
+  const handleUpdateCant = (key: 'periodo' | 'independientes' | 'asuntos', value: number) => {
+    const val = Math.max(0, value);
+    setTable4060(prev => ({
+      ...prev,
+      cant: { ...prev.cant, [key]: val }
+    }));
+    const tagId = key === 'periodo' ? '2' : key === 'independientes' ? '1' : '3';
+    setLimits(prev => ({
+      ...prev,
+      [tagId]: {
+        enabled: prev[tagId]?.enabled || false,
+        max: val
+      }
+    }));
+  };
+
+  // Botón "Limpiar todo": solo limpia la tabla 40-60 (no borra los días del calendario)
+  const handleClearTable4060 = () => {
+    setTable4060({
+      cant: { periodo: 0, independientes: 0, asuntos: 0 },
+      pastDisfrutadas: { periodo: 0, independientes: 0, asuntos: 0 },
+      pastPresenc: 0,
+      pastTT: 0
+    });
+    setLimits(prev => ({
+      ...prev,
+      '1': { ...prev['1'], max: 0 },
+      '2': { ...prev['2'], max: 0 },
+      '3': { ...prev['3'], max: 0 },
+    }));
+  };
   
   // Actualizar visibilidad de botones de scroll para las etiquetas en móvil
   useEffect(() => {
@@ -273,8 +412,16 @@ const CalendarApp = () => {
     setLimits(prev => ({ ...prev, [id]: { ...prev[id], enabled } }));
   };
 
-  const handleLimitChange = (id, max) => {
-    setLimits(prev => ({ ...prev, [id]: { ...prev[id], max } }));
+  const handleLimitChange = (id: string, max: number) => {
+    const val = Math.max(0, max);
+    setLimits(prev => ({ ...prev, [id]: { ...prev[id], max: val } }));
+    if (id === '2') {
+      setTable4060(prev => ({ ...prev, cant: { ...prev.cant, periodo: val } }));
+    } else if (id === '1') {
+      setTable4060(prev => ({ ...prev, cant: { ...prev.cant, independientes: val } }));
+    } else if (id === '3') {
+      setTable4060(prev => ({ ...prev, cant: { ...prev.cant, asuntos: val } }));
+    }
   };
 
   const [newLabel, setNewLabel] = useState('');
@@ -340,7 +487,12 @@ const CalendarApp = () => {
       // Comprobar límites si es un color configurable (Vac. independientes, Vac. por periodo, Asuntos Propios)
       if (['1', '2', '3'].includes(activeColorId) && limits[activeColorId]?.enabled) {
          const currentUsage = Object.values(prev).filter(id => id === activeColorId).length;
-         if (currentUsage >= limits[activeColorId].max) {
+         const past = activeColorId === '2' 
+           ? (table4060.pastDisfrutadas?.periodo || 0)
+           : activeColorId === '1' 
+           ? (table4060.pastDisfrutadas?.independientes || 0)
+           : (table4060.pastDisfrutadas?.asuntos || 0);
+         if ((currentUsage + past) >= limits[activeColorId].max) {
              return prev; // Límite alcanzado, no se añade el color
          }
       }
@@ -633,6 +785,586 @@ const CalendarApp = () => {
       )
     : Object.values(fixedWeeklySelections).some(isSelected => isSelected);
 
+  const renderPanel4060 = (isExport = false) => {
+    const cantPeriodo = table4060.cant?.periodo ?? 0;
+    const cantIndep = table4060.cant?.independientes ?? 0;
+    const cantAsuntos = table4060.cant?.asuntos ?? 0;
+    const totalCant = cantPeriodo + cantIndep + cantAsuntos;
+
+    // Disfrutadas calculadas en tiempo real: días previos no pintados + días marcados en el calendario
+    const pastPeriodo = table4060.pastDisfrutadas?.periodo || 0;
+    const pastIndep = table4060.pastDisfrutadas?.independientes || 0;
+    const pastAsuntos = table4060.pastDisfrutadas?.asuntos || 0;
+
+    const disfPeriodo = pastPeriodo + calendarStats.periodo;
+    const disfIndep = pastIndep + calendarStats.independientes;
+    const disfAsuntos = pastAsuntos + calendarStats.asuntos;
+    const totalDisfrutadas = disfPeriodo + disfIndep + disfAsuntos;
+
+    // Quedan = Cantidad - Disfrutadas (sin inputs, se calcula de forma dinámica)
+    const quedanPeriodo = cantPeriodo - disfPeriodo;
+    const quedanIndep = cantIndep - disfIndep;
+    const quedanAsuntos = cantAsuntos - disfAsuntos;
+    const totalQuedan = totalCant - totalDisfrutadas;
+
+    const colorPeriodo = legendColors.find(c => c.id === '2')?.color || '#fef08a';
+    const colorIndep = legendColors.find(c => c.id === '1')?.color || '#bbf7d0';
+    const colorAsuntos = legendColors.find(c => c.id === '3')?.color || '#bae6fd';
+
+    // El 100% de las vacaciones para la regla 40-60 es el total de días por periodo + individuales
+    const totalVacaciones4060 = cantPeriodo + cantIndep;
+    const targetPresencDays = Math.round(totalVacaciones4060 * 0.4);
+    const targetTTDays = totalVacaciones4060 - targetPresencDays;
+
+    // Presenc y TT se calculan a partir de los días previos configurados + los marcados dinámicamente en el calendario
+    // Solo computan Vac. días independientes y Vac. por periodo
+    const pastPresenc = table4060.pastPresenc || 0;
+    const pastTT = table4060.pastTT || 0;
+
+    const presencDays = pastPresenc + calendarStats.presencial;
+    const ttDays = pastTT + calendarStats.tt;
+
+    const presencTotalPct = totalVacaciones4060 > 0 ? ((presencDays / totalVacaciones4060) * 100).toFixed(2).replace('.', ',') : '0,00';
+    const ttTotalPct = totalVacaciones4060 > 0 ? ((ttDays / totalVacaciones4060) * 100).toFixed(2).replace('.', ',') : '0,00';
+
+    const totalModalityDays = presencDays + ttDays;
+    const presencOfEnjoyedPct = totalModalityDays > 0 ? Math.round((presencDays / totalModalityDays) * 100) : 0;
+    const ttOfEnjoyedPct = totalModalityDays > 0 ? (100 - presencOfEnjoyedPct) : 0;
+
+    const presencRemainingGoal = Math.max(0, targetPresencDays - presencDays);
+    const ttRemainingGoal = Math.max(0, targetTTDays - ttDays);
+
+    const useDark = isDarkMode && !isExport;
+
+    const renderBoxes = (total: number, enjoyed: number, color: string) => {
+      const boxes = [];
+      const safeTotal = Math.max(0, Math.min(total, 45));
+      for (let i = 0; i < safeTotal; i++) {
+        const isFilled = i < enjoyed;
+        boxes.push(
+          <span
+            key={i}
+            style={{
+              width: '13px',
+              height: '13px',
+              backgroundColor: isFilled ? color : 'transparent',
+              border: isFilled 
+                ? '1px solid rgba(0, 0, 0, 0.35)' 
+                : (useDark ? '1px dashed #475569' : '1px solid #cbd5e1'),
+              borderRadius: '2px',
+              display: 'inline-block',
+              boxShadow: isFilled ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
+              flexShrink: 0
+            }}
+            title={isFilled ? `Día ${i + 1} disfrutado` : `Día ${i + 1} pendiente`}
+          />
+        );
+      }
+      return (
+        <div className="is-flex is-flex-wrap-wrap is-align-items-center" style={{ gap: '2px', maxWidth: '280px' }}>
+          {boxes}
+        </div>
+      );
+    };
+
+    return (
+      <div 
+        className="box mt-4 p-4"
+        style={{
+          border: useDark ? '1.5px solid #334155' : '1.5px solid #cbd5e1',
+          borderRadius: '14px',
+          backgroundColor: useDark ? '#17202e' : '#ffffff',
+          boxShadow: useDark ? 'none' : '0 4px 20px -2px rgba(15, 118, 110, 0.08)',
+          width: '100%'
+        }}
+      >
+        {/* Cabecera del Panel 40-60 */}
+        <div className="is-flex is-align-items-center is-justify-content-space-between mb-3 pb-2" style={{ borderBottom: useDark ? '1px solid #334155' : '1px solid #e2e8f0' }}>
+          <div className="is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
+            <span style={{ fontSize: '18px' }}>⚖️</span>
+            <h3 className="title is-6 mb-0" style={{ color: useDark ? '#f8fafc' : '#0f172a', fontWeight: 800 }}>
+              Balance de Vacaciones y Proporción 40-60
+            </h3>
+          </div>
+          {!isExport && (
+            <div className="is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
+              {showClearTableConfirm ? (
+                <div className="is-flex is-align-items-center" style={{ gap: '0.35rem' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: useDark ? '#fca5a5' : '#dc2626' }}>
+                    ¿Limpiar tabla?
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleClearTable4060();
+                      setShowClearTableConfirm(false);
+                    }}
+                    className="button is-small is-danger py-0 px-2"
+                    style={{ height: '24px', fontSize: '11px', borderRadius: '6px', fontWeight: 700 }}
+                  >
+                    Sí
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowClearTableConfirm(false)}
+                    className="button is-small is-light py-0 px-2"
+                    style={{ height: '24px', fontSize: '11px', borderRadius: '6px' }}
+                  >
+                    No
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowClearTableConfirm(true)}
+                  className="button is-small is-light"
+                  style={{
+                    borderRadius: '8px',
+                    gap: '0.35rem',
+                    fontWeight: 600,
+                    fontSize: '11px',
+                    color: useDark ? '#fca5a5' : '#e11d48',
+                    border: useDark ? '1px solid #475569' : '1px solid #cbd5e1'
+                  }}
+                  title="Pone a 0 las cantidades y días disfrutados de esta tabla (no borra los días del calendario)"
+                >
+                  <Trash2 size={12} />
+                  <span>Limpiar todo</span>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Columnas: Tabla de Vacaciones a la izquierda | Tabla de Proporciones a la derecha */}
+        <div className="columns is-variable is-3">
+          
+          {/* TABLA 1: DESGLOSE DE VACACIONES */}
+          <div className="column is-7-desktop is-12-tablet">
+            <div style={{ overflowX: 'auto' }}>
+              <table 
+                className="table is-bordered is-fullwidth is-narrow mb-0" 
+                style={{ 
+                  backgroundColor: 'transparent',
+                  color: useDark ? '#e2e8f0' : '#1e293b',
+                  fontSize: '12px'
+                }}
+              >
+                <thead>
+                  <tr style={{ backgroundColor: useDark ? '#1e293b' : '#f1f5f9' }}>
+                    <th style={{ color: useDark ? '#cbd5e1' : '#334155', fontWeight: 700 }}>Vacaciones</th>
+                    <th className="has-text-centered" style={{ width: '60px', color: useDark ? '#cbd5e1' : '#334155', fontWeight: 700 }}>Cant.</th>
+                    <th className="has-text-centered" style={{ minWidth: '130px', color: useDark ? '#cbd5e1' : '#334155', fontWeight: 700 }}>Progreso</th>
+                    <th className="has-text-centered" style={{ width: '64px', color: useDark ? '#cbd5e1' : '#334155', fontWeight: 700 }}>Disfrutadas</th>
+                    <th className="has-text-centered" style={{ width: '64px', color: useDark ? '#cbd5e1' : '#334155', fontWeight: 700 }}>Quedan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Fila 1: Por periodo / anuales */}
+                  <tr>
+                    <td 
+                      style={{ 
+                        backgroundColor: useDark ? 'rgba(254, 240, 138, 0.15)' : '#fef9c3', 
+                        fontWeight: 600,
+                        verticalAlign: 'middle'
+                      }}
+                    >
+                      Por periodo / anuales (5 mínimo)
+                    </td>
+                    <td className="has-text-centered p-1" style={{ verticalAlign: 'middle' }}>
+                      {!isExport ? (
+                        <input 
+                          type="number" 
+                          min="0"
+                          value={cantPeriodo} 
+                          onChange={(e) => handleUpdateCant('periodo', parseInt(e.target.value) || 0)}
+                          className="input is-small has-text-centered has-text-weight-bold" 
+                          style={{ width: '50px', height: '26px', padding: '2px', borderRadius: '4px' }}
+                        />
+                      ) : (
+                        <span style={{ fontWeight: 700 }}>{cantPeriodo}</span>
+                      )}
+                    </td>
+                    <td className="p-1" style={{ verticalAlign: 'middle' }}>
+                      {renderBoxes(cantPeriodo, disfPeriodo, colorPeriodo)}
+                    </td>
+                    <td className="has-text-centered p-1" style={{ verticalAlign: 'middle' }}>
+                      {!isExport ? (
+                        <input 
+                          type="number" 
+                          min="0"
+                          value={disfPeriodo} 
+                          onChange={(e) => {
+                            const val = Math.max(0, parseInt(e.target.value) || 0);
+                            const newPast = Math.max(0, val - calendarStats.periodo);
+                            setTable4060(prev => ({
+                              ...prev,
+                              pastDisfrutadas: { ...prev.pastDisfrutadas, periodo: newPast }
+                            }));
+                          }}
+                          className="input is-small has-text-centered has-text-weight-bold" 
+                          style={{ width: '50px', height: '26px', padding: '2px', borderRadius: '4px' }}
+                          title="Días disfrutados (sumando los del calendario y previos no marcados)"
+                        />
+                      ) : (
+                        <span style={{ fontWeight: 700, color: '#0f766e' }}>{disfPeriodo}</span>
+                      )}
+                    </td>
+                    <td className="has-text-centered p-1" style={{ verticalAlign: 'middle' }}>
+                      <span 
+                        style={{ 
+                          fontWeight: 800, 
+                          fontSize: '13px',
+                          color: quedanPeriodo < 0 ? '#ef4444' : (useDark ? '#f8fafc' : '#0f172a') 
+                        }}
+                      >
+                        {quedanPeriodo}
+                      </span>
+                    </td>
+                  </tr>
+
+                  {/* Fila 2: Independientes */}
+                  <tr>
+                    <td 
+                      style={{ 
+                        backgroundColor: useDark ? 'rgba(187, 247, 208, 0.15)' : '#dcfce7', 
+                        fontWeight: 600,
+                        verticalAlign: 'middle'
+                      }}
+                    >
+                      Independientes (rellena anuales)
+                    </td>
+                    <td className="has-text-centered p-1" style={{ verticalAlign: 'middle' }}>
+                      {!isExport ? (
+                        <input 
+                          type="number" 
+                          min="0"
+                          value={cantIndep} 
+                          onChange={(e) => handleUpdateCant('independientes', parseInt(e.target.value) || 0)}
+                          className="input is-small has-text-centered has-text-weight-bold" 
+                          style={{ width: '50px', height: '26px', padding: '2px', borderRadius: '4px' }}
+                        />
+                      ) : (
+                        <span style={{ fontWeight: 700 }}>{cantIndep}</span>
+                      )}
+                    </td>
+                    <td className="p-1" style={{ verticalAlign: 'middle' }}>
+                      {renderBoxes(cantIndep, disfIndep, colorIndep)}
+                    </td>
+                    <td className="has-text-centered p-1" style={{ verticalAlign: 'middle' }}>
+                      {!isExport ? (
+                        <input 
+                          type="number" 
+                          min="0"
+                          value={disfIndep} 
+                          onChange={(e) => {
+                            const val = Math.max(0, parseInt(e.target.value) || 0);
+                            const newPast = Math.max(0, val - calendarStats.independientes);
+                            setTable4060(prev => ({
+                              ...prev,
+                              pastDisfrutadas: { ...prev.pastDisfrutadas, independientes: newPast }
+                            }));
+                          }}
+                          className="input is-small has-text-centered has-text-weight-bold" 
+                          style={{ width: '50px', height: '26px', padding: '2px', borderRadius: '4px' }}
+                          title="Días disfrutados (sumando los del calendario y previos no marcados)"
+                        />
+                      ) : (
+                        <span style={{ fontWeight: 700, color: '#0f766e' }}>{disfIndep}</span>
+                      )}
+                    </td>
+                    <td className="has-text-centered p-1" style={{ verticalAlign: 'middle' }}>
+                      <span 
+                        style={{ 
+                          fontWeight: 800, 
+                          fontSize: '13px',
+                          color: quedanIndep < 0 ? '#ef4444' : (useDark ? '#f8fafc' : '#0f172a') 
+                        }}
+                      >
+                        {quedanIndep}
+                      </span>
+                    </td>
+                  </tr>
+
+                  {/* Fila 3: Asuntos Particulares / Moscosos */}
+                  <tr>
+                    <td 
+                      style={{ 
+                        backgroundColor: useDark ? 'rgba(186, 230, 253, 0.15)' : '#e0f2fe', 
+                        fontWeight: 600,
+                        verticalAlign: 'middle'
+                      }}
+                    >
+                      Asuntos Particulares / Moscosos
+                    </td>
+                    <td className="has-text-centered p-1" style={{ verticalAlign: 'middle' }}>
+                      {!isExport ? (
+                        <input 
+                          type="number" 
+                          min="0"
+                          value={cantAsuntos} 
+                          onChange={(e) => handleUpdateCant('asuntos', parseInt(e.target.value) || 0)}
+                          className="input is-small has-text-centered has-text-weight-bold" 
+                          style={{ width: '50px', height: '26px', padding: '2px', borderRadius: '4px' }}
+                        />
+                      ) : (
+                        <span style={{ fontWeight: 700 }}>{cantAsuntos}</span>
+                      )}
+                    </td>
+                    <td className="p-1" style={{ verticalAlign: 'middle' }}>
+                      {renderBoxes(cantAsuntos, disfAsuntos, colorAsuntos)}
+                    </td>
+                    <td className="has-text-centered p-1" style={{ verticalAlign: 'middle' }}>
+                      {!isExport ? (
+                        <input 
+                          type="number" 
+                          min="0"
+                          value={disfAsuntos} 
+                          onChange={(e) => {
+                            const val = Math.max(0, parseInt(e.target.value) || 0);
+                            const newPast = Math.max(0, val - calendarStats.asuntos);
+                            setTable4060(prev => ({
+                              ...prev,
+                              pastDisfrutadas: { ...prev.pastDisfrutadas, asuntos: newPast }
+                            }));
+                          }}
+                          className="input is-small has-text-centered has-text-weight-bold" 
+                          style={{ width: '50px', height: '26px', padding: '2px', borderRadius: '4px' }}
+                          title="Días disfrutados (sumando los del calendario y previos no marcados)"
+                        />
+                      ) : (
+                        <span style={{ fontWeight: 700, color: '#0f766e' }}>{disfAsuntos}</span>
+                      )}
+                    </td>
+                    <td className="has-text-centered p-1" style={{ verticalAlign: 'middle' }}>
+                      <span 
+                        style={{ 
+                          fontWeight: 800, 
+                          fontSize: '13px',
+                          color: quedanAsuntos < 0 ? '#ef4444' : (useDark ? '#f8fafc' : '#0f172a') 
+                        }}
+                      >
+                        {quedanAsuntos}
+                      </span>
+                    </td>
+                  </tr>
+
+                  {/* Fila Total */}
+                  <tr style={{ backgroundColor: useDark ? '#1e293b' : '#f8fafc', fontWeight: 800 }}>
+                    <td style={{ verticalAlign: 'middle' }}>Total</td>
+                    <td className="has-text-centered" style={{ verticalAlign: 'middle', fontSize: '13px' }}>{totalCant}</td>
+                    <td className="p-1" style={{ verticalAlign: 'middle' }}>
+                      <span className="is-size-7 has-text-grey font-monospace">
+                        {totalDisfrutadas} / {totalCant} ({totalCant > 0 ? Math.round((totalDisfrutadas / totalCant) * 100) : 0}%)
+                      </span>
+                    </td>
+                    <td className="has-text-centered" style={{ verticalAlign: 'middle', fontSize: '13px', color: useDark ? '#5eead4' : '#0f766e' }}>{totalDisfrutadas}</td>
+                    <td className="has-text-centered" style={{ verticalAlign: 'middle', fontSize: '13px', color: totalQuedan < 0 ? '#ef4444' : (useDark ? '#f8fafc' : '#0f172a') }}>{totalQuedan}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* TABLA 2: PROPORCIONES PRESENCIAL vs TT */}
+          <div className="column is-5-desktop is-12-tablet">
+            <div 
+              className="p-3" 
+              style={{ 
+                backgroundColor: useDark ? '#1e293b' : '#f8fafc',
+                borderRadius: '12px',
+                border: useDark ? '1px solid #334155' : '1px solid #e2e8f0',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between'
+              }}
+            >
+              <div>
+                {/* Tabla idéntica a la imagen de referencia */}
+                <table 
+                  className="table is-bordered is-fullwidth is-narrow mb-2 has-text-centered" 
+                  style={{ 
+                    backgroundColor: 'transparent',
+                    color: useDark ? '#e2e8f0' : '#1e293b',
+                    fontSize: '12px'
+                  }}
+                >
+                  <thead>
+                    <tr style={{ backgroundColor: useDark ? '#141d2b' : '#f1f5f9' }}>
+                      <th className="has-text-centered" style={{ width: '50%', color: useDark ? '#93c5fd' : '#1e40af', fontWeight: 800, fontSize: '13px' }}>
+                        🏢 Presenc.
+                      </th>
+                      <th className="has-text-centered" style={{ width: '50%', color: useDark ? '#5eead4' : '#0f766e', fontWeight: 800, fontSize: '13px' }}>
+                        💻 TT
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Fila Días Previos (Introducidos manualmente por el usuario para partir de ellos) */}
+                    <tr style={{ backgroundColor: useDark ? 'rgba(255, 255, 255, 0.03)' : '#ffffff' }}>
+                      <td style={{ verticalAlign: 'middle', padding: '5px 8px' }}>
+                        <div className="is-flex is-align-items-center is-justify-content-center" style={{ gap: '0.4rem' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 600, color: useDark ? '#94a3b8' : '#64748b' }}>
+                            Previos:
+                          </span>
+                          {!isExport ? (
+                            <input 
+                              type="number" 
+                              min="0"
+                              value={table4060.pastPresenc || 0}
+                              onChange={(e) => {
+                                const val = Math.max(0, parseInt(e.target.value) || 0);
+                                setTable4060(prev => ({ ...prev, pastPresenc: val }));
+                              }}
+                              className="input is-small has-text-centered has-text-weight-bold" 
+                              style={{ width: '48px', height: '24px', padding: '2px', borderRadius: '4px' }}
+                              title="Días presenciales disfrutados previamente fuera de este calendario"
+                            />
+                          ) : (
+                            <span style={{ fontWeight: 700, fontSize: '11px' }}>{table4060.pastPresenc || 0}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td style={{ verticalAlign: 'middle', padding: '5px 8px' }}>
+                        <div className="is-flex is-align-items-center is-justify-content-center" style={{ gap: '0.4rem' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 600, color: useDark ? '#94a3b8' : '#64748b' }}>
+                            Previos:
+                          </span>
+                          {!isExport ? (
+                            <input 
+                              type="number" 
+                              min="0"
+                              value={table4060.pastTT || 0}
+                              onChange={(e) => {
+                                const val = Math.max(0, parseInt(e.target.value) || 0);
+                                setTable4060(prev => ({ ...prev, pastTT: val }));
+                              }}
+                              className="input is-small has-text-centered has-text-weight-bold" 
+                              style={{ width: '48px', height: '24px', padding: '2px', borderRadius: '4px' }}
+                              title="Días en teletrabajo disfrutados previamente fuera de este calendario"
+                            />
+                          ) : (
+                            <span style={{ fontWeight: 700, fontSize: '11px' }}>{table4060.pastTT || 0}</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+
+                    {/* Fila Total Días (Previos + Calendario) */}
+                    <tr>
+                      <td style={{ verticalAlign: 'middle', padding: '6px 8px', backgroundColor: useDark ? 'rgba(59, 130, 246, 0.12)' : '#eff6ff' }}>
+                        <span style={{ fontSize: '1.45rem', fontWeight: 900, color: useDark ? '#60a5fa' : '#2563eb' }}>
+                          {presencDays}
+                        </span>
+                        <div style={{ fontSize: '10px', color: useDark ? '#93c5fd' : '#2563eb', marginTop: '-2px' }}>
+                          ({table4060.pastPresenc || 0} prev. + {calendarStats.presencial} cal.)
+                        </div>
+                      </td>
+                      <td style={{ verticalAlign: 'middle', padding: '6px 8px', backgroundColor: useDark ? 'rgba(15, 118, 110, 0.12)' : '#f0fdfa' }}>
+                        <span style={{ fontSize: '1.45rem', fontWeight: 900, color: useDark ? '#2dd4bf' : '#0f766e' }}>
+                          {ttDays}
+                        </span>
+                        <div style={{ fontSize: '10px', color: useDark ? '#5eead4' : '#0f766e', marginTop: '-2px' }}>
+                          ({table4060.pastTT || 0} prev. + {calendarStats.tt} cal.)
+                        </div>
+                      </td>
+                    </tr>
+                    <tr style={{ backgroundColor: useDark ? '#141d2b' : '#f8fafc' }}>
+                      <td colSpan={2} style={{ fontWeight: 800, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em', color: useDark ? '#94a3b8' : '#475569', padding: '4px' }}>
+                        Proporciones
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={{ verticalAlign: 'middle', padding: '8px 6px', backgroundColor: useDark ? 'rgba(59, 130, 246, 0.07)' : '#f8faff' }}>
+                        <div style={{ fontSize: '1.15rem', fontWeight: 900, color: useDark ? '#60a5fa' : '#2563eb', lineHeight: 1.15 }}>
+                          {presencTotalPct}%
+                        </div>
+                        <div style={{ fontSize: '11px', fontWeight: 600, color: useDark ? '#94a3b8' : '#64748b', marginTop: '2px' }}>
+                          (Meta: 40%)
+                        </div>
+                      </td>
+                      <td style={{ verticalAlign: 'middle', padding: '8px 6px', backgroundColor: useDark ? 'rgba(15, 118, 110, 0.07)' : '#f9fefe' }}>
+                        <div style={{ fontSize: '1.15rem', fontWeight: 900, color: useDark ? '#2dd4bf' : '#0f766e', lineHeight: 1.15 }}>
+                          {ttTotalPct}%
+                        </div>
+                        <div style={{ fontSize: '11px', fontWeight: 600, color: useDark ? '#94a3b8' : '#64748b', marginTop: '2px' }}>
+                          (Meta: 60%)
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {/* Barra comparativa de distribución de lo disfrutado */}
+                <div className="mt-2 mb-2">
+                  <div className="is-flex is-justify-content-space-between mb-1" style={{ fontSize: '10.5px' }}>
+                    <span style={{ color: useDark ? '#93c5fd' : '#2563eb', fontWeight: 600 }}>
+                      Presencial: {presencOfEnjoyedPct}%
+                    </span>
+                    <span style={{ color: useDark ? '#94a3b8' : '#64748b' }}>
+                      Meta: 40% / 60%
+                    </span>
+                    <span style={{ color: useDark ? '#5eead4' : '#0f766e', fontWeight: 600 }}>
+                      TT: {ttOfEnjoyedPct}%
+                    </span>
+                  </div>
+                  <div 
+                    style={{ 
+                      width: '100%', 
+                      height: '8px', 
+                      backgroundColor: useDark ? '#334155' : '#e2e8f0', 
+                      borderRadius: '9999px', 
+                      overflow: 'hidden',
+                      display: 'flex'
+                    }}
+                  >
+                    <div 
+                      style={{ 
+                        width: `${presencOfEnjoyedPct}%`, 
+                        backgroundColor: '#3b82f6', 
+                        transition: 'width 0.2s ease' 
+                      }} 
+                    />
+                    <div 
+                      style={{ 
+                        width: `${ttOfEnjoyedPct}%`, 
+                        backgroundColor: '#0d9488', 
+                        transition: 'width 0.2s ease' 
+                      }} 
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Sugerencia para cumplir la regla */}
+              <div 
+                className="p-2 mt-2"
+                style={{
+                  backgroundColor: useDark ? '#141d2b' : '#ffffff',
+                  borderRadius: '6px',
+                  fontSize: '11px',
+                  border: useDark ? '1px solid #334155' : '1px solid #cbd5e1',
+                  color: useDark ? '#cbd5e1' : '#475569'
+                }}
+              >
+                {totalModalityDays === 0 ? (
+                  <span>Marca días de vacaciones en el calendario para calcular el cumplimiento 40/60.</span>
+                ) : (
+                  <span>
+                    Para alcanzar la meta 40/60 restan <strong>{presencRemainingGoal}</strong> días presenciales y <strong>{ttRemainingGoal}</strong> días en teletrabajo.
+                  </span>
+                )}
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
+  };
+
   return (
     <section className="section px-4" style={{ minHeight: '100vh', paddingTop: '2.25rem', paddingBottom: '3rem', backgroundColor: isDarkMode ? '#0b0f17' : '#f8fafc', transition: 'background-color 0.25s ease' }}>
       
@@ -766,7 +1498,17 @@ const CalendarApp = () => {
                     const isCustom = !['1', '2', '3', '4'].includes(item.id);
                     const limitConfig = limits[item.id];
                     const usage = Object.values(coloredDays).filter(id => id === item.id).length;
-                    const remaining = (limitConfig?.max || 0) - usage;
+                    let remaining = (limitConfig?.max || 0) - usage;
+                    if (item.id === '2') {
+                      const totalDisf = (table4060.pastDisfrutadas?.periodo || 0) + calendarStats.periodo;
+                      remaining = (table4060.cant?.periodo ?? limitConfig?.max ?? 0) - totalDisf;
+                    } else if (item.id === '1') {
+                      const totalDisf = (table4060.pastDisfrutadas?.independientes || 0) + calendarStats.independientes;
+                      remaining = (table4060.cant?.independientes ?? limitConfig?.max ?? 0) - totalDisf;
+                    } else if (item.id === '3') {
+                      const totalDisf = (table4060.pastDisfrutadas?.asuntos || 0) + calendarStats.asuntos;
+                      remaining = (table4060.cant?.asuntos ?? limitConfig?.max ?? 0) - totalDisf;
+                    }
 
                     const isActive = activeColorId === item.id;
                     const itemBorder = isActive 
@@ -1099,6 +1841,27 @@ const CalendarApp = () => {
                         <span className="is-size-7 has-text-weight-bold" style={{ color: isDarkMode ? '#e2e8f0' : '#334155', lineHeight: 1.35 }}>Presencial cambia primer lunes</span>
                       </label>
 
+                      {/* 4. Mostrar 40-60 */}
+                      <label 
+                        className="checkbox box p-3 is-flex is-align-items-center mb-0" 
+                        style={{ 
+                          gap: '0.5rem', 
+                          border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
+                          backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', 
+                          boxShadow: 'none',
+                          borderRadius: '10px',
+                          cursor: 'pointer'
+                        }}
+                        title="Muestra el balance de vacaciones y el control de proporción 40% presencial y 60% teletrabajo"
+                      >
+                        <input 
+                          type="checkbox" 
+                          checked={show4060} 
+                          onChange={(e) => setShow4060(e.target.checked)} 
+                        />
+                        <span className="is-size-7 has-text-weight-bold" style={{ color: isDarkMode ? '#e2e8f0' : '#334155' }}>Mostrar 40-60</span>
+                      </label>
+
                       {/* 4. Limpiar calendario */}
                       <div>
                         {showClearConfirm ? (
@@ -1175,6 +1938,9 @@ const CalendarApp = () => {
                 </div>
 
               </div>
+
+              {/* Panel de Proporción 40-60 en Escritorio */}
+              {show4060 && renderPanel4060()}
 
             </div>
 
@@ -1602,6 +2368,13 @@ const CalendarApp = () => {
             {renderMonth(rightYear, rightMonth)}
           </div>
 
+          {/* 6. Panel de Proporción 40-60 en Móvil */}
+          {show4060 && (
+            <div style={{ width: '100%' }}>
+              {renderPanel4060()}
+            </div>
+          )}
+
         </div>
 
       </div>
@@ -1774,6 +2547,29 @@ const CalendarApp = () => {
                     Alternar semanas presenciales por mes
                   </span>
                 </div>
+              </label>
+
+              {/* Mostrar 40-60 */}
+              <label 
+                className="checkbox box p-3 is-flex is-align-items-center mb-0" 
+                style={{ 
+                  gap: '0.65rem', 
+                  border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', 
+                  backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', 
+                  boxShadow: 'none',
+                  borderRadius: '10px',
+                  cursor: 'pointer'
+                }}
+              >
+                <input 
+                  type="checkbox" 
+                  checked={show4060} 
+                  onChange={(e) => setShow4060(e.target.checked)} 
+                  style={{ width: '18px', height: '18px' }}
+                />
+                <span className="is-size-7 has-text-weight-bold" style={{ color: isDarkMode ? '#e2e8f0' : '#334155' }}>
+                  Mostrar 40-60
+                </span>
               </label>
 
               <hr style={{ margin: '0.5rem 0', backgroundColor: isDarkMode ? '#334155' : '#e2e8f0' }} />
@@ -2020,9 +2816,29 @@ const CalendarApp = () => {
                             </button>
                           </div>
                         </div>
-                        <p className="is-size-7 mt-2 mb-0" style={{ color: isDarkMode ? '#94a3b8' : '#64748b' }}>
-                          Marcados: <strong>{Object.values(coloredDays).filter(id => id === colorSettingsItem.id).length}</strong> de <strong>{limits[colorSettingsItem.id]?.max || 0}</strong> días.
-                        </p>
+                        {(() => {
+                          const id = colorSettingsItem.id;
+                          const currentMarked = Object.values(coloredDays).filter(cId => cId === id).length;
+                          let rem = (limits[id]?.max || 0) - currentMarked;
+                          if (id === '2') {
+                            const tot = (table4060.pastDisfrutadas?.periodo || 0) + calendarStats.periodo;
+                            rem = (table4060.cant?.periodo ?? limits[id]?.max ?? 0) - tot;
+                          } else if (id === '1') {
+                            const tot = (table4060.pastDisfrutadas?.independientes || 0) + calendarStats.independientes;
+                            rem = (table4060.cant?.independientes ?? limits[id]?.max ?? 0) - tot;
+                          } else if (id === '3') {
+                            const tot = (table4060.pastDisfrutadas?.asuntos || 0) + calendarStats.asuntos;
+                            rem = (table4060.cant?.asuntos ?? limits[id]?.max ?? 0) - tot;
+                          }
+                          return (
+                            <div className="is-flex is-justify-content-space-between is-align-items-center mt-2" style={{ fontSize: '12px', color: isDarkMode ? '#cbd5e1' : '#475569' }}>
+                              <span>Marcados: <strong>{currentMarked}</strong> de <strong>{limits[id]?.max || 0}</strong></span>
+                              <span className="tag is-small has-text-weight-bold" style={{ backgroundColor: rem <= 0 ? '#ffe4e6' : '#dcfce7', color: rem <= 0 ? '#e11d48' : '#15803d', borderRadius: '4px' }}>
+                                Restan {rem}
+                              </span>
+                            </div>
+                          );
+                        })()}
                       </div>
                     )}
                   </div>
@@ -2265,6 +3081,13 @@ const CalendarApp = () => {
               </div>
             </div>
           )}
+
+          {/* Si 'Mostrar 40-60' está activo, lo incluimos en la exportación PNG */}
+          {show4060 && (
+            <div style={{ width: '100%' }}>
+              {renderPanel4060(true)}
+            </div>
+          )}
         </div>
       </div>
 
@@ -2408,6 +3231,16 @@ const CalendarApp = () => {
                 </h4>
                 <p>
                   Marca o desmarca la opción <strong>"Mostrar fin de semana"</strong> en la columna derecha para alternar entre ver solo la semana laboral (Lunes a Viernes) o la semana completa (Lunes a Domingo).
+                </p>
+              </section>
+
+              <section className="mb-4">
+                <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
+                  <span>⚖️</span>
+                  <span>Balance de Vacaciones y Regla 40-60</span>
+                </h4>
+                <p>
+                  Activa <strong>"Mostrar 40-60"</strong> para ver el panel de cálculo interactivo: desglosa la cantidad de días disponibles, disfrutados y restantes por categoría, y supervisa en tiempo real que se cumpla la proporción de <strong>40% de vacaciones en jornadas presenciales</strong> y <strong>60% en jornadas de teletrabajo</strong>.
                 </p>
               </section>
 
