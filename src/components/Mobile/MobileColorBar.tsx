@@ -108,7 +108,7 @@ export const MobileColorBar: React.FC<MobileColorBarProps> = ({
           className="is-uppercase has-text-weight-bold table-header" 
           style={{ color: isDarkMode ? '#94a3b8' : '#475569', letterSpacing: '0.05em', fontSize: 'var(--font-size-header-table)' }}
         >
-          🎨 Colores y Etiquetas
+          🎨 Marcadores
         </h3>
         <span className="subtext-helper" style={{ fontSize: 'var(--font-size-subtext)', color: isDarkMode ? '#94a3b8' : '#64748b' }}>
           mantén pulsado para opciones
@@ -324,7 +324,7 @@ export const MobileColorBar: React.FC<MobileColorBarProps> = ({
             justifyContent: 'center',
             cursor: 'pointer'
           }}
-          title="Añadir nueva etiqueta"
+          title="Añadir marcador"
         >
           <div 
             style={{

@@ -145,7 +145,7 @@ export const ColorPalette: React.FC<ColorPaletteProps> = ({
         {/* Cabecera Colores */}
         <div className="pb-2 mb-2" style={{ borderBottom: isDarkMode ? '1px solid #334155' : '1px solid #edf2f7' }}>
           <h3 className="is-uppercase has-text-weight-bold" style={{ color: isDarkMode ? '#94a3b8' : '#475569', letterSpacing: '0.05em', fontSize: 'var(--font-size-header-table)' }}>
-            🎨 Colores
+            🎨 Marcadores
           </h3>
         </div>
 
@@ -261,7 +261,7 @@ export const ColorPalette: React.FC<ColorPaletteProps> = ({
                   type="text" 
                   value={newLabel} 
                   onChange={(e) => setNewLabel(e.target.value)} 
-                  placeholder="Añadir etiqueta..." 
+                  placeholder="Añadir marcador..." 
                   className="input is-small" 
                   style={{ 
                     height: '28px', 
@@ -284,7 +284,7 @@ export const ColorPalette: React.FC<ColorPaletteProps> = ({
                     borderRadius: '0 6px 6px 0',
                     padding: '0 10px'
                   }}
-                  title="Añadir etiqueta"
+                  title="Añadir marcador"
                 >
                   <Plus size={14} />
                 </button>

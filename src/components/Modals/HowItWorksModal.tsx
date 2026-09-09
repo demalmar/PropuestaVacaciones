@@ -93,17 +93,17 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
           <section className="mb-4">
             <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
               <span>🎨</span>
-              <span>Leyenda de colores</span>
+              <span>Marcadores</span>
             </h4>
             <p className="mb-2">
-              El panel izquierdo contiene las categorías predeterminadas y las que tú añadas:
+              El panel izquierdo de <strong>Marcadores</strong> contiene las categorías predeterminadas y las que tú añadas:
             </p>
             <ul>
               <li><strong>Vac. días independientes:</strong> Vacaciones disfrutadas por días sueltos.</li>
               <li><strong>Vac. por periodo:</strong> Vacaciones planificadas por temporadas o bloques continuos.</li>
               <li><strong>Asuntos Propios:</strong> Días reservados para trámites y gestiones personales.</li>
               <li><strong>Festivo:</strong> Días no laborales (los fines de semana se pintan automáticamente en este color si no se personalizan).</li>
-              <li><strong>Personalizadas:</strong> Puedes crear tus propias categorías con nombre y color libre.</li>
+              <li><strong>Personalizadas:</strong> Puedes crear tus propios marcadores con nombre y color libre.</li>
             </ul>
           </section>
 
@@ -113,9 +113,9 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
               <span>Cómo interactuar</span>
             </h4>
             <ul>
-              <li><strong>Seleccionar categoría activa:</strong> Haz clic en cualquier etiqueta de la leyenda para seleccionarla como color activo de trabajo.</li>
-              <li><strong>Pintar días:</strong> Haz clic sobre cualquier día del calendario para aplicarle la categoría activa.</li>
-              <li><strong>Quitar color:</strong> Vuelve a hacer clic sobre un día ya coloreado con la misma categoría activa para desmarcarlo.</li>
+              <li><strong>Seleccionar marcador activo:</strong> Haz clic en cualquier marcador de la lista para seleccionarlo como color activo de trabajo.</li>
+              <li><strong>Pintar días:</strong> Haz clic sobre cualquier día del calendario para aplicarle el marcador activo.</li>
+              <li><strong>Quitar marcador:</strong> Vuelve a hacer clic sobre un día ya coloreado con el mismo marcador activo para desmarcarlo.</li>
               <li><strong>Marcar días presenciales por columna:</strong> Haz clic en la cabecera de cualquier día (L, M, X, J, V, S, D) de un mes para marcar o desmarcar todos los días de esa columna en dicho mes como días presenciales.</li>
             </ul>
           </section>
@@ -123,10 +123,10 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
           <section className="mb-4">
             <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
               <span>➕</span>
-              <span>Añadir etiquetas</span>
+              <span>Añadir marcador</span>
             </h4>
             <p>
-              En el formulario <strong>"Añadir etiqueta..."</strong> del panel izquierdo puedes crear nuevas categorías personalizadas: selecciona un color con la paleta, escribe su nombre y pulsa el botón <strong>+</strong> (o la tecla Enter).
+              En el formulario <strong>"Añadir marcador..."</strong> del panel izquierdo puedes crear nuevos marcadores personalizados: selecciona un color con la paleta, escribe su nombre y pulsa el botón <strong>+</strong> (o la tecla Enter).
             </p>
           </section>
 
@@ -187,7 +187,7 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
 
           <article className="message is-info is-small mb-0">
             <div className="message-body" style={{ fontSize: '0.92rem', lineHeight: 1.5 }}>
-              <strong>Nota:</strong> Todos tus datos (colores, selecciones y etiquetas) se guardan automáticamente en tu navegador (Local Storage), por lo que no perderás tu planificación aunque recargues o cierres la página.
+              <strong>Nota:</strong> Todos tus datos (marcadores, selecciones y opciones) se guardan automáticamente en tu navegador (Local Storage), por lo que no perderás tu planificación aunque recargues o cierres la página.
             </div>
           </article>
         </section>

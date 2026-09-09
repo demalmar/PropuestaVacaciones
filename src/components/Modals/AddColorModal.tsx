@@ -45,7 +45,7 @@ export const AddColorModal: React.FC<AddColorModalProps> = ({
             <div className="is-flex is-align-items-center" style={{ gap: '0.45rem' }}>
               <span style={{ fontSize: '16px' }}>🎨</span>
               <h6 className="title is-6 mb-0" style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontWeight: 800, fontSize: '14px' }}>
-                Añadir nuevo color
+                Añadir marcador
               </h6>
             </div>
             <button 
@@ -59,7 +59,7 @@ export const AddColorModal: React.FC<AddColorModalProps> = ({
           <div className="is-flex is-flex-direction-column" style={{ gap: '0.65rem' }}>
             <div>
               <label className="label is-size-7 mb-1" style={{ color: isDarkMode ? '#e2e8f0' : '#1e293b', fontSize: '12px' }}>
-                Nombre de la etiqueta:
+                Nombre del marcador:
               </label>
               <input 
                 type="text" 
@@ -79,7 +79,7 @@ export const AddColorModal: React.FC<AddColorModalProps> = ({
 
             <div>
               <label className="label is-size-7 mb-1" style={{ color: isDarkMode ? '#e2e8f0' : '#1e293b', fontSize: '12px' }}>
-                Color de la etiqueta:
+                Color del marcador:
               </label>
               <div className="is-flex is-align-items-center" style={{ gap: '0.6rem' }}>
                 <input 
