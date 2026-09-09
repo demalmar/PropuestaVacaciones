@@ -1,0 +1,47 @@
+/* Estilos específicos para la barra de colores móvil (MobileColorBar) */
+
+/* Contenedor con scroll horizontal para etiquetas en móvil */
+.mobile-color-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE / Edge */
+  padding: 2px 1px;
+}
+
+.mobile-color-scroll::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* Botones cuadrados de etiquetas en móvil */
+.mobile-color-square {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 4px;
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
+  transition: transform 0.1s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  position: relative;
+  text-align: center;
+}
+
+.mobile-color-square * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+.mobile-color-square:active {
+  transform: scale(0.95);
+}
+

@@ -1,99 +1,157 @@
-/* Estilos complementarios para la cuadrícula del calendario con Bulma */
-.calendar-grid-7 {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+/* Fuente Google Outfit (soporte local y fallback offline) */
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/outfit/outfit-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-.calendar-grid-5 {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/outfit/outfit-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
-.calendar-day-cell {
-  position: relative;
-  height: 2.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  cursor: pointer;
-  user-select: none;
-  transition: opacity 0.12s ease;
+/* ==========================================================================
+   VARIABLES DE DISEÑO ESTÁNDAR (DESIGN TOKENS GLOBALES)
+   Agrupadas por casos de uso para modificar tipografías y cabeceras globalmente
+   ========================================================================== */
+:root {
+  /* --- 1. TÍTULOS PRINCIPALES --- */
+  --font-size-title-app: 1.08rem;              /* Título de la aplicación "Propuesta Vacaciones" */
+  --font-size-title-panel: 1.05rem;            /* Títulos de paneles (Balance, Proporción 40-60, Modales) */
+  --font-size-title-month-bimestral: 1.35rem;  /* Título de cada mes en vista bimestral */
+  --font-size-title-month-annual: 0.98rem;     /* Título de cada mes en vista anual */
+  --font-size-title-year: 1.3rem;              /* Selector e input de año */
+
+  /* --- 2. CABECERAS DE SECCIÓN Y TABLAS --- */
+  --font-size-header-section: 13.5px;          /* Cabeceras de bloques ("Modo de Vista", "Modo de Selección", "Colores") */
+  --font-size-header-table: 13px;              /* Cabeceras de columnas en tablas */
+  --font-size-header-weekday-bimestral: 14px;  /* Días de la semana L..D (bimestral) */
+  --font-size-header-weekday-annual: 12px;     /* Días de la semana L..D (anual compacta) */
+
+  /* --- 3. DÍAS DEL CALENDARIO --- */
+  --font-size-day-bimestral: 1.05rem;          /* Números de día en vista bimestral */
+  --font-size-day-annual: 0.84rem;             /* Números de día en vista anual compacta */
+  --cell-height-day-annual: 27px;              /* Altura de celda de día anual */
+  --cell-height-weekday-annual: 24px;          /* Altura de cabecera de semana anual */
+
+  /* --- 4. TEXTO GENERAL, ETIQUETAS Y CONTROLES --- */
+  --font-size-body: 0.95rem;                   /* Texto base general */
+  --font-size-label: 13.5px;                   /* Etiquetas de color, opciones de selección, checkboxes */
+  --font-size-button: 13px;                    /* Botones de acción estándar */
+  --font-size-input: 13.5px;                   /* Campos de texto y números */
+  --font-size-table-cell: 13.5px;              /* Celdas regulares de tablas */
+
+  /* --- 5. SUBTÍTULOS, NOTAS Y BADGES --- */
+  --font-size-subtext: 12px;                   /* Subtítulos descriptivos de opciones */
+  --font-size-note: 12.5px;                    /* Notas informativas y sugerencias */
+  --font-size-badge: 12px;                     /* Etiquetas pequeñas / badges ("+exceso", "Meta: 40%") */
+  --font-size-modal-body: 0.98rem;             /* Texto de lectura en modales explicativos */
+  --font-size-modal-note: 0.92rem;             /* Cajas de aviso secundarias en modales */
+
+  /* --- 6. NÚMEROS DESTACADOS Y MÉTRICAS (KPIs) --- */
+  --font-size-kpi-huge: 1.65rem;               /* Porcentajes 40% y 60% */
+  --font-size-kpi-large: 1.6rem;                /* Total días acumulados en 40-60 */
+  --font-size-kpi-medium: 15px;                /* Cifra de días restantes ("Quedan") */
+
+  /* --- 7. PESOS DE FUENTE ESTÁNDAR --- */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 900;
+
+  /* --- 8. DIMENSIONES DE LAYOUT ESTÁNDAR --- */
+  --sidebar-width: 287px;                      /* Ancho barra lateral de opciones (+1/3 ampliada) */
+  --menu-width: 264px;                         /* Ancho menú de colores */
+  --calendar-target-width: 960px;              /* Ancho constante del calendario */
 }
 
-.calendar-day-cell:not(.is-empty):hover {
-  opacity: 0.82;
+/* Clases estándar reutilizables basadas en tokens CSS */
+.app-title {
+  font-size: var(--font-size-title-app) !important;
+  font-weight: var(--font-weight-extrabold) !important;
 }
 
-.calendar-day-cell.is-empty {
-  cursor: default;
-  pointer-events: none;
+.panel-title {
+  font-size: var(--font-size-title-panel) !important;
+  font-weight: var(--font-weight-extrabold) !important;
 }
 
-.calendar-day-cell.is-presencial {
-  box-shadow: inset 0 0 0 2px #3273dc;
+.section-header {
+  font-size: var(--font-size-header-section) !important;
+  font-weight: var(--font-weight-extrabold) !important;
 }
 
-.calendar-day-cell .presencial-dot {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #3273dc;
+.table-header {
+  font-size: var(--font-size-header-table) !important;
+  font-weight: var(--font-weight-extrabold) !important;
 }
 
-.calendar-day-cell .presencial-bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background-color: #3273dc;
-  opacity: 0.4;
+.subtext-helper {
+  font-size: var(--font-size-subtext) !important;
 }
 
-/* Modo Compacto para Vista Anual (Cuadrícula 4x3) */
-.calendar-day-cell.is-compact {
-  height: 24px !important;
-  min-height: 24px !important;
-  font-size: 0.72rem !important;
-  line-height: 1;
+.kpi-huge {
+  font-size: var(--font-size-kpi-huge) !important;
+  font-weight: var(--font-weight-black) !important;
 }
 
-.calendar-header-day.is-compact {
-  min-height: 22px !important;
-  height: 22px !important;
-  font-size: 10.5px !important;
+.kpi-large {
+  font-size: var(--font-size-kpi-large) !important;
+  font-weight: var(--font-weight-black) !important;
 }
 
-.calendar-day-cell.is-compact .presencial-dot {
-  top: 2px;
-  right: 2px;
-  width: 4px;
-  height: 4px;
+.kpi-medium {
+  font-size: var(--font-size-kpi-medium) !important;
+  font-weight: var(--font-weight-extrabold) !important;
 }
 
-.calendar-day-cell.is-compact .presencial-bar {
-  height: 2px;
+/* Aplicación global de Outfit en toda la interfaz y escala tipográfica legible */
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* Cuadrícula Anual: 4 columnas x 3 filas */
-.annual-calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.65rem;
-  width: 100%;
+body {
+  font-size: var(--font-size-body);
+  line-height: 1.5;
 }
 
-@media screen and (max-width: 1150px) {
-  .annual-calendar-grid {
-    gap: 0.45rem;
-  }
+html, body, button, input, select, textarea,
+.button, .input, .title, .subtitle, .label, .table,
+.modal-card-title, .box, .notification, .tag, .content, span, p, h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
 }
 
-/* Animaciones para el cambio de vista Semestral / Anual */
+/* Escala mejorada para elementos pequeños de Bulma */
+.is-size-7 {
+  font-size: var(--font-size-label) !important;
+}
+
+.button.is-small {
+  font-size: var(--font-size-label) !important;
+}
+
+.input.is-small {
+  font-size: var(--font-size-label) !important;
+}
+
+/* Modo nocturno: fondo global */
+[data-theme="dark"] section.section {
+  background-color: #0b0f17 !important;
+}
+
+/* Animaciones para el cambio de vista (usada en SemestralView, AnnualView, BalancePanelsWrapper) */
 .view-transition-content {
   animation: viewTransitionFadeIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: opacity, transform;
@@ -109,234 +167,3 @@
     transform: translateY(0) scale(1);
   }
 }
-
-/* Animación para el cambio de año en el badge */
-.view-transition-badge {
-  display: inline-block;
-  animation: badgePop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes badgePop {
-  0% {
-    opacity: 0;
-    transform: scale(0.86);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Efecto suave de elevación al pasar el ratón por los meses anuales */
-.annual-calendar-grid > div {
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
-}
-
-.annual-calendar-grid > div:hover {
-  transform: translateY(-2px);
-}
-
-/* Scroll estilizado para la lista de leyenda */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-
-/* Modo nocturno */
-[data-theme="dark"] section.section {
-  background-color: #0b0f17 !important;
-}
-
-[data-theme="dark"] .calendar-day-cell.is-presencial {
-  box-shadow: inset 0 0 0 2px #4880ed;
-}
-
-[data-theme="dark"] .calendar-day-cell .presencial-dot {
-  background-color: #60a5fa;
-}
-
-[data-theme="dark"] .calendar-day-cell .presencial-bar {
-  background-color: #60a5fa;
-  opacity: 0.5;
-}
-
-[data-theme="dark"] .custom-scrollbar::-webkit-scrollbar-track {
-  background: #1e293b;
-}
-
-[data-theme="dark"] .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #475569;
-}
-
-
-
-/* Animación sutil de botón switch */
-.theme-switch-knob {
-  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* Botones de navegación en óvalo entre calendarios */
-.oval-nav-btn {
-  transition: background-color 0.15s ease, opacity 0.15s ease;
-}
-
-.oval-nav-btn:hover {
-  background-color: rgba(255, 255, 255, 0.22) !important;
-}
-
-.oval-nav-btn:active {
-  background-color: rgba(0, 0, 0, 0.18) !important;
-}
-
-/* --- ESTILOS RESPONSIVE PARA VISTA MÓVIL (< 769px) --- */
-
-/* Menú lateral deslizable (Off-canvas Drawer) */
-.mobile-drawer-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(4px);
-  z-index: 999;
-  animation: fadeIn 0.22s ease forwards;
-}
-
-.mobile-drawer-overlay.is-closing {
-  animation: fadeOut 0.22s ease forwards;
-}
-
-.mobile-drawer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 86%;
-  max-width: 340px;
-  background-color: #ffffff;
-  z-index: 1000;
-  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  overflow-y: auto;
-}
-
-.mobile-drawer.is-closing {
-  animation: slideOutRight 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-[data-theme="dark"] .mobile-drawer {
-  background-color: #151e2b;
-  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.6);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-@keyframes slideInRight {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
-}
-
-@keyframes slideOutRight {
-  from { transform: translateX(0); }
-  to { transform: translateX(100%); }
-}
-
-/* Contenedor con scroll horizontal para etiquetas en móvil */
-.mobile-color-scroll {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE / Edge */
-  padding: 2px 1px;
-}
-
-.mobile-color-scroll::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
-
-/* Botones cuadrados de etiquetas en móvil */
-.mobile-color-square {
-  aspect-ratio: 1 / 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 4px;
-  border-radius: 12px;
-  cursor: pointer;
-  user-select: none !important;
-  -webkit-user-select: none !important;
-  -webkit-touch-callout: none !important;
-  transition: transform 0.1s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-  position: relative;
-  text-align: center;
-}
-
-.mobile-color-square * {
-  user-select: none !important;
-  -webkit-user-select: none !important;
-  -webkit-touch-callout: none !important;
-}
-
-.mobile-color-square:active {
-  transform: scale(0.95);
-}
-
-/* Días de la semana en la cabecera */
-.calendar-header-day {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 38px;
-  user-select: none;
-  touch-action: manipulation;
-}
-
-/* Ajustes de altura táctil en móviles (< 769px) */
-@media screen and (max-width: 768px) {
-  .calendar-header-day {
-    min-height: 44px !important;
-    font-size: 0.9rem !important;
-  }
-  .calendar-day-cell {
-    height: 3.25rem !important;
-    font-size: 0.92rem !important;
-  }
-}
-
-/* Barra de navegación de meses intermedia en móvil */
-.mobile-nav-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #0e7490 0%, #0f766e 100%);
-  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.3);
-  overflow: hidden;
-  user-select: none;
-}
-

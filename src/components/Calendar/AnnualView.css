@@ -1,0 +1,25 @@
+/* Estilos para la Vista Anual (AnnualView) */
+
+/* Cuadrícula Anual: 4 columnas x 3 filas */
+.annual-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+  width: 100%;
+}
+
+@media screen and (max-width: 1150px) {
+  .annual-calendar-grid {
+    gap: 0.45rem;
+  }
+}
+
+/* Efecto suave de elevación al pasar el ratón por los meses anuales */
+.annual-calendar-grid > div {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.annual-calendar-grid > div:hover {
+  transform: translateY(-2px);
+}
+
