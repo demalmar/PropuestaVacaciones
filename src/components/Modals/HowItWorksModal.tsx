@@ -93,8 +93,7 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
                 }}
               >
                 <div className="is-flex is-align-items-center mb-2" style={{ gap: '0.6rem' }}>
-                  <span className="tag is-primary is-light has-text-weight-bold" style={{ fontSize: '11px', padding: '0.2rem 0.55rem' }}>POR DEFECTO</span>
-                  <strong style={{ color: isDarkMode ? '#f1f5f9' : '#0f172a', fontSize: '0.98rem' }}>1. Siempre día seleccionado</strong>
+                  <span className="tag is-primary is-light has-text-weight-bold" style={{color: isDarkMode ? '#f1f5f9' : '#0f172a', fontSize: '0.98rem', padding: '0.2rem 0.55rem' }}><strong>1. Siempre día seleccionado</strong></span>
                 </div>
                 <p className="mb-3" style={{ fontSize: '0.9rem', lineHeight: 1.6, color: isDarkMode ? '#cbd5e1' : '#475569' }}>
                   Aplica la selección a <strong>todos los días correspondientes dentro del mes natural</strong> (del día 1 al último), independientemente del día de la semana en que comience el mes.
@@ -170,7 +169,7 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
                   </div>
 
                   <span className="is-block mt-3" style={{ fontSize: '0.84rem', color: isDarkMode ? '#4ade80' : '#16a34a', fontWeight: 600, lineHeight: 1.5 }}>
-                    ✔ Todos los jueves de Octubre (tanto el día 1 como el día 8) quedan marcados como presenciales desde el primer día del mes.
+                    ✔ Todos los jueves de Octubre (en este ejemplo, tanto el día 1 como el día 8) quedan marcados como presenciales desde el primer día del mes.
                   </span>
                 </div>
               </div>
@@ -185,8 +184,7 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
                 }}
               >
                 <div className="is-flex is-align-items-center mb-2" style={{ gap: '0.6rem' }}>
-                  <span className="tag is-info is-light has-text-weight-bold" style={{ fontSize: '11px', padding: '0.2rem 0.55rem' }}>SEMANA COMPLETA</span>
-                  <strong style={{ color: isDarkMode ? '#f1f5f9' : '#0f172a', fontSize: '0.98rem' }}>2. Desde el 1<sup>er</sup> lunes del mes</strong>
+                  <span className="tag is-info is-light has-text-weight-bold" style={{ fontSize: '0.98rem', padding: '0.2rem 0.55rem',color: isDarkMode ? '#f1f5f9' : '#0f172a' }}><strong>2. Desde el 1<sup>er</sup> lunes del mes</strong></span>
                 </div>
                 <p className="mb-3" style={{ fontSize: '0.9rem', lineHeight: 1.6, color: isDarkMode ? '#cbd5e1' : '#475569' }}>
                   El nuevo patrón presencial del mes entra en vigor <strong>a partir de su primer lunes</strong>. Los días previos al primer lunes se consideran parte de la semana del mes anterior y se rigen por la configuración de dicho mes previo.
@@ -263,21 +261,11 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
                   </div>
 
                   <span className="is-block mt-3" style={{ fontSize: '0.84rem', color: isDarkMode ? '#7dd3fc' : '#0284c7', fontWeight: 600, lineHeight: 1.5 }}>
-                    ℹ El Jueves 1 de Octubre NO es presencial (la semana aún pertenece a Septiembre con martes presencial). El nuevo patrón entra en vigor el lunes 5, marcando como primer jueves presencial el día 8 de Octubre.
+                    El Jueves 1 de Octubre NO es presencial (la semana aún pertenece a Septiembre con martes presencial). El nuevo patrón entra en vigor el lunes 5, marcando como primer jueves presencial el día 8 de Octubre.
                   </span>
                 </div>
               </div>
             </div>
-          </section>
-
-          <section className="mb-4">
-            <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
-              <span>📅</span>
-              <span>Navegación de calendarios</span>
-            </h4>
-            <p>
-              Se muestran dos meses consecutivos en pantalla. Utiliza los botones de flecha (<strong>‹</strong> y <strong>›</strong>) situados en la parte superior para avanzar o retroceder de mes.
-            </p>
           </section>
 
           <section className="mb-4">
@@ -294,19 +282,6 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
               <li><strong>Asuntos Propios:</strong> Días reservados para trámites y gestiones personales.</li>
               <li><strong>Festivo:</strong> Días no laborales.</li>
               <li><strong>Personalizadas:</strong> Puedes crear tus propios marcadores con nombre y color libre.</li>
-            </ul>
-          </section>
-
-          <section className="mb-4">
-            <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
-              <span>🖱️</span>
-              <span>Cómo interactuar</span>
-            </h4>
-            <ul>
-              <li><strong>Seleccionar marcador activo:</strong> Haz clic en cualquier marcador de la lista para seleccionarlo como color activo de trabajo.</li>
-              <li><strong>Pintar días:</strong> Haz clic sobre cualquier día del calendario para aplicarle el marcador activo.</li>
-              <li><strong>Quitar marcador:</strong> Vuelve a hacer clic sobre un día ya coloreado con el mismo marcador activo para desmarcarlo.</li>
-              <li><strong>Marcar días presenciales por columna:</strong> Haz clic en la cabecera de cualquier día (L, M, X, J, V, S, D) de un mes para marcar o desmarcar todos los días de esa columna en dicho mes como días presenciales.</li>
             </ul>
           </section>
 
