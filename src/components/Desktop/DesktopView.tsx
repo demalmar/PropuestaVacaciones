@@ -98,7 +98,7 @@ export const DesktopView: React.FC<DesktopViewProps> = ({ app }) => {
       setShow4060={app.setShow4060}
       presencialFirstMonday={app.presencialFirstMonday}
       onPresencialFirstMondayToggle={app.handlePresencialFirstMondayToggle}
-      onOpenHowItWorks={() => app.setShowHowItWorks(true)}
+      onOpenHowItWorks={app.handleOpenHowItWorks}
       onExportData={app.handleExportData}
       onTriggerImport={app.handleTriggerImport}
       onExportPNG={app.handleExportPNG}

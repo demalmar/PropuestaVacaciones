@@ -21,7 +21,7 @@ export const AppModals: React.FC<AppModalsProps> = ({ app }) => {
         onClose={() => app.setMobileMenuOpen(false)}
         isDarkMode={app.isDarkMode}
         toggleDarkMode={app.toggleDarkMode}
-        onOpenHowItWorks={() => app.setShowHowItWorks(true)}
+        onOpenHowItWorks={app.handleOpenHowItWorks}
         showWeekends={app.showWeekends}
         setShowWeekends={app.setShowWeekends}
         show4060={app.show4060}
@@ -59,8 +59,12 @@ export const AppModals: React.FC<AppModalsProps> = ({ app }) => {
       {/* Modal ¿Cómo funciona? */}
       <HowItWorksModal
         isOpen={app.showHowItWorks}
-        onClose={() => app.setShowHowItWorks(false)}
+        onClose={() => {
+          app.setShowHowItWorks(false);
+          app.setHowItWorksTarget(null);
+        }}
         isDarkMode={app.isDarkMode}
+        targetSection={app.howItWorksTarget}
       />
 
       {/* Modal ¿Qué es esto? (Regla 40-60) */}

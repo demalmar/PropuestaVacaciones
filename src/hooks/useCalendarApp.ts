@@ -32,6 +32,9 @@ export interface UseCalendarAppReturn {
   setShowClearTableConfirm: React.Dispatch<React.SetStateAction<boolean>>;
   showHowItWorks: boolean;
   setShowHowItWorks: React.Dispatch<React.SetStateAction<boolean>>;
+  howItWorksTarget: string | null;
+  setHowItWorksTarget: React.Dispatch<React.SetStateAction<string | null>>;
+  handleOpenHowItWorks: (targetId?: string) => void;
   showWhatIs4060Modal: boolean;
   setShowWhatIs4060Modal: React.Dispatch<React.SetStateAction<boolean>>;
   colorSettingsItem: LegendColorItem | null;
@@ -129,6 +132,12 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showClearTableConfirm, setShowClearTableConfirm] = useState(false);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [howItWorksTarget, setHowItWorksTarget] = useState<string | null>(null);
+
+  const handleOpenHowItWorks = (targetId?: string) => {
+    setHowItWorksTarget(targetId || null);
+    setShowHowItWorks(true);
+  };
   const [showWhatIs4060Modal, setShowWhatIs4060Modal] = useState(false);
   const [colorSettingsItem, setColorSettingsItem] = useState<LegendColorItem | null>(null);
   const [showAddColorModal, setShowAddColorModal] = useState(false);
@@ -736,6 +745,9 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
     setShowClearTableConfirm,
     showHowItWorks,
     setShowHowItWorks,
+    howItWorksTarget,
+    setHowItWorksTarget,
+    handleOpenHowItWorks,
     showWhatIs4060Modal,
     setShowWhatIs4060Modal,
     colorSettingsItem,

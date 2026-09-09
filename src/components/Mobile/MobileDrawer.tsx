@@ -7,7 +7,7 @@ interface MobileDrawerProps {
   onClose: () => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
-  onOpenHowItWorks: () => void;
+  onOpenHowItWorks: (targetSection?: string) => void;
   showWeekends: boolean;
   setShowWeekends: (show: boolean) => void;
   show4060: boolean;
@@ -229,10 +229,28 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
 
             {/* 3. Comportamiento Presenciales */}
             <div>
-              <div className="mb-2">
+              <div className="mb-2 is-flex is-align-items-center" style={{ gap: '0.45rem' }}>
                 <span className="has-text-weight-bold is-block section-header" style={{ color: isDarkMode ? '#e2e8f0' : '#334155', lineHeight: 1.25, fontSize: 'var(--font-size-header-section)' }}>
                   Comportamiento Presenciales
                 </span>
+                <button
+                  type="button"
+                  className="button is-ghost is-small p-0 is-flex is-align-items-center"
+                  onClick={() => {
+                    onOpenHowItWorks('help-comportamiento-presenciales');
+                    handleClose();
+                  }}
+                  title="Ver explicación en la Ayuda"
+                  style={{ 
+                    height: 'auto', 
+                    color: isDarkMode ? '#38bdf8' : '#0284c7', 
+                    cursor: 'pointer',
+                    border: 'none',
+                    background: 'none'
+                  }}
+                >
+                  <Info size={16} />
+                </button>
               </div>
               <div className="is-flex is-flex-direction-column" style={{ gap: '0.45rem' }}>
                 <label 

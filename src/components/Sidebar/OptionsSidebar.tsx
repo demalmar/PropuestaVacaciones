@@ -11,7 +11,7 @@ interface OptionsSidebarProps {
   setShow4060: (show: boolean) => void;
   presencialFirstMonday: boolean;
   onPresencialFirstMondayToggle: (val: boolean) => void;
-  onOpenHowItWorks: () => void;
+  onOpenHowItWorks: (targetSection?: string) => void;
   onExportData: () => void;
   onTriggerImport: () => void;
   onExportPNG: () => void;
@@ -219,10 +219,25 @@ export const OptionsSidebar: React.FC<OptionsSidebarProps> = ({
 
           {/* 4. Comportamiento Presenciales */}
           <div>
-            <div className="mb-1.5">
+            <div className="mb-1.5 is-flex is-align-items-center" style={{ gap: '0.45rem' }}>
               <span style={{ fontSize: 'var(--font-size-subtext)', fontWeight: 700, color: isDarkMode ? '#94a3b8' : '#64748b' }}>
                 Comportamiento Presenciales
               </span>
+              <button
+                type="button"
+                className="button is-ghost is-small p-0 is-flex is-align-items-center"
+                onClick={() => onOpenHowItWorks('help-comportamiento-presenciales')}
+                title="Ver explicación en la Ayuda"
+                style={{ 
+                  height: 'auto', 
+                  color: isDarkMode ? '#38bdf8' : '#0284c7', 
+                  cursor: 'pointer',
+                  border: 'none',
+                  background: 'none'
+                }}
+              >
+                <Info size={14} />
+              </button>
             </div>
             <div className="is-flex is-flex-direction-column" style={{ gap: '0.3rem' }}>
               <label 

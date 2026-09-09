@@ -1,17 +1,40 @@
-import React from 'react';
-import { Info } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Info, GitFork, ExternalLink, Link2 } from 'lucide-react';
+import fromDemalmarImg from '../../from_demalmar.png';
 
 interface HowItWorksModalProps {
   isOpen: boolean;
   onClose: () => void;
   isDarkMode: boolean;
+  targetSection?: string | null;
 }
 
 export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
   isOpen,
   onClose,
-  isDarkMode
+  isDarkMode,
+  targetSection
 }) => {
+  const presencialesSectionRef = useRef<HTMLElement | null>(null);
+  const [isPresencialesHighlighted, setIsPresencialesHighlighted] = useState(false);
+  const [showCredits, setShowCredits] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && targetSection === 'help-comportamiento-presenciales') {
+      const timer = setTimeout(() => {
+        if (presencialesSectionRef.current) {
+          presencialesSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          setIsPresencialesHighlighted(true);
+          const offTimer = setTimeout(() => {
+            setIsPresencialesHighlighted(false);
+          }, 2500);
+          return () => clearTimeout(offTimer);
+        }
+      }, 120);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, targetSection]);
+
   if (!isOpen) return null;
 
   return (
@@ -32,7 +55,7 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
         }}
       >
         <header 
-          className="modal-card-head py-3 px-5" 
+          className="modal-card-head py-3 px-5 is-flex is-align-items-center is-justify-content-space-between" 
           style={{ 
             backgroundColor: isDarkMode ? '#252e39' : '#f8fafc', 
             borderBottom: isDarkMode ? '1px solid #324054' : '1px solid #e2e8f0',
@@ -73,7 +96,18 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
             </p>
           </section>
 
-          <section className="mb-5">
+          <section 
+            id="help-comportamiento-presenciales"
+            ref={presencialesSectionRef}
+            className="mb-5"
+            style={{
+              borderRadius: '14px',
+              padding: isPresencialesHighlighted ? '1rem' : '0rem',
+              backgroundColor: isPresencialesHighlighted ? (isDarkMode ? 'rgba(56, 189, 248, 0.12)' : 'rgba(37, 99, 235, 0.07)') : 'transparent',
+              boxShadow: isPresencialesHighlighted ? (isDarkMode ? '0 0 0 2px #38bdf8, 0 6px 20px rgba(56,189,248,0.2)' : '0 0 0 2px #2563eb, 0 6px 20px rgba(37,99,235,0.18)') : 'none',
+              transition: 'all 0.35s ease'
+            }}
+          >
             <h4 className="title is-6 has-text-info mb-3 is-flex is-align-items-center" style={{ gap: '0.5rem', fontSize: 'var(--font-size-title-panel)' }}>
               <span>⚙️</span>
               <span>Comportamiento Presenciales</span>
@@ -358,14 +392,36 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
         </section>
 
         <footer 
-          className="modal-card-foot is-justify-content-flex-end py-3 px-5" 
+          className="modal-card-foot is-justify-content-space-between is-align-items-center py-3 px-5" 
           style={{ 
             backgroundColor: isDarkMode ? '#252e39' : '#f8fafc', 
             borderTop: isDarkMode ? '1px solid #324054' : '1px solid #e2e8f0',
             borderBottomLeftRadius: '12px',
-            borderBottomRightRadius: '12px'
+            borderBottomRightRadius: '12px',
+            display: 'flex'
           }}
         >
+          <a
+            role="button"
+            onClick={() => setShowCredits(true)}
+            style={{
+              cursor: 'pointer',
+              color: isDarkMode ? '#38bdf8' : '#0284c7',
+              fontWeight: 700,
+              textDecoration: 'underline',
+              textUnderlineOffset: '3px',
+              fontSize: '13px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              userSelect: 'none'
+            }}
+            title="Ver información de autoría y licencia"
+          >
+            <Link2 size={15} />
+            <span>Autoría y Licencia</span>
+          </a>
+
           <button 
             onClick={onClose} 
             className="button is-small"
@@ -384,6 +440,162 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
           </button>
         </footer>
       </div>
+
+      {/* Modal Popup de Autoría y Licencia */}
+      {showCredits && (
+        <div 
+          className="modal is-active" 
+          style={{ zIndex: 1050 }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div 
+            className="modal-background" 
+            style={{ backgroundColor: 'rgba(0, 0, 0, 0.65)', backdropFilter: 'blur(3px)' }} 
+            onClick={() => setShowCredits(false)} 
+          />
+          <div 
+            className="modal-card" 
+            style={{ 
+              maxWidth: '520px', 
+              width: '92%', 
+              borderRadius: '16px', 
+              overflow: 'hidden',
+              backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+              border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0'
+            }}
+          >
+            <header 
+              className="modal-card-head py-3 px-5 is-flex is-align-items-center is-justify-content-space-between"
+              style={{
+                backgroundColor: isDarkMode ? '#252e39' : '#f8fafc',
+                borderBottom: isDarkMode ? '1px solid #324054' : '1px solid #e2e8f0'
+              }}
+            >
+              <p className="modal-card-title is-size-6 has-text-weight-bold mb-0" style={{ color: isDarkMode ? '#f1f5f9' : '#0f172a' }}>
+                Autoría y Licencia
+              </p>
+              <button 
+                className="delete is-small" 
+                aria-label="close" 
+                onClick={() => setShowCredits(false)} 
+                title="Cerrar ventana de autoría"
+              />
+            </header>
+
+            <section className="modal-card-body p-5" style={{ backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', color: isDarkMode ? '#cbd5e1' : '#334155', maxHeight: '80vh', overflowY: 'auto' }}>
+              {/* Logo from_demalmar.png */}
+              <div className="has-text-centered mb-3 py-1">
+                <img 
+                  src={fromDemalmarImg} 
+                  alt="from Demalmar" 
+                  style={{ 
+                    maxHeight: '48px', 
+                    width: 'auto',
+                    filter: isDarkMode ? 'brightness(0) invert(1)' : 'none'
+                  }} 
+                />
+              </div>
+
+              {/* Texto de origen y motivación */}
+              <div 
+                className="font-caveat"
+                style={{ 
+                  fontFamily: '"Caveat", cursive',
+                  fontSize: '1.24rem', 
+                  lineHeight: '1.35', 
+                  color: isDarkMode ? '#e2e8f0' : '#1e293b',
+                  marginBottom: '1.5rem'
+                }}
+              >
+                <p className="mb-2">
+                  Este proyecto nace en agosto de 2026 y se crea con la intención de organizar y presentar un calendario de vacaciones para la aprobación por parte del superior.
+                </p>
+                <p className="mb-0">
+                  Mi voluntad es que el código sea de libre disposición.<br/>Por lo tanto, se informa de que este proyecto es de dominio público.
+                </p>
+              </div>
+
+              {/* Bloque unificado: Título y condiciones (2 celdas verticales) */}
+              <div
+                style={{
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1',
+                  marginBottom: '1.25rem',
+                  boxShadow: isDarkMode ? 'none' : '0 2px 8px rgba(0,0,0,0.04)'
+                }}
+              >
+                {/* Celda superior: Título de la Licencia */}
+                <div 
+                  className="has-text-centered"
+                  style={{
+                    padding: '1.15rem 1.4rem',
+                    backgroundColor: isDarkMode ? 'rgba(15, 118, 110, 0.22)' : '#f0fdf4',
+                    borderBottom: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1'
+                  }}
+                >
+                  <span className="tag is-success is-light has-text-weight-bold mb-1.5" style={{ fontSize: '11px', textTransform: 'uppercase' }}>
+                    Dominio Público
+                  </span>
+                  <h5 className="title is-6 mb-1.5" style={{ color: isDarkMode ? '#5eead4' : '#15803d', fontWeight: 800 }}>
+                    Creative Commons Zero (CC0 1.0 Universal)
+                  </h5>
+                  <p className="is-size-7 mb-0" style={{ color: isDarkMode ? '#99f6e4' : '#166534', lineHeight: 1.45 }}>
+                    Dedicación universal al Dominio Público • Sin derechos reservados
+                  </p>
+                </div>
+
+                {/* Celda inferior: Texto explicativo y condiciones */}
+                <div 
+                  style={{ 
+                    padding: '1.35rem 1.5rem',
+                    backgroundColor: isDarkMode ? '#151e2b' : '#f8fafc', 
+                    fontSize: '0.9rem', 
+                    lineHeight: '1.65' 
+                  }}
+                >
+                  <div className="is-flex is-flex-direction-column" style={{ gap: '0.95rem' }}>
+                    <div className="is-flex is-align-items-flex-start" style={{ gap: '0.75rem' }}>
+                      <span style={{ fontSize: '1.1rem', lineHeight: 1.3, flexShrink: 0 }}>🍴</span>
+                      <span style={{ color: isDarkMode ? '#cbd5e1' : '#334155' }}>
+                        <strong style={{ color: isDarkMode ? '#f1f5f9' : '#0f172a' }}>Libertad total para Fork:</strong> Puedes clonar, hacer fork del repositorio en GitHub, adaptarlo a tus necesidades y crear tus propias versiones derivadas sin ninguna restricción.
+                      </span>
+                    </div>
+                    <div className="is-flex is-align-items-flex-start" style={{ gap: '0.75rem' }}>
+                      <span style={{ fontSize: '1.1rem', lineHeight: 1.3, flexShrink: 0 }}>🔓</span>
+                      <span style={{ color: isDarkMode ? '#cbd5e1' : '#334155' }}>
+                        <strong style={{ color: isDarkMode ? '#f1f5f9' : '#0f172a' }}>Reutilización libre sin citar:</strong> Eres totalmente libre de reutilizar cualquier parte del código para uso personal, educativo o comercial sin obligación de nombrar a la autoría ni pedir autorización previa.
+                      </span>
+                    </div>
+                    <div className="is-flex is-align-items-flex-start" style={{ gap: '0.75rem' }}>
+                      <span style={{ fontSize: '1.1rem', lineHeight: 1.3, flexShrink: 0 }}>📜</span>
+                      <span style={{ color: isDarkMode ? '#cbd5e1' : '#334155' }}>
+                        <strong style={{ color: isDarkMode ? '#f1f5f9' : '#0f172a' }}>Resumen legal CC0:</strong> <em>«Puede copiar, modificar, distribuir e interpretar la obra, incluso para propósitos comerciales, sin pedir permiso ni requerir atribución.»</em>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Enlace y botón a GitHub */}
+              <div className="has-text-centered mt-4">
+                <a 
+                  href="https://github.com/demalmar/PropuestaVacaciones" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="button is-small is-info is-outlined is-rounded has-text-weight-bold"
+                  style={{ gap: '0.45rem' }}
+                >
+                  <GitFork size={15} />
+                  <span>Ver repositorio o hacer Fork en GitHub</span>
+                  <ExternalLink size={13} />
+                </a>
+              </div>
+            </section>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

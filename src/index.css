@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&display=swap');
+
 /* Fuente Google Outfit (soporte local y fallback offline) */
 @font-face {
   font-family: 'Outfit';
@@ -131,6 +133,13 @@ html, body, button, input, select, textarea,
 .button, .input, .title, .subtitle, .label, .table,
 .modal-card-title, .box, .notification, .tag, .content, span, p, h1, h2, h3, h4, h5, h6 {
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+
+/* Tipografía manuscrita personalizada (Caveat) */
+.font-caveat,
+.font-caveat p,
+.font-caveat span {
+  font-family: 'Caveat', cursive, sans-serif !important;
 }
 
 /* Escala mejorada para elementos pequeños de Bulma */
