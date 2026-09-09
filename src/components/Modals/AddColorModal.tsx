@@ -43,7 +43,7 @@ export const AddColorModal: React.FC<AddColorModalProps> = ({
           {/* Cabecera */}
           <div className="is-flex is-align-items-center is-justify-content-space-between pb-2 mb-2" style={{ borderBottom: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0' }}>
             <div className="is-flex is-align-items-center" style={{ gap: '0.45rem' }}>
-              <span style={{ fontSize: '16px' }}>🎨</span>
+              <span style={{ fontSize: '16px' }}>🖍️</span>
               <h6 className="title is-6 mb-0" style={{ color: isDarkMode ? '#f8fafc' : '#0f172a', fontWeight: 800, fontSize: '14px' }}>
                 Añadir marcador
               </h6>

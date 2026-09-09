@@ -184,7 +184,7 @@ export const ExportCanvas: React.FC<ExportCanvasProps> = ({
             >
               <div style={{ paddingBottom: '0.5rem', borderBottom: '1.5px solid #e2e8f0' }}>
                 <h3 style={{ fontSize: '0.8rem', textTransform: 'uppercase', fontWeight: 800, color: '#334155', letterSpacing: '0.06em', margin: 0 }}>
-                  🎨 Leyenda
+                  🖍️ Leyenda
                 </h3>
               </div>
               

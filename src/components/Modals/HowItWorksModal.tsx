@@ -1,4 +1,5 @@
 import React from 'react';
+import { Info } from 'lucide-react';
 
 interface HowItWorksModalProps {
   isOpen: boolean;
@@ -19,8 +20,8 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
       <div 
         className="modal-card" 
         style={{ 
-          maxWidth: '720px', 
-          width: '92%', 
+          maxWidth: '740px', 
+          width: '94%', 
           maxHeight: '90vh', 
           borderRadius: '12px', 
           overflow: 'hidden', 
@@ -39,8 +40,8 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
             borderTopRightRadius: '12px'
           }}
         >
-          <p className="modal-card-title is-size-5 has-text-weight-bold mb-0 is-flex is-align-items-center" style={{ gap: '0.5rem', color: isDarkMode ? '#f1f5f9' : '#1e293b' }}>
-            <span>💡</span>
+          <p className="modal-card-title is-size-5 has-text-weight-bold mb-0 is-flex is-align-items-center" style={{ gap: '0.55rem', color: isDarkMode ? '#f1f5f9' : '#1e293b' }}>
+            <Info size={22} className="has-text-info" strokeWidth={2.5} />
             <span>¿Cómo funciona?</span>
           </p>
           <button 
@@ -72,127 +73,202 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
             </p>
           </section>
 
-          <section className="mb-4">
-            <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem', fontSize: 'var(--font-size-title-panel)' }}>
+          <section className="mb-5">
+            <h4 className="title is-6 has-text-info mb-3 is-flex is-align-items-center" style={{ gap: '0.5rem', fontSize: 'var(--font-size-title-panel)' }}>
               <span>⚙️</span>
               <span>Comportamiento Presenciales</span>
             </h4>
-            <p className="mb-3">
+            <p className="mb-3" style={{ lineHeight: 1.6 }}>
               En el panel <strong>Opciones</strong> puedes configurar cómo interactúan los días presenciales cuando un mes no empieza en lunes (semanas compartidas entre dos meses):
             </p>
 
-            <div className="is-flex is-flex-direction-column" style={{ gap: '0.85rem' }}>
+            <div className="is-flex is-flex-direction-column" style={{ gap: '1.25rem' }}>
               {/* Opción 1: Siempre día seleccionado */}
               <div 
-                className="p-3" 
                 style={{ 
-                  borderRadius: '10px', 
+                  borderRadius: '12px', 
                   border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', 
-                  backgroundColor: isDarkMode ? '#1e293b' : '#f8fafc' 
+                  backgroundColor: isDarkMode ? '#1e293b' : '#f8fafc',
+                  padding: '1.25rem 1.4rem'
                 }}
               >
-                <div className="is-flex is-align-items-center mb-1.5" style={{ gap: '0.5rem' }}>
-                  <span className="tag is-primary is-light has-text-weight-bold" style={{ fontSize: '11px' }}>POR DEFECTO</span>
-                  <strong style={{ color: isDarkMode ? '#f1f5f9' : '#0f172a' }}>1. Siempre día seleccionado</strong>
+                <div className="is-flex is-align-items-center mb-2" style={{ gap: '0.6rem' }}>
+                  <span className="tag is-primary is-light has-text-weight-bold" style={{ fontSize: '11px', padding: '0.2rem 0.55rem' }}>POR DEFECTO</span>
+                  <strong style={{ color: isDarkMode ? '#f1f5f9' : '#0f172a', fontSize: '0.98rem' }}>1. Siempre día seleccionado</strong>
                 </div>
-                <p className="mb-2" style={{ fontSize: '0.88rem', lineHeight: 1.5 }}>
-                  Aplica la selección a <strong>todos los días correspondientes dentro del mes</strong>, desde el día 1 hasta el último, independientemente del día de la semana en que comience el mes.
+                <p className="mb-3" style={{ fontSize: '0.9rem', lineHeight: 1.6, color: isDarkMode ? '#cbd5e1' : '#475569' }}>
+                  Aplica la selección a <strong>todos los días correspondientes dentro del mes natural</strong> (del día 1 al último), independientemente del día de la semana en que comience el mes.
                 </p>
-                <div className="p-2.5 mb-1" style={{ borderRadius: '8px', backgroundColor: isDarkMode ? '#151e2b' : '#ffffff', border: isDarkMode ? '1px solid #283445' : '1px solid #e2e8f0' }}>
-                  <span className="is-block mb-2 has-text-weight-semibold" style={{ fontSize: '0.82rem', color: isDarkMode ? '#94a3b8' : '#475569' }}>
+                <div 
+                  style={{ 
+                    borderRadius: '10px', 
+                    backgroundColor: isDarkMode ? '#151e2b' : '#ffffff', 
+                    border: isDarkMode ? '1px solid #283445' : '1px solid #e2e8f0',
+                    padding: '1.1rem 1.25rem'
+                  }}
+                >
+                  <span className="is-block mb-3 has-text-weight-semibold" style={{ fontSize: '0.84rem', color: isDarkMode ? '#94a3b8' : '#334155' }}>
                     📌 <em>Ejemplo: Octubre empieza en Jueves 1 y seleccionas los <strong>Jueves</strong> como presenciales:</em>
                   </span>
-                  {/* Fila de días visuales */}
-                  <div className="is-flex is-flex-wrap-wrap" style={{ gap: '6px' }}>
-                    <div style={{ textAlign: 'center', width: '40px', padding: '4px 2px', borderRadius: '6px', border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', fontSize: '11px' }}>
-                      <span style={{ display: 'block', color: '#64748b', fontSize: '9px', fontWeight: 700 }}>X 30</span>
-                      <span style={{ color: '#64748b' }}>Sep</span>
+                  
+                  {/* Mini Calendario 2 Filas */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', maxWidth: '340px' }}>
+                    {/* Cabecera L M X J V */}
+                    <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '11px', color: isDarkMode ? '#94a3b8' : '#64748b' }}>L</div>
+                    <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '11px', color: isDarkMode ? '#94a3b8' : '#64748b' }}>M</div>
+                    <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '11px', color: isDarkMode ? '#94a3b8' : '#64748b' }}>X</div>
+                    <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '11px', color: '#2563eb' }}>J</div>
+                    <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '11px', color: isDarkMode ? '#94a3b8' : '#64748b' }}>V</div>
+
+                    {/* Fila 1: Semana de cambio de mes */}
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', backgroundColor: isDarkMode ? '#1a2230' : '#f8fafc', fontSize: '11px' }}>
+                      <span style={{ display: 'block', fontWeight: 700, color: '#64748b', fontSize: '12px' }}>28</span>
+                      <span style={{ fontSize: '9px', color: '#94a3b8' }}>Sep</span>
                     </div>
-                    <div style={{ textAlign: 'center', width: '40px', padding: '4px 2px', borderRadius: '6px', border: '2px solid #2563eb', backgroundColor: isDarkMode ? 'rgba(37,99,235,0.2)' : '#eff6ff', fontSize: '11px', position: 'relative' }}>
-                      <span style={{ display: 'block', color: '#2563eb', fontSize: '9px', fontWeight: 800 }}>J 1</span>
-                      <span style={{ fontWeight: 800, color: '#2563eb' }}>Oct</span>
-                      <span style={{ position: 'absolute', top: '2px', right: '2px', width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#2563eb' }} />
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', backgroundColor: isDarkMode ? '#1a2230' : '#f8fafc', fontSize: '11px' }}>
+                      <span style={{ display: 'block', fontWeight: 700, color: '#64748b', fontSize: '12px' }}>29</span>
+                      <span style={{ fontSize: '9px', color: '#94a3b8' }}>Sep</span>
                     </div>
-                    <div style={{ textAlign: 'center', width: '40px', padding: '4px 2px', borderRadius: '6px', border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', fontSize: '11px' }}>
-                      <span style={{ display: 'block', color: '#64748b', fontSize: '9px', fontWeight: 700 }}>V 2</span>
-                      <span style={{ color: isDarkMode ? '#cbd5e1' : '#334155' }}>Oct</span>
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', backgroundColor: isDarkMode ? '#1a2230' : '#f8fafc', fontSize: '11px' }}>
+                      <span style={{ display: 'block', fontWeight: 700, color: '#64748b', fontSize: '12px' }}>30</span>
+                      <span style={{ fontSize: '9px', color: '#94a3b8' }}>Sep</span>
                     </div>
-                    <div style={{ textAlign: 'center', width: '40px', padding: '4px 2px', borderRadius: '6px', border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', fontSize: '11px' }}>
-                      <span style={{ display: 'block', color: '#64748b', fontSize: '9px', fontWeight: 700 }}>S 3</span>
-                      <span style={{ color: isDarkMode ? '#cbd5e1' : '#334155' }}>Oct</span>
+                    {/* JUEVES 1 OCT - PRESENCIAL */}
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: '2px solid #2563eb', backgroundColor: isDarkMode ? 'rgba(37,99,235,0.22)' : '#eff6ff', fontSize: '11px', position: 'relative', boxShadow: '0 1px 4px rgba(37,99,235,0.2)' }}>
+                      <span style={{ display: 'block', fontWeight: 800, color: '#2563eb', fontSize: '12px' }}>1</span>
+                      <span style={{ fontSize: '9px', fontWeight: 800, color: '#2563eb' }}>Oct</span>
+                      <span style={{ position: 'absolute', top: '3px', right: '3px', width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#2563eb' }} />
                     </div>
-                    <div style={{ textAlign: 'center', width: '40px', padding: '4px 2px', borderRadius: '6px', border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', fontSize: '11px' }}>
-                      <span style={{ display: 'block', color: '#64748b', fontSize: '9px', fontWeight: 700 }}>D 4</span>
-                      <span style={{ color: isDarkMode ? '#cbd5e1' : '#334155' }}>Oct</span>
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', backgroundColor: isDarkMode ? '#17202e' : '#ffffff', fontSize: '11px' }}>
+                      <span style={{ display: 'block', fontWeight: 700, color: isDarkMode ? '#cbd5e1' : '#334155', fontSize: '12px' }}>2</span>
+                      <span style={{ fontSize: '9px', color: '#64748b' }}>Oct</span>
                     </div>
-                    <div style={{ textAlign: 'center', width: '48px', padding: '4px 2px', borderRadius: '6px', border: isDarkMode ? '1px solid #0d9488' : '1px solid #0f766e', backgroundColor: isDarkMode ? 'rgba(13,148,136,0.15)' : '#f0fdfa', fontSize: '11px' }}>
-                      <span style={{ display: 'block', color: isDarkMode ? '#2dd4bf' : '#0f766e', fontSize: '9px', fontWeight: 800 }}>L 5</span>
-                      <span style={{ fontWeight: 700, color: isDarkMode ? '#2dd4bf' : '#0f766e' }}>1.ᵉʳ lun</span>
+
+                    {/* Fila 2: Semana completa */}
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: isDarkMode ? '1.5px solid #0d9488' : '1.5px solid #0f766e', backgroundColor: isDarkMode ? 'rgba(13,148,136,0.15)' : '#f0fdfa', fontSize: '11px' }}>
+                      <span style={{ display: 'block', fontWeight: 800, color: isDarkMode ? '#2dd4bf' : '#0f766e', fontSize: '12px' }}>5</span>
+                      <span style={{ fontSize: '9px', fontWeight: 700, color: isDarkMode ? '#2dd4bf' : '#0f766e' }}>1.ᵉʳ lun</span>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', backgroundColor: isDarkMode ? '#17202e' : '#ffffff', fontSize: '11px' }}>
+                      <span style={{ display: 'block', fontWeight: 700, color: isDarkMode ? '#cbd5e1' : '#334155', fontSize: '12px' }}>6</span>
+                      <span style={{ fontSize: '9px', color: '#64748b' }}>Oct</span>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', backgroundColor: isDarkMode ? '#17202e' : '#ffffff', fontSize: '11px' }}>
+                      <span style={{ display: 'block', fontWeight: 700, color: isDarkMode ? '#cbd5e1' : '#334155', fontSize: '12px' }}>7</span>
+                      <span style={{ fontSize: '9px', color: '#64748b' }}>Oct</span>
+                    </div>
+                    {/* JUEVES 8 OCT - PRESENCIAL */}
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: '2px solid #2563eb', backgroundColor: isDarkMode ? 'rgba(37,99,235,0.22)' : '#eff6ff', fontSize: '11px', position: 'relative', boxShadow: '0 1px 4px rgba(37,99,235,0.2)' }}>
+                      <span style={{ display: 'block', fontWeight: 800, color: '#2563eb', fontSize: '12px' }}>8</span>
+                      <span style={{ fontSize: '9px', fontWeight: 800, color: '#2563eb' }}>Oct</span>
+                      <span style={{ position: 'absolute', top: '3px', right: '3px', width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#2563eb' }} />
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', backgroundColor: isDarkMode ? '#17202e' : '#ffffff', fontSize: '11px' }}>
+                      <span style={{ display: 'block', fontWeight: 700, color: isDarkMode ? '#cbd5e1' : '#334155', fontSize: '12px' }}>9</span>
+                      <span style={{ fontSize: '9px', color: '#64748b' }}>Oct</span>
                     </div>
                   </div>
-                  <span className="is-block mt-2" style={{ fontSize: '0.82rem', color: isDarkMode ? '#4ade80' : '#16a34a', fontWeight: 600 }}>
-                    ✔ El Jueves 1 de Octubre queda marcado automáticamente como presencial.
+
+                  <span className="is-block mt-3" style={{ fontSize: '0.84rem', color: isDarkMode ? '#4ade80' : '#16a34a', fontWeight: 600, lineHeight: 1.5 }}>
+                    ✔ Todos los jueves de Octubre (tanto el día 1 como el día 8) quedan marcados como presenciales desde el primer día del mes.
                   </span>
                 </div>
               </div>
 
               {/* Opción 2: Desde el 1er lunes del mes */}
               <div 
-                className="p-3" 
                 style={{ 
-                  borderRadius: '10px', 
+                  borderRadius: '12px', 
                   border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', 
-                  backgroundColor: isDarkMode ? '#1e293b' : '#f8fafc' 
+                  backgroundColor: isDarkMode ? '#1e293b' : '#f8fafc',
+                  padding: '1.25rem 1.4rem'
                 }}
               >
-                <div className="is-flex is-align-items-center mb-1.5" style={{ gap: '0.5rem' }}>
-                  <span className="tag is-info is-light has-text-weight-bold" style={{ fontSize: '11px' }}>SEMANA COMPLETA</span>
-                  <strong style={{ color: isDarkMode ? '#f1f5f9' : '#0f172a' }}>2. Desde el 1<sup>er</sup> lunes del mes</strong>
+                <div className="is-flex is-align-items-center mb-2" style={{ gap: '0.6rem' }}>
+                  <span className="tag is-info is-light has-text-weight-bold" style={{ fontSize: '11px', padding: '0.2rem 0.55rem' }}>SEMANA COMPLETA</span>
+                  <strong style={{ color: isDarkMode ? '#f1f5f9' : '#0f172a', fontSize: '0.98rem' }}>2. Desde el 1<sup>er</sup> lunes del mes</strong>
                 </div>
-                <p className="mb-2" style={{ fontSize: '0.88rem', lineHeight: 1.5 }}>
-                  El patrón presencial del mes entra en vigor <strong>a partir de su primer lunes</strong>. Los días previos al primer lunes se consideran parte de la semana del mes anterior y se rigen por la configuración de dicho mes previo.
+                <p className="mb-3" style={{ fontSize: '0.9rem', lineHeight: 1.6, color: isDarkMode ? '#cbd5e1' : '#475569' }}>
+                  El nuevo patrón presencial del mes entra en vigor <strong>a partir de su primer lunes</strong>. Los días previos al primer lunes se consideran parte de la semana del mes anterior y se rigen por la configuración de dicho mes previo.
                 </p>
-                <div className="p-2.5 mb-1" style={{ borderRadius: '8px', backgroundColor: isDarkMode ? '#151e2b' : '#ffffff', border: isDarkMode ? '1px solid #283445' : '1px solid #e2e8f0' }}>
-                  <span className="is-block mb-2 has-text-weight-semibold" style={{ fontSize: '0.82rem', color: isDarkMode ? '#94a3b8' : '#475569' }}>
+                <div 
+                  style={{ 
+                    borderRadius: '10px', 
+                    backgroundColor: isDarkMode ? '#151e2b' : '#ffffff', 
+                    border: isDarkMode ? '1px solid #283445' : '1px solid #e2e8f0',
+                    padding: '1.1rem 1.25rem'
+                  }}
+                >
+                  <span className="is-block mb-3 has-text-weight-semibold" style={{ fontSize: '0.84rem', color: isDarkMode ? '#94a3b8' : '#334155' }}>
                     📌 <em>Ejemplo: Septiembre tenía presenciales los <strong>Martes</strong> y Octubre los <strong>Jueves</strong>:</em>
                   </span>
-                  {/* Fila de días visuales */}
-                  <div className="is-flex is-flex-wrap-wrap" style={{ gap: '6px' }}>
-                    <div style={{ textAlign: 'center', width: '40px', padding: '4px 2px', borderRadius: '6px', border: '2px solid #2563eb', backgroundColor: isDarkMode ? 'rgba(37,99,235,0.2)' : '#eff6ff', fontSize: '11px', position: 'relative' }}>
-                      <span style={{ display: 'block', color: '#2563eb', fontSize: '9px', fontWeight: 800 }}>M 29</span>
-                      <span style={{ fontWeight: 800, color: '#2563eb' }}>Sep</span>
-                      <span style={{ position: 'absolute', top: '2px', right: '2px', width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#2563eb' }} />
+
+                  {/* Mini Calendario 2 Filas */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', maxWidth: '340px' }}>
+                    {/* Cabecera L M X J V */}
+                    <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '11px', color: isDarkMode ? '#94a3b8' : '#64748b' }}>L</div>
+                    <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '11px', color: '#2563eb' }}>M</div>
+                    <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '11px', color: isDarkMode ? '#94a3b8' : '#64748b' }}>X</div>
+                    <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '11px', color: '#2563eb' }}>J</div>
+                    <div style={{ textAlign: 'center', fontWeight: 800, fontSize: '11px', color: isDarkMode ? '#94a3b8' : '#64748b' }}>V</div>
+
+                    {/* Fila 1: Semana regida por Septiembre (Martes presencial) */}
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', backgroundColor: isDarkMode ? '#1a2230' : '#f8fafc', fontSize: '11px' }}>
+                      <span style={{ display: 'block', fontWeight: 700, color: '#64748b', fontSize: '12px' }}>28</span>
+                      <span style={{ fontSize: '9px', color: '#94a3b8' }}>Sep</span>
                     </div>
-                    <div style={{ textAlign: 'center', width: '40px', padding: '4px 2px', borderRadius: '6px', border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', fontSize: '11px' }}>
-                      <span style={{ display: 'block', color: '#64748b', fontSize: '9px', fontWeight: 700 }}>X 30</span>
-                      <span style={{ color: '#64748b' }}>Sep</span>
+                    {/* MARTES 29 SEP - PRESENCIAL */}
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: '2px solid #2563eb', backgroundColor: isDarkMode ? 'rgba(37,99,235,0.22)' : '#eff6ff', fontSize: '11px', position: 'relative', boxShadow: '0 1px 4px rgba(37,99,235,0.2)' }}>
+                      <span style={{ display: 'block', fontWeight: 800, color: '#2563eb', fontSize: '12px' }}>29</span>
+                      <span style={{ fontSize: '9px', fontWeight: 800, color: '#2563eb' }}>Sep</span>
+                      <span style={{ position: 'absolute', top: '3px', right: '3px', width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#2563eb' }} />
                     </div>
-                    <div style={{ textAlign: 'center', width: '40px', padding: '4px 2px', borderRadius: '6px', border: isDarkMode ? '1px dashed #64748b' : '1px dashed #94a3b8', backgroundColor: isDarkMode ? '#1e242c' : '#f1f5f9', fontSize: '11px' }}>
-                      <span style={{ display: 'block', color: '#64748b', fontSize: '9px', fontWeight: 700 }}>J 1</span>
-                      <span style={{ color: '#64748b' }}>Oct</span>
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0', backgroundColor: isDarkMode ? '#1a2230' : '#f8fafc', fontSize: '11px' }}>
+                      <span style={{ display: 'block', fontWeight: 700, color: '#64748b', fontSize: '12px' }}>30</span>
+                      <span style={{ fontSize: '9px', color: '#94a3b8' }}>Sep</span>
                     </div>
-                    <div style={{ textAlign: 'center', width: '40px', padding: '4px 2px', borderRadius: '6px', border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', fontSize: '11px' }}>
-                      <span style={{ display: 'block', color: '#64748b', fontSize: '9px', fontWeight: 700 }}>V 2</span>
-                      <span style={{ color: '#64748b' }}>Oct</span>
+                    {/* JUEVES 1 OCT - NO ES PRESENCIAL (pertenece a la semana de Sep) */}
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: isDarkMode ? '1.5px dashed #64748b' : '1.5px dashed #94a3b8', backgroundColor: isDarkMode ? '#1a2230' : '#f1f5f9', fontSize: '11px' }}>
+                      <span style={{ display: 'block', fontWeight: 700, color: '#64748b', fontSize: '12px' }}>1</span>
+                      <span style={{ fontSize: '9px', color: '#94a3b8' }}>Oct</span>
                     </div>
-                    <div style={{ textAlign: 'center', width: '48px', padding: '4px 2px', borderRadius: '6px', border: isDarkMode ? '1px solid #0d9488' : '1px solid #0f766e', backgroundColor: isDarkMode ? 'rgba(13,148,136,0.15)' : '#f0fdfa', fontSize: '11px' }}>
-                      <span style={{ display: 'block', color: isDarkMode ? '#2dd4bf' : '#0f766e', fontSize: '9px', fontWeight: 800 }}>L 5</span>
-                      <span style={{ fontWeight: 700, color: isDarkMode ? '#2dd4bf' : '#0f766e' }}>1.ᵉʳ lun</span>
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', backgroundColor: isDarkMode ? '#17202e' : '#ffffff', fontSize: '11px' }}>
+                      <span style={{ display: 'block', fontWeight: 700, color: isDarkMode ? '#cbd5e1' : '#334155', fontSize: '12px' }}>2</span>
+                      <span style={{ fontSize: '9px', color: '#64748b' }}>Oct</span>
                     </div>
-                    <div style={{ textAlign: 'center', width: '40px', padding: '4px 2px', borderRadius: '6px', border: '2px solid #2563eb', backgroundColor: isDarkMode ? 'rgba(37,99,235,0.2)' : '#eff6ff', fontSize: '11px', position: 'relative' }}>
-                      <span style={{ display: 'block', color: '#2563eb', fontSize: '9px', fontWeight: 800 }}>J 8</span>
-                      <span style={{ fontWeight: 800, color: '#2563eb' }}>Oct</span>
-                      <span style={{ position: 'absolute', top: '2px', right: '2px', width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#2563eb' }} />
+
+                    {/* Fila 2: Semana que arranca con el 1er lunes de Octubre (Jueves presencial) */}
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: isDarkMode ? '1.5px solid #0d9488' : '1.5px solid #0f766e', backgroundColor: isDarkMode ? 'rgba(13,148,136,0.15)' : '#f0fdfa', fontSize: '11px' }}>
+                      <span style={{ display: 'block', fontWeight: 800, color: isDarkMode ? '#2dd4bf' : '#0f766e', fontSize: '12px' }}>5</span>
+                      <span style={{ fontSize: '9px', fontWeight: 700, color: isDarkMode ? '#2dd4bf' : '#0f766e' }}>1.ᵉʳ lun</span>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', backgroundColor: isDarkMode ? '#17202e' : '#ffffff', fontSize: '11px' }}>
+                      <span style={{ display: 'block', fontWeight: 700, color: isDarkMode ? '#cbd5e1' : '#334155', fontSize: '12px' }}>6</span>
+                      <span style={{ fontSize: '9px', color: '#64748b' }}>Oct</span>
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', backgroundColor: isDarkMode ? '#17202e' : '#ffffff', fontSize: '11px' }}>
+                      <span style={{ display: 'block', fontWeight: 700, color: isDarkMode ? '#cbd5e1' : '#334155', fontSize: '12px' }}>7</span>
+                      <span style={{ fontSize: '9px', color: '#64748b' }}>Oct</span>
+                    </div>
+                    {/* JUEVES 8 OCT - PRESENCIAL */}
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: '2px solid #2563eb', backgroundColor: isDarkMode ? 'rgba(37,99,235,0.22)' : '#eff6ff', fontSize: '11px', position: 'relative', boxShadow: '0 1px 4px rgba(37,99,235,0.2)' }}>
+                      <span style={{ display: 'block', fontWeight: 800, color: '#2563eb', fontSize: '12px' }}>8</span>
+                      <span style={{ fontSize: '9px', fontWeight: 800, color: '#2563eb' }}>Oct</span>
+                      <span style={{ position: 'absolute', top: '3px', right: '3px', width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#2563eb' }} />
+                    </div>
+                    <div style={{ textAlign: 'center', padding: '6px 2px', borderRadius: '7px', border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', backgroundColor: isDarkMode ? '#17202e' : '#ffffff', fontSize: '11px' }}>
+                      <span style={{ display: 'block', fontWeight: 700, color: isDarkMode ? '#cbd5e1' : '#334155', fontSize: '12px' }}>9</span>
+                      <span style={{ fontSize: '9px', color: '#64748b' }}>Oct</span>
                     </div>
                   </div>
-                  <span className="is-block mt-2" style={{ fontSize: '0.82rem', color: isDarkMode ? '#7dd3fc' : '#0284c7', fontWeight: 600 }}>
-                    ℹ El Jueves 1 de Octubre NO es presencial (pertenece a la semana de Septiembre). El primer jueves presencial es el día 8 de Octubre.
+
+                  <span className="is-block mt-3" style={{ fontSize: '0.84rem', color: isDarkMode ? '#7dd3fc' : '#0284c7', fontWeight: 600, lineHeight: 1.5 }}>
+                    ℹ El Jueves 1 de Octubre NO es presencial (la semana aún pertenece a Septiembre con martes presencial). El nuevo patrón entra en vigor el lunes 5, marcando como primer jueves presencial el día 8 de Octubre.
                   </span>
                 </div>
               </div>
             </div>
           </section>
-
 
           <section className="mb-4">
             <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
@@ -206,7 +282,7 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
 
           <section className="mb-4">
             <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
-              <span>🎨</span>
+              <span>🖍️</span>
               <span>Marcadores</span>
             </h4>
             <p className="mb-2">
