@@ -7,6 +7,8 @@ interface OptionsSidebarProps {
   setViewMode: (mode: ViewMode) => void;
   showWeekends: boolean;
   setShowWeekends: (show: boolean) => void;
+  showNextYearJanuary: boolean;
+  setShowNextYearJanuary: (show: boolean) => void;
   show4060: boolean;
   setShow4060: (show: boolean) => void;
   presencialFirstMonday: boolean;
@@ -30,6 +32,8 @@ export const OptionsSidebar: React.FC<OptionsSidebarProps> = ({
   setViewMode,
   showWeekends,
   setShowWeekends,
+  showNextYearJanuary,
+  setShowNextYearJanuary,
   show4060,
   setShow4060,
   presencialFirstMonday,
@@ -165,7 +169,7 @@ export const OptionsSidebar: React.FC<OptionsSidebarProps> = ({
             </div>
           </div>
 
-          <hr style={{ margin: '0.1rem 0', backgroundColor: isDarkMode ? '#334155' : '#f1f5f9', height: '1px' }} />
+          <hr style={{ margin: 0, border: 'none', backgroundColor: isDarkMode ? '#334155' : '#f1f5f9', height: '1px' }} />
 
           {/* 2. Mostrar fines de semana */}
           <label 
@@ -180,14 +184,50 @@ export const OptionsSidebar: React.FC<OptionsSidebarProps> = ({
               type="checkbox" 
               checked={showWeekends} 
               onChange={(e) => setShowWeekends(e.target.checked)} 
-              style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#0f766e' }}
+              style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#0f766e', margin: 0 }}
             />
             <span style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, color: isDarkMode ? '#e2e8f0' : '#334155' }}>
               Mostrar fines de semana
             </span>
           </label>
 
-          <hr style={{ margin: '0.1rem 0', backgroundColor: isDarkMode ? '#334155' : '#f1f5f9', height: '1px' }} />
+          {/* 2b. Mostrar enero siguiente año (Solo vista anual, animado) */}
+          <div 
+            style={{
+              maxHeight: viewMode === 'anual' ? '60px' : '0px',
+              opacity: viewMode === 'anual' ? 1 : 0,
+              transform: viewMode === 'anual' ? 'translateY(0)' : 'translateY(-4px)',
+              marginTop: viewMode === 'anual' ? 0 : '-0.65rem',
+              overflow: 'hidden',
+              transition: 'max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.22s ease, margin-top 0.28s ease, transform 0.22s ease',
+              pointerEvents: viewMode === 'anual' ? 'auto' : 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.65rem'
+            }}
+          >
+            <hr style={{ margin: 0, border: 'none', backgroundColor: isDarkMode ? '#334155' : '#f1f5f9', height: '1px' }} />
+            <label 
+              className="checkbox is-flex is-align-items-center mb-0" 
+              style={{ 
+                gap: '0.6rem', 
+                cursor: 'pointer',
+                userSelect: 'none'
+              }}
+            >
+              <input 
+                type="checkbox" 
+                checked={showNextYearJanuary} 
+                onChange={(e) => setShowNextYearJanuary(e.target.checked)} 
+                style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#0f766e', margin: 0 }}
+              />
+              <span style={{ fontSize: 'var(--font-size-label)', fontWeight: 600, color: isDarkMode ? '#e2e8f0' : '#334155' }}>
+                Mostrar enero siguiente año
+              </span>
+            </label>
+          </div>
+
+          <hr style={{ margin: 0, border: 'none', backgroundColor: isDarkMode ? '#334155' : '#f1f5f9', height: '1px' }} />
 
           {/* 3. Mostrar panel 40-60 (Funcionarios AEAT) */}
           <label 

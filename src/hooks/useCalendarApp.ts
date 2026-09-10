@@ -50,6 +50,8 @@ export interface UseCalendarAppReturn {
   toggleDarkMode: () => void;
   showWeekends: boolean;
   setShowWeekends: React.Dispatch<React.SetStateAction<boolean>>;
+  showNextYearJanuary: boolean;
+  setShowNextYearJanuary: React.Dispatch<React.SetStateAction<boolean>>;
 
   legendColors: LegendColorItem[];
   setLegendColors: React.Dispatch<React.SetStateAction<LegendColorItem[]>>;
@@ -192,6 +194,20 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
   }, []);
 
   const [showWeekends, setShowWeekends] = useState(true);
+
+  const [showNextYearJanuary, setShowNextYearJanuary] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('vacationApp_showNextYearJanuary');
+      if (saved !== null) return JSON.parse(saved);
+    } catch (e) {}
+    return false;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('vacationApp_showNextYearJanuary', JSON.stringify(showNextYearJanuary));
+    } catch (e) {}
+  }, [showNextYearJanuary]);
 
   // Colores de leyenda
   const [legendColors, setLegendColors] = useState<LegendColorItem[]>(() => {
@@ -566,6 +582,7 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
         limits,
         table4060,
         showWeekends,
+        showNextYearJanuary,
         show4060,
         planningMode,
         viewMode
@@ -669,6 +686,10 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
         setShow4060(d.show4060);
         try { localStorage.setItem('vacationApp_show4060', JSON.stringify(d.show4060)); } catch (e) {}
       }
+      if (typeof d.showNextYearJanuary === 'boolean') {
+        setShowNextYearJanuary(d.showNextYearJanuary);
+        try { localStorage.setItem('vacationApp_showNextYearJanuary', JSON.stringify(d.showNextYearJanuary)); } catch (e) {}
+      }
       if (d.planningMode === 'libre' || d.planningMode === 'balance') {
         setPlanningMode(d.planningMode);
         try { localStorage.setItem('vacationApp_planningMode', d.planningMode); } catch (e) {}
@@ -725,7 +746,7 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, [viewMode, showWeekends, currentDate, currentYear]);
+  }, [viewMode, showWeekends, showNextYearJanuary, currentDate, currentYear]);
 
   return {
     currentDate,
@@ -763,6 +784,8 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
     toggleDarkMode,
     showWeekends,
     setShowWeekends,
+    showNextYearJanuary,
+    setShowNextYearJanuary,
 
     legendColors,
     setLegendColors,

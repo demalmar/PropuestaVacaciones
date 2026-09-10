@@ -15,11 +15,46 @@
 }
 
 /* Efecto suave de elevación al pasar el ratón por los meses anuales */
-.annual-calendar-grid > div {
+.annual-calendar-grid > div:not(.annual-calendar-next-january) {
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-.annual-calendar-grid > div:hover {
+.annual-calendar-grid > div:not(.annual-calendar-next-january):hover {
   transform: translateY(-2px);
 }
 
+/* Enero siguiente año centrado en la siguiente fila */
+.annual-calendar-next-january {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  animation: fadeInNextJan 0.28s ease-out;
+}
+
+.annual-calendar-next-january > div {
+  width: calc((100% - 3 * 0.65rem) / 4);
+  min-width: 0;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.annual-calendar-next-january > div:hover {
+  transform: translateY(-2px);
+}
+
+@media screen and (max-width: 1150px) {
+  .annual-calendar-next-january > div {
+    width: calc((100% - 3 * 0.45rem) / 4);
+  }
+}
+
+@keyframes fadeInNextJan {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

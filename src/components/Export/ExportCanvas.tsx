@@ -20,6 +20,7 @@ interface ExportCanvasProps {
   rightYear: number;
   rightMonth: number;
   showWeekends: boolean;
+  showNextYearJanuary?: boolean;
   coloredDays: ColoredDays;
   legendColors: LegendColorItem[];
   presencialFirstMonday: boolean;
@@ -41,6 +42,7 @@ export const ExportCanvas: React.FC<ExportCanvasProps> = ({
   rightYear,
   rightMonth,
   showWeekends,
+  showNextYearJanuary = false,
   coloredDays,
   legendColors,
   presencialFirstMonday,
@@ -134,6 +136,33 @@ export const ExportCanvas: React.FC<ExportCanvasProps> = ({
                     />
                   </div>
                 ))}
+                {showNextYearJanuary && (
+                  <div 
+                    style={{
+                      gridColumn: '1 / -1',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      width: '100%'
+                    }}
+                  >
+                    <div style={{ width: '280px' }}>
+                      <MonthGrid
+                        targetYear={currentYear + 1}
+                        targetMonth={0}
+                        customTitle={`Enero ${currentYear + 1}`}
+                        isExport={true}
+                        isCompact={true}
+                        showWeekends={showWeekends}
+                        isDarkMode={false}
+                        coloredDays={coloredDays}
+                        legendColors={legendColors}
+                        presencialFirstMonday={presencialFirstMonday}
+                        weeklySelections={weeklySelections}
+                        fixedWeeklySelections={fixedWeeklySelections}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="is-flex" style={{ gap: '2rem', alignItems: 'flex-start' }}>

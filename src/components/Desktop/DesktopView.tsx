@@ -73,6 +73,7 @@ export const DesktopView: React.FC<DesktopViewProps> = ({ app }) => {
             onNextYear={app.handleNextYear}
             onYearChange={app.handleSetYear}
             showWeekends={app.showWeekends}
+            showNextYearJanuary={app.showNextYearJanuary}
             isDarkMode={app.isDarkMode}
             coloredDays={app.coloredDays}
             legendColors={app.legendColors}
@@ -94,6 +95,8 @@ export const DesktopView: React.FC<DesktopViewProps> = ({ app }) => {
       setViewMode={app.setViewMode}
       showWeekends={app.showWeekends}
       setShowWeekends={app.setShowWeekends}
+      showNextYearJanuary={app.showNextYearJanuary}
+      setShowNextYearJanuary={app.setShowNextYearJanuary}
       show4060={app.show4060}
       setShow4060={app.setShow4060}
       presencialFirstMonday={app.presencialFirstMonday}

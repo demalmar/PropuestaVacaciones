@@ -42,6 +42,7 @@ const CalendarApp: React.FC = () => {
         rightYear={app.rightYear}
         rightMonth={app.rightMonth}
         showWeekends={app.showWeekends}
+        showNextYearJanuary={app.showNextYearJanuary}
         coloredDays={app.coloredDays}
         legendColors={app.legendColors}
         presencialFirstMonday={app.presencialFirstMonday}

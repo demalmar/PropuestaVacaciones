@@ -13,6 +13,7 @@ import './MonthGrid.css';
 interface MonthGridProps {
   targetYear: number;
   targetMonth: number;
+  customTitle?: string;
   isExport?: boolean;
   isCompact?: boolean;
   showWeekends: boolean;
@@ -29,6 +30,7 @@ interface MonthGridProps {
 export const MonthGrid: React.FC<MonthGridProps> = ({
   targetYear,
   targetMonth,
+  customTitle,
   isExport = false,
   isCompact = false,
   showWeekends,
@@ -138,7 +140,7 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
             userSelect: 'none'
           }}
         >
-          {isCompact ? MONTHS[targetMonth] : `${MONTHS[targetMonth]} ${targetYear}`}
+          {customTitle ? customTitle : (isCompact ? MONTHS[targetMonth] : `${MONTHS[targetMonth]} ${targetYear}`)}
         </h3>
       </div>
       

@@ -15,6 +15,7 @@ interface AnnualViewProps {
   onNextYear: () => void;
   onYearChange?: (year: number) => void;
   showWeekends: boolean;
+  showNextYearJanuary?: boolean;
   isDarkMode: boolean;
   coloredDays: ColoredDays;
   legendColors: LegendColorItem[];
@@ -31,6 +32,7 @@ export const AnnualView: React.FC<AnnualViewProps> = ({
   onNextYear,
   onYearChange,
   showWeekends,
+  showNextYearJanuary = false,
   isDarkMode,
   coloredDays,
   legendColors,
@@ -216,6 +218,30 @@ export const AnnualView: React.FC<AnnualViewProps> = ({
             />
           </div>
         ))}
+
+        {/* Enero del año siguiente centrado en la siguiente fila */}
+        {showNextYearJanuary && (
+          <div className="annual-calendar-next-january">
+            <div>
+              <MonthGrid
+                targetYear={currentYear + 1}
+                targetMonth={0}
+                customTitle={`Enero ${currentYear + 1}`}
+                isExport={false}
+                isCompact={true}
+                showWeekends={showWeekends}
+                isDarkMode={isDarkMode}
+                coloredDays={coloredDays}
+                legendColors={legendColors}
+                presencialFirstMonday={presencialFirstMonday}
+                weeklySelections={weeklySelections}
+                fixedWeeklySelections={fixedWeeklySelections}
+                onDayClick={onDayClick}
+                onHeaderDayClick={onHeaderDayClick}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
