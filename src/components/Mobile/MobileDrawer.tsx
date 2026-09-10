@@ -378,70 +378,93 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             </button>
           </div>
 
-          {/* 6. Limpiar calendario */}
-          <div>
-            {showClearConfirm ? (
-              <div className="notification is-danger is-light p-3 mb-0" style={{ border: '1px solid #f87171', borderRadius: '10px' }}>
-                <p className="is-size-7 has-text-weight-bold has-text-centered mb-2">¿Borrar todo lo marcado?</p>
-                <div className="buttons are-small mb-0 is-flex">
-                  <button 
-                    onClick={() => { onClearCalendar(); setShowClearConfirm(false); handleClose(); }} 
-                    className="button is-danger is-fullwidth"
-                    style={{ borderRadius: '6px' }}
-                  >
-                    Sí, borrar
-                  </button>
-                  <button 
-                    onClick={() => setShowClearConfirm(false)} 
-                    className="button is-light is-fullwidth"
-                    style={{ borderRadius: '6px' }}
-                  >
-                    Cancelar
-                  </button>
-                </div>
+          {/* 6. Acciones finales: Limpiar calendario (20%, min-width = alto) y Guardar PNG (resto) */}
+          {showClearConfirm ? (
+            <div 
+              className="notification is-danger is-light p-2 mb-0" 
+              style={{ 
+                width: '100%', 
+                border: '1px solid #f87171', 
+                borderRadius: '10px'
+              }}
+            >
+              <p className="has-text-weight-bold has-text-centered mb-1.5" style={{ fontSize: '12px' }}>
+                ¿Borrar todo el calendario?
+              </p>
+              <div className="buttons are-small mb-0 is-flex" style={{ gap: '6px' }}>
+                <button 
+                  type="button"
+                  onClick={() => { onClearCalendar(); setShowClearConfirm(false); handleClose(); }} 
+                  className="button is-danger is-fullwidth mb-0"
+                  style={{ borderRadius: '6px', fontSize: '11px', fontWeight: 700, height: '30px' }}
+                >
+                  Sí, borrar
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setShowClearConfirm(false)} 
+                  className="button is-light is-fullwidth mb-0"
+                  style={{ borderRadius: '6px', fontSize: '11px', height: '30px' }}
+                >
+                  Cancelar
+                </button>
               </div>
-            ) : (
+            </div>
+          ) : (
+            <div className="is-flex is-align-items-center" style={{ gap: '0.5rem', width: '100%', marginTop: '0.25rem' }}>
               <button 
+                type="button"
                 onClick={() => setShowClearConfirm(true)} 
-                className="button is-fullwidth"
+                className="button"
                 style={{ 
+                  width: '20%',
+                  minWidth: '44px',
+                  height: '44px',
                   borderRadius: '10px', 
-                  border: '1px solid #fecdd3', 
+                  border: isDarkMode ? '1px solid rgba(244, 63, 94, 0.4)' : '1px solid #fecdd3', 
                   color: '#e11d48', 
-                  backgroundColor: isDarkMode ? 'rgba(225, 29, 72, 0.12)' : '#fff1f2', 
-                  fontWeight: 600,
-                  height: '42px'
+                  backgroundColor: isDarkMode ? 'rgba(225, 29, 72, 0.14)' : '#fff1f2', 
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: 0,
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  transition: 'all 0.15s ease'
                 }}
+                title="Limpiar calendario (borrar todas las selecciones)"
               >
-                <span className="icon is-small"><Trash2 size={16} /></span>
-                <span>Limpiar calendario</span>
+                <Trash2 size={18} strokeWidth={2.2} />
               </button>
-            )}
-          </div>
 
-          {/* 7. Botón Guardar PNG */}
-          <button 
-            onClick={() => { onExportPNG(); handleClose(); }}
-            className="button is-fullwidth"
-            style={{ 
-              height: '44px',
-              borderRadius: '10px', 
-              background: 'linear-gradient(135deg, #0e7490 0%, #0f766e 100%)', 
-              color: '#ffffff', 
-              border: 'none', 
-              boxShadow: '0 4px 14px rgba(15, 118, 110, 0.35)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginTop: '0.25rem',
-              gap: '0.5rem',
-              padding: '4px 8px'
-            }}
-            title="Guardar imagen PNG"
-          >
-            <Download size={18} strokeWidth={2.3} />
-            <span style={{ fontWeight: 800 }}>Guardar PNG</span>
-          </button>
+              <button 
+                type="button"
+                onClick={() => { onExportPNG(); handleClose(); }}
+                className="button"
+                style={{ 
+                  flex: 1,
+                  minWidth: 0,
+                  height: '44px',
+                  borderRadius: '10px', 
+                  background: 'linear-gradient(135deg, #0e7490 0%, #0f766e 100%)', 
+                  color: '#ffffff', 
+                  border: 'none', 
+                  boxShadow: '0 4px 14px rgba(15, 118, 110, 0.35)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  padding: '4px 8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+                title="Guardar imagen PNG"
+              >
+                <Download size={18} strokeWidth={2.3} />
+                <span style={{ fontWeight: 800 }}>Guardar PNG</span>
+              </button>
+            </div>
+          )}
 
         </div>
       </div>

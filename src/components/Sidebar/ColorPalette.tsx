@@ -50,7 +50,7 @@ export const ColorPalette: React.FC<ColorPaletteProps> = ({
         }}
       >
         {/* Lado izquierdo: Título y subtítulo */}
-        <div className="py-2 px-3 is-flex is-flex-direction-column is-justify-content-center" style={{ minWidth: 0, flex: 1 }}>
+        <div className="py-2 px-3 is-flex is-flex-direction-column is-justify-content-center" style={{ paddingRight: '6px', minWidth: 0, flex: 1 }}>
           <h1 
             className="title mb-0" 
             style={{ 
@@ -65,10 +65,12 @@ export const ColorPalette: React.FC<ColorPaletteProps> = ({
             Propuesta Vacaciones
           </h1>
           <span 
+            title="Organiza y planifica tu calendario laboral"
             style={{ 
               color: isDarkMode ? '#94a3b8' : '#64748b', 
-              fontSize: 'var(--font-size-subtext)', 
+              fontSize: '10px', 
               fontWeight: 500,
+              letterSpacing: '-0.025em',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',

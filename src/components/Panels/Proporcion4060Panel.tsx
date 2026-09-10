@@ -1,5 +1,5 @@
-import React from 'react';
-import { HelpCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { HelpCircle, Info } from 'lucide-react';
 import { Table4060Data, CalendarStats } from '../../types/calendar.ts';
 
 interface Proporcion4060PanelProps {
@@ -21,6 +21,7 @@ export const Proporcion4060Panel: React.FC<Proporcion4060PanelProps> = ({
   onUpdatePastTT,
   onOpenHelpModal
 }) => {
+  const [showPreviosInfo, setShowPreviosInfo] = useState(false);
   const cantPeriodo = table4060.cant?.periodo ?? 0;
   const cantIndep = table4060.cant?.independientes ?? 0;
 
@@ -44,8 +45,9 @@ export const Proporcion4060Panel: React.FC<Proporcion4060PanelProps> = ({
   const presencPctStr = `${presencPctVal.toFixed(1).replace('.', ',')}%`;
   const ttPctStr = `${ttPctVal.toFixed(1).replace('.', ',')}%`;
 
-  const presencBarWidth = totalModalityDays > 0 ? Math.min(100, Math.max(0, presencPctVal)) : 0;
-  const ttBarWidth = totalModalityDays > 0 ? Math.min(100, Math.max(0, 100 - presencBarWidth)) : 0;
+  const isZeroModality = totalModalityDays === 0;
+  const presencBarWidth = isZeroModality ? 40 : Math.min(100, Math.max(0, presencPctVal));
+  const ttBarWidth = isZeroModality ? 60 : Math.min(100, Math.max(0, 100 - presencBarWidth));
 
   const presencRemainingGoal = Math.max(0, targetPresencDays - presencDays);
   const ttRemainingGoal = Math.max(0, targetTTDays - ttDays);
@@ -57,15 +59,11 @@ export const Proporcion4060Panel: React.FC<Proporcion4060PanelProps> = ({
   const presencColor = useDark ? '#60a5fa' : '#3273dc';
   const presencBarColor = '#3273dc';
   const presencBgTint = useDark ? 'rgba(50, 115, 220, 0.18)' : 'rgba(50, 115, 220, 0.08)';
-  const presencTagBg = useDark ? 'rgba(50, 115, 220, 0.22)' : 'rgba(50, 115, 220, 0.1)';
-  const presencTagColor = useDark ? '#93c5fd' : '#3273dc';
 
   // Teletrabajo: Verde esmeralda luminoso de alto contraste (sin componente azul)
   const ttColor = useDark ? '#4ade80' : '#15803d';
   const ttBarColor = useDark ? '#22c55e' : '#16a34a';
   const ttBgTint = useDark ? 'rgba(34, 197, 94, 0.16)' : 'rgba(22, 163, 74, 0.08)';
-  const ttTagBg = useDark ? 'rgba(34, 197, 94, 0.2)' : 'rgba(22, 163, 74, 0.1)';
-  const ttTagColor = useDark ? '#4ade80' : '#15803d';
 
   return (
     <div 
@@ -146,7 +144,7 @@ export const Proporcion4060Panel: React.FC<Proporcion4060PanelProps> = ({
                     letterSpacing: '0.01em'
                   }}
                 >
-                  Vacaciones
+                  Días de vacaciones tomados en...
                 </th>
               </tr>
               <tr style={{ backgroundColor: useDark ? '#141d2b' : '#f1f5f9' }}>
@@ -159,12 +157,12 @@ export const Proporcion4060Panel: React.FC<Proporcion4060PanelProps> = ({
               </tr>
             </thead>
             <tbody>
-              {/* Fila Días Previos */}
+              {/* Fila Días Previos (opción secundaria compacta) */}
               {!isExport && (
-                <tr style={{ backgroundColor: useDark ? 'rgba(255, 255, 255, 0.03)' : '#ffffff' }}>
-                  <td style={{ verticalAlign: 'middle', padding: '6px 8px' }}>
-                    <div className="is-flex is-align-items-center is-justify-content-center" style={{ gap: '0.45rem' }}>
-                      <span style={{ fontSize: 'var(--font-size-note)', fontWeight: 'var(--font-weight-bold)', color: useDark ? '#94a3b8' : '#64748b' }}>
+                <tr style={{ backgroundColor: useDark ? 'rgba(255, 255, 255, 0.015)' : '#fafafa' }}>
+                  <td style={{ verticalAlign: 'middle', padding: '3px 6px', position: 'relative' }}>
+                    <div className="is-flex is-align-items-center is-justify-content-center" style={{ gap: '0.35rem' }}>
+                      <span style={{ fontSize: '10px', fontWeight: 600, color: useDark ? '#64748b' : '#94a3b8', letterSpacing: '0.01em' }}>
                         Previos:
                       </span>
                       <input 
@@ -175,15 +173,109 @@ export const Proporcion4060Panel: React.FC<Proporcion4060PanelProps> = ({
                           const val = Math.max(0, parseInt(e.target.value) || 0);
                           onUpdatePastPresenc(val);
                         }}
-                        className="input is-small has-text-centered has-text-weight-bold" 
-                        style={{ width: '52px', height: '28px', padding: '2px', borderRadius: '5px', fontSize: 'var(--font-size-input)' }}
+                        className="input is-small has-text-centered" 
+                        style={{ 
+                          width: '36px', 
+                          height: '22px', 
+                          padding: '0 2px', 
+                          borderRadius: '4px', 
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          border: useDark ? '1px solid #334155' : '1px solid #cbd5e1'
+                        }}
                         title="Días presenciales disfrutados previamente fuera de este calendario"
                       />
                     </div>
+
+                    {/* Icono info entre los dos Previos con cuadro flotante contextual */}
+                    <div 
+                      style={{ 
+                        position: 'absolute', 
+                        right: '-9px', 
+                        top: '50%', 
+                        transform: 'translateY(-50%)', 
+                        zIndex: 30 
+                      }}
+                      onMouseEnter={() => setShowPreviosInfo(true)}
+                      onMouseLeave={() => setShowPreviosInfo(false)}
+                    >
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShowPreviosInfo(prev => !prev);
+                        }}
+                        onFocus={() => setShowPreviosInfo(true)}
+                        onBlur={() => setShowPreviosInfo(false)}
+                        className="button is-ghost p-0 is-flex is-align-items-center is-justify-content-center"
+                        style={{ 
+                          width: '18px', 
+                          height: '18px', 
+                          borderRadius: '50%', 
+                          backgroundColor: useDark ? '#1e293b' : '#ffffff',
+                          border: showPreviosInfo 
+                            ? (useDark ? '1.5px solid #38bdf8' : '1.5px solid #0284c7') 
+                            : (useDark ? '1px solid #475569' : '1px solid #cbd5e1'),
+                          color: showPreviosInfo ? (useDark ? '#38bdf8' : '#0284c7') : (useDark ? '#94a3b8' : '#64748b'),
+                          cursor: 'pointer',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title="Información sobre los días previos"
+                        aria-label="Información sobre los días previos"
+                      >
+                        <Info size={10} strokeWidth={2.5} />
+                      </button>
+
+                      {/* Cuadro flotante contextual (tooltip) */}
+                      {showPreviosInfo && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            left: '50%',
+                            bottom: 'calc(100% + 8px)',
+                            transform: 'translateX(-50%)',
+                            width: '235px',
+                            backgroundColor: useDark ? '#1e293b' : '#ffffff',
+                            color: useDark ? '#e2e8f0' : '#1e293b',
+                            border: useDark ? '1.5px solid #38bdf8' : '1.5px solid #0284c7',
+                            borderRadius: '8px',
+                            padding: '8px 10px',
+                            boxShadow: useDark ? '0 8px 24px rgba(0,0,0,0.5)' : '0 8px 24px rgba(0,0,0,0.15)',
+                            fontSize: '11px',
+                            lineHeight: 1.45,
+                            zIndex: 100,
+                            textAlign: 'left',
+                            pointerEvents: 'none'
+                          }}
+                        >
+                          <div className="is-flex is-align-items-flex-start" style={{ gap: '0.45rem' }}>
+                            <Info size={14} style={{ color: useDark ? '#38bdf8' : '#0284c7', flexShrink: 0, marginTop: '2px' }} />
+                            <span>
+                              Si ya has disfrutado de días anteriormente (o no los tienes a mano en el calendario pero sabes cuántos fueron), puedes contarlos directamente en estas casillas para comprobar la proporción 40-60 que te queda.
+                            </span>
+                          </div>
+                          {/* Flecha inferior apuntando al botón */}
+                          <div 
+                            style={{
+                              position: 'absolute',
+                              bottom: '-5px',
+                              left: '50%',
+                              transform: 'translateX(-50%) rotate(45deg)',
+                              width: '8px',
+                              height: '8px',
+                              backgroundColor: useDark ? '#1e293b' : '#ffffff',
+                              borderRight: useDark ? '1.5px solid #38bdf8' : '1.5px solid #0284c7',
+                              borderBottom: useDark ? '1.5px solid #38bdf8' : '1.5px solid #0284c7'
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </td>
-                  <td style={{ verticalAlign: 'middle', padding: '6px 8px' }}>
-                    <div className="is-flex is-align-items-center is-justify-content-center" style={{ gap: '0.45rem' }}>
-                      <span style={{ fontSize: 'var(--font-size-note)', fontWeight: 'var(--font-weight-bold)', color: useDark ? '#94a3b8' : '#64748b' }}>
+                  <td style={{ verticalAlign: 'middle', padding: '3px 6px' }}>
+                    <div className="is-flex is-align-items-center is-justify-content-center" style={{ gap: '0.35rem' }}>
+                      <span style={{ fontSize: '10px', fontWeight: 600, color: useDark ? '#64748b' : '#94a3b8', letterSpacing: '0.01em' }}>
                         Previos:
                       </span>
                       <input 
@@ -194,8 +286,16 @@ export const Proporcion4060Panel: React.FC<Proporcion4060PanelProps> = ({
                           const val = Math.max(0, parseInt(e.target.value) || 0);
                           onUpdatePastTT(val);
                         }}
-                        className="input is-small has-text-centered has-text-weight-bold" 
-                        style={{ width: '52px', height: '28px', padding: '2px', borderRadius: '5px', fontSize: 'var(--font-size-input)' }}
+                        className="input is-small has-text-centered" 
+                        style={{ 
+                          width: '36px', 
+                          height: '22px', 
+                          padding: '0 2px', 
+                          borderRadius: '4px', 
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          border: useDark ? '1px solid #334155' : '1px solid #cbd5e1'
+                        }}
                         title="Días en teletrabajo disfrutados previamente fuera de este calendario"
                       />
                     </div>
@@ -209,9 +309,9 @@ export const Proporcion4060Panel: React.FC<Proporcion4060PanelProps> = ({
                   <span className="kpi-large" style={{ fontSize: 'var(--font-size-kpi-large)', fontWeight: 'var(--font-weight-black)', color: presencColor }}>
                     {presencDays}
                   </span>
-                  {!isExport && (
-                    <div className="subtext-helper" style={{ fontSize: 'var(--font-size-subtext)', fontWeight: 'var(--font-weight-semibold)', color: presencColor, marginTop: '-2px' }}>
-                      ({pastPresenc} prev. + {calendarStats.presencial} cal.)
+                  {!isExport && pastPresenc > 0 && (
+                    <div className="subtext-helper" style={{ fontSize: '8px',  color: presencColor, marginTop: '-2px' }}>
+                      ({pastPresenc} previos + {calendarStats.presencial} calendario)
                     </div>
                   )}
                 </td>
@@ -219,9 +319,9 @@ export const Proporcion4060Panel: React.FC<Proporcion4060PanelProps> = ({
                   <span className="kpi-large" style={{ fontSize: 'var(--font-size-kpi-large)', fontWeight: 'var(--font-weight-black)', color: ttColor }}>
                     {ttDays}
                   </span>
-                  {!isExport && (
-                    <div className="subtext-helper" style={{ fontSize: 'var(--font-size-subtext)', fontWeight: 'var(--font-weight-semibold)', color: ttColor, marginTop: '-2px' }}>
-                      ({pastTT} prev. + {calendarStats.tt} cal.)
+                  {!isExport && pastTT > 0 && (
+                    <div className="subtext-helper" style={{ fontSize: '8px', color: ttColor, marginTop: '-2px' }}>
+                      ({pastTT} previos. + {calendarStats.tt} calendario)
                     </div>
                   )}
                 </td>
@@ -232,94 +332,134 @@ export const Proporcion4060Panel: React.FC<Proporcion4060PanelProps> = ({
                 <td 
                   colSpan={2} 
                   style={{ 
-                    padding: '10px 14px', 
+                    paddingTop: '9px',
+                    paddingBottom: '9px',
+                    paddingLeft: '8px',
+                    paddingRight: '8px',
                     verticalAlign: 'middle'
                   }}
                 >
-                  {/* Números grandes de un vistazo y metas */}
-                  <div className="is-flex is-justify-content-space-between is-align-items-flex-start mb-2">
-                    {/* Presencial */}
-                    <div>
-                      <div className="is-flex is-align-items-center" style={{ gap: '0.4rem' }}>
-                        <span style={{ fontSize: '15px' }}>🏢</span>
-                        <span className="kpi-huge" style={{ fontSize: 'var(--font-size-kpi-huge)', fontWeight: 'var(--font-weight-black)', color: presencColor, lineHeight: 1 }}>
+                  {/* Barra de distribución de color con valores KPI dentro */}
+                  <div 
+                    style={{ 
+                      position: 'relative',
+                      width: '100%', 
+                      height: '40px', 
+                      backgroundColor: useDark ? '#334155' : '#e2e8f0', 
+                      borderRadius: '25px', 
+                      overflow: 'hidden',
+                      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.15)'
+                    }}
+                    title={`Presencial: ${presencPctStr} (Meta: 40%) | Teletrabajo: ${ttPctStr} (Meta: 60%)`}
+                  >
+                    {/* Capa de barras de color de fondo */}
+                    <div 
+                      style={{ 
+                        position: 'absolute', 
+                        top: 0, 
+                        left: 0, 
+                        right: 0, 
+                        bottom: 0, 
+                        display: 'flex',
+                        opacity: isZeroModality ? 0.45 : 1,
+                        transition: 'opacity 0.25s ease'
+                      }}
+                    >
+                      <div 
+                        style={{ 
+                          width: `${presencBarWidth}%`, 
+                          backgroundColor: presencBarColor, 
+                          transition: 'width 0.3s ease' 
+                        }} 
+                      />
+                      <div 
+                        style={{ 
+                          width: `${ttBarWidth}%`, 
+                          backgroundColor: ttBarColor, 
+                          transition: 'width 0.3s ease' 
+                        }} 
+                      />
+                    </div>
+
+                    {/* Contenido dentro de la barra: {presencPctStr} a la izquierda y {ttPctStr} a la derecha */}
+                    <div 
+                      style={{ 
+                        position: 'relative', 
+                        zIndex: 1, 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        height: '100%', 
+                        padding: '0 12px',
+                        pointerEvents: 'none',
+                        userSelect: 'none'
+                      }}
+                    >
+                      {/* Presencial */}
+                      <div className="is-flex is-align-items-center">
+                        <span 
+                          className="kpi-large" 
+                          style={{ 
+                            fontSize: 'var(--font-size-kpi-large)', 
+                            fontWeight: 'var(--font-weight-black)', 
+                            color: '#ffffff', 
+                            lineHeight: 1,
+                            textShadow: '0 1px 3px rgba(0, 0, 0, 0.5)'
+                          }}
+                        >
                           {presencPctStr}
                         </span>
                       </div>
-                      <div className="mt-1">
-                        <span 
-                          className="tag py-0 px-2" 
-                          style={{ 
-                            fontSize: 'var(--font-size-badge)', 
-                            height: '22px', 
-                            fontWeight: 'var(--font-weight-bold)', 
-                            borderRadius: '4px',
-                            backgroundColor: presencTagBg,
-                            color: presencTagColor,
-                            border: `1px solid ${useDark ? 'rgba(96, 165, 250, 0.3)' : 'rgba(50, 115, 220, 0.25)'}`
-                          }}
-                        >
-                          Meta: 40%
-                        </span>
-                      </div>
-                    </div>
 
-                    {/* Teletrabajo */}
-                    <div className="has-text-right">
-                      <div className="is-flex is-align-items-center is-justify-content-flex-end" style={{ gap: '0.4rem' }}>
-                        <span className="kpi-huge" style={{ fontSize: 'var(--font-size-kpi-huge)', fontWeight: 'var(--font-weight-black)', color: ttColor, lineHeight: 1 }}>
-                          {ttPctStr}
-                        </span>
-                        <span style={{ fontSize: '15px' }}>💻</span>
-                      </div>
-                      <div className="mt-1 is-flex is-justify-content-flex-end">
+                      {/* Teletrabajo */}
+                      <div className="is-flex is-align-items-center is-justify-content-flex-end">
                         <span 
-                          className="tag py-0 px-2" 
+                          className="kpi-large" 
                           style={{ 
-                            fontSize: 'var(--font-size-badge)', 
-                            height: '22px', 
-                            fontWeight: 'var(--font-weight-bold)', 
-                            borderRadius: '4px',
-                            backgroundColor: ttTagBg,
-                            color: ttTagColor,
-                            border: `1px solid ${useDark ? 'rgba(74, 222, 128, 0.3)' : 'rgba(22, 163, 74, 0.25)'}`
+                            fontSize: 'var(--font-size-kpi-large)', 
+                            fontWeight: 'var(--font-weight-black)', 
+                            color: '#ffffff', 
+                            lineHeight: 1,
+                            textShadow: '0 1px 3px rgba(0, 0, 0, 0.5)'
                           }}
                         >
-                          Meta: 60%
+                          {ttPctStr}
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Barra de distribución de color */}
+                  {/* Debajo de la barra: Metas de referencia muy pequeñas */}
                   <div 
+                    className="is-flex is-justify-content-space-between is-align-items-center" 
                     style={{ 
-                      width: '100%', 
-                      height: '14px', 
-                      backgroundColor: useDark ? '#334155' : '#e2e8f0', 
-                      borderRadius: '9999px', 
-                      overflow: 'hidden',
-                      display: 'flex',
-                      boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)',
-                      marginTop: '6px'
+                      padding: '0 6px', 
+                      marginTop: '5px',
+                      lineHeight: 1
                     }}
                   >
-                    <div 
+                    <span 
                       style={{ 
-                        width: `${presencBarWidth}%`, 
-                        backgroundColor: presencBarColor, 
-                        transition: 'width 0.25s ease' 
-                      }} 
-                      title={`Presencial: ${presencPctStr}`}
-                    />
-                    <div 
+                        fontSize: '10px', 
+                        fontWeight: 600, 
+                        color: presencColor,
+                        letterSpacing: '0.01em',
+                        lineHeight: 1
+                      }}
+                    >
+                      Meta: 40%
+                    </span>
+                    <span 
                       style={{ 
-                        width: `${ttBarWidth}%`, 
-                        backgroundColor: ttBarColor, 
-                        transition: 'width 0.25s ease' 
-                      }} 
-                      title={`Teletrabajo: ${ttPctStr}`}
-                    />
+                        fontSize: '10px', 
+                        fontWeight: 600, 
+                        color: ttColor,
+                        letterSpacing: '0.01em',
+                        lineHeight: 1
+                      }}
+                    >
+                      Meta: 60%
+                    </span>
                   </div>
                 </td>
               </tr>
