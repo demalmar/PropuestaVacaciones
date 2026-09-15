@@ -557,7 +557,7 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
                   Este proyecto nace en agosto de 2026 y se crea con la intención de organizar y presentar un calendario de vacaciones para la aprobación por parte del superior.
                 </p>
                 <p className="mb-0">
-                  Mi voluntad es que el código sea de libre disposición.<br/>Por lo tanto, se informa de que este proyecto es de dominio público.
+                  Mi voluntad es que esta herramienta sea de libre disposición y gratuita para todo el mundo, salvo para cualquier fin comercial o con ánimo de lucro.
                 </p>
               </div>
 
@@ -576,18 +576,18 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
                   className="has-text-centered"
                   style={{
                     padding: '1.15rem 1.4rem',
-                    backgroundColor: isDarkMode ? 'rgba(15, 118, 110, 0.22)' : '#f0fdf4',
+                    backgroundColor: isDarkMode ? 'rgba(14, 116, 144, 0.22)' : '#f0f9ff',
                     borderBottom: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1'
                   }}
                 >
-                  <span className="tag is-success is-light has-text-weight-bold mb-1.5" style={{ fontSize: '11px', textTransform: 'uppercase' }}>
-                    Dominio Público
+                  <span className="tag is-info is-light has-text-weight-bold mb-1.5" style={{ fontSize: '11px', textTransform: 'uppercase' }}>
+                    Uso Libre No Comercial
                   </span>
-                  <h5 className="title is-6 mb-1.5" style={{ color: isDarkMode ? '#5eead4' : '#15803d', fontWeight: 800 }}>
-                    Creative Commons Zero (CC0 1.0 Universal)
+                  <h5 className="title is-6 mb-1.5" style={{ color: isDarkMode ? '#38bdf8' : '#0284c7', fontWeight: 800 }}>
+                    Creative Commons Reconocimiento-NoComercial<br/>(CC BY-NC 4.0)
                   </h5>
-                  <p className="is-size-7 mb-0" style={{ color: isDarkMode ? '#99f6e4' : '#166534', lineHeight: 1.45 }}>
-                    Dedicación universal al Dominio Público • Sin derechos reservados
+                  <p className="is-size-7 mb-0" style={{ color: isDarkMode ? '#bae6fd' : '#0369a1', lineHeight: 1.45 }}>
+                    Uso, copia y modificación gratuitos • Prohibida la explotación comercial o con ánimo de lucro
                   </p>
                 </div>
 
@@ -604,19 +604,25 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
                     <div className="is-flex is-align-items-flex-start" style={{ gap: '0.75rem' }}>
                       <span style={{ fontSize: '1.1rem', lineHeight: 1.3, flexShrink: 0 }}>🍴</span>
                       <span style={{ color: isDarkMode ? '#cbd5e1' : '#334155' }}>
-                        <strong style={{ color: isDarkMode ? '#f1f5f9' : '#0f172a' }}>Libertad total para Fork:</strong> Puedes clonar, hacer fork del repositorio en GitHub, adaptarlo a tus necesidades y crear tus propias versiones derivadas sin ninguna restricción.
+                        <strong style={{ color: isDarkMode ? '#f1f5f9' : '#0f172a' }}>Libertad para Fork y adaptación:</strong> Puedes clonar o hacer fork del repositorio en GitHub, adaptarlo a tus necesidades y crear tus propias versiones derivadas sin restricciones de uso personal o colectivo.
                       </span>
                     </div>
                     <div className="is-flex is-align-items-flex-start" style={{ gap: '0.75rem' }}>
-                      <span style={{ fontSize: '1.1rem', lineHeight: 1.3, flexShrink: 0 }}>🔓</span>
+                      <span style={{ fontSize: '1.1rem', lineHeight: 1.3, flexShrink: 0 }}>🎁</span>
                       <span style={{ color: isDarkMode ? '#cbd5e1' : '#334155' }}>
-                        <strong style={{ color: isDarkMode ? '#f1f5f9' : '#0f172a' }}>Reutilización libre sin citar:</strong> Eres totalmente libre de reutilizar cualquier parte del código para uso personal, educativo o comercial sin obligación de nombrar a la autoría ni pedir autorización previa.
+                        <strong style={{ color: isDarkMode ? '#f1f5f9' : '#0f172a' }}>Gratuito y de libre uso:</strong> Totalmente libre y gratuito para cualquier persona, empleado, departamento u organización que desee utilizarlo para organizar sus vacaciones y calendarios.
+                      </span>
+                    </div>
+                    <div className="is-flex is-align-items-flex-start" style={{ gap: '0.75rem' }}>
+                      <span style={{ fontSize: '1.1rem', lineHeight: 1.3, flexShrink: 0 }}>🚫</span>
+                      <span style={{ color: isDarkMode ? '#cbd5e1' : '#334155' }}>
+                        <strong style={{ color: isDarkMode ? '#f1f5f9' : '#0f172a' }}>Prohibido el uso comercial o lucrativo:</strong> Queda terminantemente prohibida la venta de esta aplicación o su código, su cobro por suscripción, su inclusión en paquetes de software de pago o cualquier explotación comercial con ánimo de lucro.
                       </span>
                     </div>
                     <div className="is-flex is-align-items-flex-start" style={{ gap: '0.75rem' }}>
                       <span style={{ fontSize: '1.1rem', lineHeight: 1.3, flexShrink: 0 }}>📜</span>
                       <span style={{ color: isDarkMode ? '#cbd5e1' : '#334155' }}>
-                        <strong style={{ color: isDarkMode ? '#f1f5f9' : '#0f172a' }}>Resumen legal CC0:</strong> <em>«Puede copiar, modificar, distribuir e interpretar la obra, incluso para propósitos comerciales, sin pedir permiso ni requerir atribución.»</em>
+                        <strong style={{ color: isDarkMode ? '#f1f5f9' : '#0f172a' }}>Resumen legal CC BY-NC:</strong> <em>«Puede copiar, redistribuir, remezclar y transformar la obra para cualquier propósito, siempre que no se utilice con fines comerciales ni de beneficio económico.»</em>
                       </span>
                     </div>
                   </div>
