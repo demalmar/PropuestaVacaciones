@@ -8,6 +8,8 @@ import {
   FixedWeeklySelections,
   DayData
 } from '../../types/calendar.ts';
+import { ConflictInfo } from '../../utils/consecutiveRules.ts';
+import { AlertTriangle } from 'lucide-react';
 import './MonthGrid.css';
 
 interface MonthGridProps {
@@ -23,6 +25,7 @@ interface MonthGridProps {
   presencialFirstMonday: boolean;
   weeklySelections: WeeklySelections;
   fixedWeeklySelections: FixedWeeklySelections;
+  consecutiveConflicts?: Map<string, ConflictInfo>;
   onDayClick?: (year: number, month: number, day: number) => void;
   onHeaderDayClick?: (year: number, month: number, dayIndex: number) => void;
 }
@@ -40,6 +43,7 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
   presencialFirstMonday,
   weeklySelections,
   fixedWeeklySelections,
+  consecutiveConflicts,
   onDayClick,
   onHeaderDayClick
 }) => {
@@ -105,13 +109,14 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
           ? (isCompact ? '1.5px solid #0d9488' : '2px solid #0d9488') 
           : (isCompact ? '1.5px solid #0f766e' : '2px solid #0f766e'), 
         borderRadius: isCompact ? '8px' : '12px', 
-        overflow: 'hidden', 
+        overflow: 'visible', 
         minWidth: isCompact ? '0' : (isExport ? (showWeekends ? '350px' : '260px') : (showWeekends ? '220px' : '170px')),
         width: isCompact ? '100%' : (isExport ? (showWeekends ? '350px' : '260px') : '100%'),
         backgroundColor: useDarkMode ? '#17202e' : '#ffffff',
         boxShadow: isExport ? '0 4px 20px rgba(0,0,0,0.08)' : (useDarkMode ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 20px -2px rgba(15,118,110,0.1)'),
         alignSelf: 'flex-start',
-        height: 'fit-content'
+        height: 'fit-content',
+        position: 'relative'
       }}
     >
       {/* Cabecera del Mes */}
@@ -121,6 +126,8 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          borderTopLeftRadius: isCompact ? '6.5px' : '10px',
+          borderTopRightRadius: isCompact ? '6.5px' : '10px',
           borderBottom: useDarkMode 
             ? (isCompact ? '1.5px solid #0d9488' : '2px solid #0d9488') 
             : (isCompact ? '1.5px solid #0f766e' : '2px solid #0f766e'),
@@ -202,8 +209,20 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
       </div>
       
       {/* Cuadrícula de días */}
-      <div className={`calendar-grid-${cols}`} style={{ backgroundColor: useDarkMode ? '#131b26' : '#ffffff' }}>
+      <div 
+        className={`calendar-grid-${cols}`} 
+        style={{ 
+          backgroundColor: useDarkMode ? '#131b26' : '#ffffff',
+          borderBottomLeftRadius: isCompact ? '6.5px' : '10px',
+          borderBottomRightRadius: isCompact ? '6.5px' : '10px'
+        }}
+      >
         {visibleDays.map((dayData, index) => {
+          const isLastRow = index >= visibleDays.length - cols;
+          const isBottomLeft = index === visibleDays.length - cols;
+          const isBottomRight = index === visibleDays.length - 1;
+          const cornerRadius = isCompact ? '6.5px' : '10px';
+
           // Si es un día fuera del mes (sobrantes antes del 1 o después del 30/31), casilla vacía sin romper bordes
           if (!dayData.isCurrentMonth) {
             return (
@@ -215,7 +234,9 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
                   minHeight: isCompact ? '24px' : undefined,
                   backgroundColor: useDarkMode ? '#111620' : '#f8fafc',
                   borderRight: (index % cols === cols - 1) ? 'none' : cellBorder,
-                  borderBottom: cellBorder,
+                  borderBottom: isLastRow ? 'none' : cellBorder,
+                  borderBottomLeftRadius: isBottomLeft ? cornerRadius : undefined,
+                  borderBottomRightRadius: isBottomRight ? cornerRadius : undefined,
                   cursor: 'default'
                 }}
               />
@@ -259,6 +280,15 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
 
           const isPreview = !isExport && hoveredDayIndex !== null && dayData.dayIndex === hoveredDayIndex;
 
+          // Comprobar conflicto de días consecutivos (Periodo y Moscosos pegados)
+          const conflict = !isExport && consecutiveConflicts ? consecutiveConflicts.get(dayData.dateStr) : undefined;
+          let tooltipAlignClass = 'tooltip-align-center';
+          if (dayData.dayIndex === 0) {
+            tooltipAlignClass = 'tooltip-align-left';
+          } else if (dayData.dayIndex >= cols - 1) {
+            tooltipAlignClass = 'tooltip-align-right';
+          }
+
           return (
             <div 
               key={dayData.dateStr}
@@ -266,7 +296,8 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
                 const parts = dayData.dateStr.split('-');
                 onDayClick(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
               } : undefined}
-              className={`calendar-day-cell ${isCompact ? 'is-compact' : ''} ${isColumnSelected ? 'is-presencial' : ''} ${isPreview ? 'is-presencial-preview' : ''}`}
+              className={`calendar-day-cell ${isCompact ? 'is-compact' : ''} ${isColumnSelected ? 'is-presencial' : ''} ${isPreview ? 'is-presencial-preview' : ''} ${conflict ? 'has-consecutive-conflict' : ''}`}
+              title={conflict ? conflict.message : undefined}
               style={{
                 height: isCompact ? '24px' : undefined,
                 minHeight: isCompact ? '24px' : undefined,
@@ -274,22 +305,65 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
                 color: textColor,
                 fontWeight: (dayData.dayIndex >= 5 || finalBgColor) ? 700 : 600,
                 borderRight: (index % cols === cols - 1) ? 'none' : cellBorder,
-                borderBottom: cellBorder,
+                borderBottom: isLastRow ? 'none' : cellBorder,
+                borderBottomLeftRadius: isBottomLeft ? cornerRadius : undefined,
+                borderBottomRightRadius: isBottomRight ? cornerRadius : undefined,
               }}
             >
               {/* Indicadores visuales para "Días Presenciales" (permanente o preview) */}
               {isColumnSelected ? (
                 <>
-                  <span className="presencial-border" style={{ borderColor: useDarkMode ? '#4880ed' : '#2563eb' }} />
+                  <span 
+                    className="presencial-border" 
+                    style={{ 
+                      borderColor: useDarkMode ? '#4880ed' : '#2563eb',
+                      borderBottomLeftRadius: isBottomLeft ? cornerRadius : undefined,
+                      borderBottomRightRadius: isBottomRight ? cornerRadius : undefined
+                    }} 
+                  />
                   <span className="presencial-dot" style={{ backgroundColor: useDarkMode ? '#60a5fa' : '#2563eb' }} />
-                  <span className="presencial-bar" style={{ backgroundColor: useDarkMode ? '#60a5fa' : '#2563eb' }} />
+                  <span 
+                    className="presencial-bar" 
+                    style={{ 
+                      backgroundColor: useDarkMode ? '#60a5fa' : '#2563eb',
+                      borderBottomLeftRadius: isBottomLeft ? cornerRadius : undefined,
+                      borderBottomRightRadius: isBottomRight ? cornerRadius : undefined
+                    }} 
+                  />
                 </>
               ) : isPreview ? (
                 <>
                   <span className="presencial-dot is-preview" style={{ backgroundColor: useDarkMode ? '#60a5fa' : '#2563eb' }} />
-                  <span className="presencial-bar is-preview" style={{ backgroundColor: useDarkMode ? '#60a5fa' : '#2563eb' }} />
+                  <span 
+                    className="presencial-bar is-preview" 
+                    style={{ 
+                      backgroundColor: useDarkMode ? '#60a5fa' : '#2563eb',
+                      borderBottomLeftRadius: isBottomLeft ? cornerRadius : undefined,
+                      borderBottomRightRadius: isBottomRight ? cornerRadius : undefined
+                    }} 
+                  />
                 </>
               ) : null}
+
+              {/* Indicador y tooltip flotante de conflicto por días pegados */}
+              {conflict && (
+                <>
+                  <span className="conflict-badge" title={conflict.message}>
+                    ⚠️
+                  </span>
+                  {!isExport && (
+                    <div className={`conflict-tooltip ${tooltipAlignClass}`} role="tooltip">
+                      <div className="conflict-tooltip-header">
+                        <AlertTriangle size={13} strokeWidth={2.5} style={{ flexShrink: 0, color: '#f59e0b' }} />
+                        <span>Incompatibilidad detectada</span>
+                      </div>
+                      <div className="conflict-tooltip-body">
+                        {conflict.message}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
               
               <span style={{ position: 'relative', zIndex: 1, fontSize: isCompact ? 'var(--font-size-day-annual)' : 'var(--font-size-day-bimestral)', fontWeight: (dayData.dayIndex >= 5 || finalBgColor) ? 800 : 700 }}>{dayData.day}</span>
             </div>

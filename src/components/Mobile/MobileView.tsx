@@ -38,6 +38,8 @@ export const MobileView: React.FC<MobileViewProps> = ({ app }) => {
         onOpenColorSettings={(item) => app.setColorSettingsItem(item)}
         onOpenAddColorModal={() => app.setShowAddColorModal(true)}
         isDarkMode={app.isDarkMode}
+        periodoLock5Enabled={app.periodoLock5Enabled}
+        setPeriodoLock5Enabled={app.setPeriodoLock5Enabled}
       />
 
       {/* 3. Primer Mes (Calendario Superior) */}
@@ -52,6 +54,7 @@ export const MobileView: React.FC<MobileViewProps> = ({ app }) => {
           presencialFirstMonday={app.presencialFirstMonday}
           weeklySelections={app.weeklySelections}
           fixedWeeklySelections={app.fixedWeeklySelections}
+          consecutiveConflicts={app.consecutiveConflicts}
           onDayClick={app.handleDayClick}
           onHeaderDayClick={app.handleHeaderDayClick}
         />
@@ -127,6 +130,7 @@ export const MobileView: React.FC<MobileViewProps> = ({ app }) => {
           presencialFirstMonday={app.presencialFirstMonday}
           weeklySelections={app.weeklySelections}
           fixedWeeklySelections={app.fixedWeeklySelections}
+          consecutiveConflicts={app.consecutiveConflicts}
           onDayClick={app.handleDayClick}
           onHeaderDayClick={app.handleHeaderDayClick}
         />

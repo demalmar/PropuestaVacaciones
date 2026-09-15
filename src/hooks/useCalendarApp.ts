@@ -13,6 +13,7 @@ import {
 import { INITIAL_LEGEND_COLORS } from '../constants/calendar.ts';
 import { dateToString } from '../utils/dateUtils.ts';
 import { exportToPNG, exportToJSON } from '../utils/exportUtils.ts';
+import { getConsecutiveRuleConflicts, ConflictInfo } from '../utils/consecutiveRules.ts';
 
 export interface UseCalendarAppReturn {
   currentDate: Date;
@@ -52,6 +53,11 @@ export interface UseCalendarAppReturn {
   setShowWeekends: React.Dispatch<React.SetStateAction<boolean>>;
   showNextYearJanuary: boolean;
   setShowNextYearJanuary: React.Dispatch<React.SetStateAction<boolean>>;
+  periodoLock5Enabled: boolean;
+  setPeriodoLock5Enabled: React.Dispatch<React.SetStateAction<boolean>>;
+  validateConsecutiveRules: boolean;
+  setValidateConsecutiveRules: React.Dispatch<React.SetStateAction<boolean>>;
+  consecutiveConflicts: Map<string, ConflictInfo>;
 
   legendColors: LegendColorItem[];
   setLegendColors: React.Dispatch<React.SetStateAction<LegendColorItem[]>>;
@@ -208,6 +214,36 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
       localStorage.setItem('vacationApp_showNextYearJanuary', JSON.stringify(showNextYearJanuary));
     } catch (e) {}
   }, [showNextYearJanuary]);
+
+  // Marcado en bloques de 5 días para vacaciones por periodo
+  const [periodoLock5Enabled, setPeriodoLock5Enabled] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('vacationApp_periodoLock5');
+      if (saved !== null) return JSON.parse(saved);
+    } catch (e) {}
+    return false;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('vacationApp_periodoLock5', JSON.stringify(periodoLock5Enabled));
+    } catch (e) {}
+  }, [periodoLock5Enabled]);
+
+  // Validación de reglas de días consecutivos (incompatibilidad Periodo - Moscosos)
+  const [validateConsecutiveRules, setValidateConsecutiveRules] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('vacationApp_validateConsecutiveRules');
+      if (saved !== null) return JSON.parse(saved);
+    } catch (e) {}
+    return true;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('vacationApp_validateConsecutiveRules', JSON.stringify(validateConsecutiveRules));
+    } catch (e) {}
+  }, [validateConsecutiveRules]);
 
   // Colores de leyenda
   const [legendColors, setLegendColors] = useState<LegendColorItem[]>(() => {
@@ -437,6 +473,12 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
     return { periodo, independientes, asuntos, presencial, tt };
   }, [coloredDays, weeklySelections, presencialFirstMonday]);
 
+  // Detección de incompatibilidades de días consecutivos
+  const consecutiveConflicts = useMemo(() => {
+    if (!validateConsecutiveRules) return new Map<string, ConflictInfo>();
+    return getConsecutiveRuleConflicts(coloredDays, legendColors, currentDate.getFullYear(), showNextYearJanuary);
+  }, [validateConsecutiveRules, coloredDays, legendColors, currentDate, showNextYearJanuary]);
+
   const handlePrevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   };
@@ -459,14 +501,106 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
   };
 
   const handleDayClick = (year: number, month: number, day: number) => {
-    const dateStr = dateToString(year, month, day);
+    const clickedDateStr = dateToString(year, month, day);
+
+    // Regla especial de marcado en bloques de 5 días para "Vac. por periodo" (id '2')
+    if (activeColorId === '2' && periodoLock5Enabled) {
+      // Si el día ya está marcado como Vac. por periodo, se desmarca ese día
+      if (coloredDays[clickedDateStr] === '2') {
+        setColoredDays(prev => {
+          const next = { ...prev };
+          delete next[clickedDateStr];
+          return next;
+        });
+        return;
+      }
+
+      // Función auxiliar para comprobar si un color es festivo, vac. individuales o asuntos propios
+      const isProtectedColor = (colorId: string | undefined): boolean => {
+        if (!colorId) return false;
+        if (colorId === '4' || colorId === '1' || colorId === '3') return true;
+        const cItem = legendColors.find(c => c.id === colorId);
+        if (cItem) {
+          const l = cItem.label.toLowerCase();
+          return l.includes('festivo') || l.includes('individual') || l.includes('independiente') || l.includes('asunto');
+        }
+        return false;
+      };
+
+      const clickedDate = new Date(year, month, day);
+      const clickedDayOfWeek = clickedDate.getDay();
+      const isWeekend = clickedDayOfWeek === 0 || clickedDayOfWeek === 6;
+
+      // Si el día pulsado es fin de semana, festivo, vac. independiente o asuntos propios, no se sobrescribe
+      if (isWeekend || isProtectedColor(coloredDays[clickedDateStr])) {
+        return;
+      }
+
+      // Calcular cantidad a marcar según el resto en el panel de Balance
+      const cantPeriodo = table4060.cant?.periodo ?? 0;
+      const pastPeriodo = table4060.pastDisfrutadas?.periodo || 0;
+      const currentDisfPeriodo = pastPeriodo + calendarStats.periodo;
+      const quedanPeriodo = cantPeriodo - currentDisfPeriodo;
+
+      let targetCount = 5;
+      let maxNewAllowed = 5;
+
+      if (cantPeriodo > 0) {
+        if (quedanPeriodo <= 0) {
+          // Si no queda resto de días por periodo, no se marcan nuevos días
+          return;
+        } else if (quedanPeriodo < 10) {
+          // Si el resto que queda es inferior a 10 (ej: 6, 7, 8 o 9 días),
+          // marcar solo 5 dejaría un resto huérfano menor de 5 días (1, 2, 3 o 4).
+          // La norma indica que debe combinarse con la última tanda disponible (tomarse todos juntos).
+          targetCount = quedanPeriodo;
+          maxNewAllowed = quedanPeriodo;
+        } else {
+          targetCount = 5;
+          maxNewAllowed = 5;
+        }
+      }
+
+      setColoredDays(prev => {
+        const next = { ...prev };
+        let daysInBlock = 0;
+        let newDaysAdded = 0;
+        const iter = new Date(year, month, day);
+        let safety = 0;
+
+        while (daysInBlock < targetCount && newDaysAdded < maxNewAllowed && safety < 60) {
+          safety++;
+          const dOfWeek = iter.getDay();
+          const dKey = dateToString(iter.getFullYear(), iter.getMonth(), iter.getDate());
+          const existing = next[dKey];
+
+          const isWk = dOfWeek === 0 || dOfWeek === 6;
+          const isProt = isProtectedColor(existing);
+
+          if (!isWk && !isProt) {
+            if (existing !== '2') {
+              next[dKey] = '2';
+              newDaysAdded++;
+            }
+            daysInBlock++;
+          }
+
+          iter.setDate(iter.getDate() + 1);
+        }
+
+        return next;
+      });
+      return;
+    }
+
+    // Comportamiento habitual (1 a 1)
     setColoredDays(prev => {
       const newColoredDays = { ...prev };
-      if (newColoredDays[dateStr] === activeColorId) {
-        delete newColoredDays[dateStr];
+      if (newColoredDays[clickedDateStr] === activeColorId) {
+        delete newColoredDays[clickedDateStr];
         return newColoredDays;
       }
-      newColoredDays[dateStr] = activeColorId;
+      newColoredDays[clickedDateStr] = activeColorId;
       return newColoredDays;
     });
   };
@@ -583,6 +717,8 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
         table4060,
         showWeekends,
         showNextYearJanuary,
+        periodoLock5Enabled,
+        validateConsecutiveRules,
         show4060,
         planningMode,
         viewMode
@@ -690,6 +826,14 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
         setShowNextYearJanuary(d.showNextYearJanuary);
         try { localStorage.setItem('vacationApp_showNextYearJanuary', JSON.stringify(d.showNextYearJanuary)); } catch (e) {}
       }
+      if (typeof d.periodoLock5Enabled === 'boolean') {
+        setPeriodoLock5Enabled(d.periodoLock5Enabled);
+        try { localStorage.setItem('vacationApp_periodoLock5', JSON.stringify(d.periodoLock5Enabled)); } catch (e) {}
+      }
+      if (typeof d.validateConsecutiveRules === 'boolean') {
+        setValidateConsecutiveRules(d.validateConsecutiveRules);
+        try { localStorage.setItem('vacationApp_validateConsecutiveRules', JSON.stringify(d.validateConsecutiveRules)); } catch (e) {}
+      }
       if (d.planningMode === 'libre' || d.planningMode === 'balance') {
         setPlanningMode(d.planningMode);
         try { localStorage.setItem('vacationApp_planningMode', d.planningMode); } catch (e) {}
@@ -786,6 +930,11 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
     setShowWeekends,
     showNextYearJanuary,
     setShowNextYearJanuary,
+    periodoLock5Enabled,
+    setPeriodoLock5Enabled,
+    validateConsecutiveRules,
+    setValidateConsecutiveRules,
+    consecutiveConflicts,
 
     legendColors,
     setLegendColors,

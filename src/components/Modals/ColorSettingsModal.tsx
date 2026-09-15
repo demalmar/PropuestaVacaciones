@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Lock, LockOpen } from 'lucide-react';
 import { LegendColorItem } from '../../types/calendar.ts';
 
 interface ColorSettingsModalProps {
@@ -8,6 +8,8 @@ interface ColorSettingsModalProps {
   onUpdateColor: (id: string, color: string) => void;
   onDeleteColor: (id: string) => void;
   isDarkMode: boolean;
+  periodoLock5Enabled?: boolean;
+  setPeriodoLock5Enabled?: (enabled: boolean) => void;
 }
 
 export const ColorSettingsModal: React.FC<ColorSettingsModalProps> = ({
@@ -15,7 +17,9 @@ export const ColorSettingsModal: React.FC<ColorSettingsModalProps> = ({
   onClose,
   onUpdateColor,
   onDeleteColor,
-  isDarkMode
+  isDarkMode,
+  periodoLock5Enabled,
+  setPeriodoLock5Enabled
 }) => {
   if (!item) return null;
 
@@ -101,6 +105,94 @@ export const ColorSettingsModal: React.FC<ColorSettingsModalProps> = ({
                 </div>
               </div>
             </div>
+
+            {/* Opción de bloqueo de 5 días para Vacaciones por periodo ('2') */}
+            {item.id === '2' && setPeriodoLock5Enabled && (
+              <div 
+                className="p-3" 
+                style={{ 
+                  backgroundColor: isDarkMode ? '#141d2b' : '#f8fafc',
+                  borderRadius: '12px',
+                  border: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0'
+                }}
+              >
+                <div className="is-flex is-align-items-center is-justify-content-space-between mb-2">
+                  <div className="is-flex is-align-items-center" style={{ gap: '0.6rem' }}>
+                    <div 
+                      style={{ 
+                        width: '32px', 
+                        height: '32px', 
+                        borderRadius: '8px', 
+                        backgroundColor: periodoLock5Enabled 
+                          ? (isDarkMode ? 'rgba(20, 184, 166, 0.3)' : '#ccfbf1') 
+                          : (isDarkMode ? 'rgba(255, 255, 255, 0.06)' : '#e2e8f0'),
+                        color: periodoLock5Enabled 
+                          ? (isDarkMode ? '#2dd4bf' : '#0f766e') 
+                          : (isDarkMode ? '#94a3b8' : '#64748b'),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0
+                      }}
+                    >
+                      {periodoLock5Enabled ? <Lock size={17} strokeWidth={2.6} /> : <LockOpen size={17} strokeWidth={2.5} />}
+                    </div>
+                    <div>
+                      <span className="has-text-weight-bold is-block" style={{ color: isDarkMode ? '#e2e8f0' : '#1e293b', fontSize: '13.5px' }}>
+                        Bloque de 5 días
+                      </span>
+                      <span style={{ fontSize: '12px', color: isDarkMode ? '#94a3b8' : '#64748b' }}>
+                        Marcar de 5 en 5 laborables
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setPeriodoLock5Enabled(!periodoLock5Enabled)}
+                    className="button is-small px-3"
+                    style={{
+                      height: '32px',
+                      borderRadius: '8px',
+                      border: periodoLock5Enabled 
+                        ? (isDarkMode ? '1.5px solid #14b8a6' : '1.5px solid #0f766e') 
+                        : (isDarkMode ? '1px solid #475569' : '1px solid #cbd5e1'),
+                      backgroundColor: periodoLock5Enabled
+                        ? (isDarkMode ? 'rgba(20, 184, 166, 0.35)' : '#ccfbf1')
+                        : (isDarkMode ? 'rgba(255, 255, 255, 0.05)' : '#ffffff'),
+                      color: periodoLock5Enabled
+                        ? (isDarkMode ? '#2dd4bf' : '#0f766e')
+                        : (isDarkMode ? '#94a3b8' : '#64748b'),
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '5px',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      boxShadow: periodoLock5Enabled ? '0 1px 3px rgba(15, 118, 110, 0.25)' : 'none',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {periodoLock5Enabled ? (
+                      <>
+                        <Lock size={13} strokeWidth={2.6} />
+                        <span>Activo (5)</span>
+                      </>
+                    ) : (
+                      <>
+                        <LockOpen size={13} strokeWidth={2.5} />
+                        <span>Inactivo</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <p className="mb-0" style={{ fontSize: '12px', color: isDarkMode ? '#94a3b8' : '#64748b', lineHeight: 1.35 }}>
+                  Al activarlo, marcar un día seleccionará automáticamente 5 días hábiles consecutivos. Si quedan menos de 10 días, se combinan en la última tanda.
+                </p>
+              </div>
+            )}
 
             {/* Nota para etiqueta de Festivos ('4') */}
             {item.id === '4' && (

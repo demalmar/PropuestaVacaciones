@@ -26,6 +26,8 @@ export const AppModals: React.FC<AppModalsProps> = ({ app }) => {
         setShowWeekends={app.setShowWeekends}
         show4060={app.show4060}
         setShow4060={app.setShow4060}
+        validateConsecutiveRules={app.validateConsecutiveRules}
+        setValidateConsecutiveRules={app.setValidateConsecutiveRules}
         presencialFirstMonday={app.presencialFirstMonday}
         onPresencialFirstMondayToggle={app.handlePresencialFirstMondayToggle}
         onExportData={app.handleExportData}
@@ -46,6 +48,8 @@ export const AppModals: React.FC<AppModalsProps> = ({ app }) => {
         onUpdateColor={app.handleUpdateItemColor}
         onDeleteColor={app.handleDeleteColor}
         isDarkMode={app.isDarkMode}
+        periodoLock5Enabled={app.periodoLock5Enabled}
+        setPeriodoLock5Enabled={app.setPeriodoLock5Enabled}
       />
 
       {/* Modal para Añadir Color */}

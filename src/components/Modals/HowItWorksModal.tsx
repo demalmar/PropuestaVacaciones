@@ -17,6 +17,8 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
 }) => {
   const presencialesSectionRef = useRef<HTMLElement | null>(null);
   const [isPresencialesHighlighted, setIsPresencialesHighlighted] = useState(false);
+  const incompatibilidadesSectionRef = useRef<HTMLElement | null>(null);
+  const [isIncompatibilidadesHighlighted, setIsIncompatibilidadesHighlighted] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
 
   useEffect(() => {
@@ -27,6 +29,19 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
           setIsPresencialesHighlighted(true);
           const offTimer = setTimeout(() => {
             setIsPresencialesHighlighted(false);
+          }, 2500);
+          return () => clearTimeout(offTimer);
+        }
+      }, 120);
+      return () => clearTimeout(timer);
+    }
+    if (isOpen && targetSection === 'help-incompatibilidades') {
+      const timer = setTimeout(() => {
+        if (incompatibilidadesSectionRef.current) {
+          incompatibilidadesSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          setIsIncompatibilidadesHighlighted(true);
+          const offTimer = setTimeout(() => {
+            setIsIncompatibilidadesHighlighted(false);
           }, 2500);
           return () => clearTimeout(offTimer);
         }
@@ -312,7 +327,7 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
             </p>
             <ul>
               <li><strong>Vac. días independientes:</strong> Vacaciones disfrutadas por días sueltos.</li>
-              <li><strong>Vac. por periodo:</strong> Vacaciones planificadas por bloques continuos mínimos de 5 días.</li>
+              <li><strong>Vac. por periodo:</strong> Vacaciones planificadas por bloques continuos mínimos de 5 días. Cuenta con un icono de candado con el <strong>5</strong> para activar o desactivar el marcado automático de 5 en 5 días laborables consecutivos (respetando fines de semana, festivos, vac. independientes y asuntos propios, o ajustando al resto disponible).</li>
               <li><strong>Asuntos Propios:</strong> Días reservados para trámites y gestiones personales.</li>
               <li><strong>Festivo:</strong> Días no laborales.</li>
               <li><strong>Personalizadas:</strong> Puedes crear tus propios marcadores con nombre y color libre.</li>
@@ -381,6 +396,36 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
             </h4>
             <p>
               El botón <strong>"Limpiar calendario"</strong> borra de golpe todos los días coloreados y selecciones presenciales para reiniciar tu propuesta. ¡Requiere confirmación previa para evitar borrados por error!
+            </p>
+          </section>
+
+          <section 
+            id="help-incompatibilidades"
+            ref={incompatibilidadesSectionRef}
+            className="mb-4"
+            style={{
+              borderRadius: '14px',
+              padding: isIncompatibilidadesHighlighted ? '1rem' : '0rem',
+              backgroundColor: isIncompatibilidadesHighlighted ? (isDarkMode ? 'rgba(245, 158, 11, 0.15)' : 'rgba(245, 158, 11, 0.1)') : 'transparent',
+              boxShadow: isIncompatibilidadesHighlighted ? (isDarkMode ? '0 0 0 2px #f59e0b, 0 6px 20px rgba(245,158,11,0.25)' : '0 0 0 2px #f59e0b, 0 6px 20px rgba(245,158,11,0.2)') : 'none',
+              transition: 'all 0.35s ease'
+            }}
+          >
+            <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
+              <span>⚠️</span>
+              <span>Validar incompatibilidades (Periodo y Asuntos propios)</span>
+            </h4>
+            <p className="mb-2">
+              Esta opción supervisa si existen combinaciones continuas no permitidas entre tus solicitudes:
+            </p>
+            <ul>
+              <li><strong>Permitido:</strong> Vacaciones por periodo con Días independientes, o Días independientes con Asuntos propios (Moscosos).</li>
+              <li><strong>No permitido:</strong> Vacaciones por periodo unidas a Asuntos propios (Moscosos), ya sea de forma directa o intercalando días independientes.</li>
+              <li><strong>Fines de semana:</strong> No rompen la continuidad (un viernes y el lunes siguiente se consideran contiguos).</li>
+              <li><strong>Festivos y días laborables no marcados:</strong> Sí rompen la continuidad (si hay un festivo o día laborable libre entre medias, ya no se consideran pegados).</li>
+            </ul>
+            <p style={{ fontSize: '0.9rem', color: isDarkMode ? '#94a3b8' : '#64748b' }}>
+              Cuando se detecta una incompatibilidad, las casillas afectadas se señalan con un indicador ⚠️ y una advertencia flotante contextual explicativa. Puedes activar o desactivar este control en cualquier momento desde el panel de <strong>Opciones</strong>.
             </p>
           </section>
 

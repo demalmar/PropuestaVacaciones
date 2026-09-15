@@ -63,6 +63,7 @@ export const DesktopView: React.FC<DesktopViewProps> = ({ app }) => {
             presencialFirstMonday={app.presencialFirstMonday}
             weeklySelections={app.weeklySelections}
             fixedWeeklySelections={app.fixedWeeklySelections}
+            consecutiveConflicts={app.consecutiveConflicts}
             onDayClick={app.handleDayClick}
             onHeaderDayClick={app.handleHeaderDayClick}
           />
@@ -80,6 +81,7 @@ export const DesktopView: React.FC<DesktopViewProps> = ({ app }) => {
             presencialFirstMonday={app.presencialFirstMonday}
             weeklySelections={app.weeklySelections}
             fixedWeeklySelections={app.fixedWeeklySelections}
+            consecutiveConflicts={app.consecutiveConflicts}
             onDayClick={app.handleDayClick}
             onHeaderDayClick={app.handleHeaderDayClick}
           />
@@ -99,6 +101,8 @@ export const DesktopView: React.FC<DesktopViewProps> = ({ app }) => {
       setShowNextYearJanuary={app.setShowNextYearJanuary}
       show4060={app.show4060}
       setShow4060={app.setShow4060}
+      validateConsecutiveRules={app.validateConsecutiveRules}
+      setValidateConsecutiveRules={app.setValidateConsecutiveRules}
       presencialFirstMonday={app.presencialFirstMonday}
       onPresencialFirstMondayToggle={app.handlePresencialFirstMondayToggle}
       onOpenHowItWorks={app.handleOpenHowItWorks}
@@ -176,6 +180,8 @@ export const DesktopView: React.FC<DesktopViewProps> = ({ app }) => {
                 onAddColor={app.handleAddColor}
                 isDarkMode={app.isDarkMode}
                 toggleDarkMode={app.toggleDarkMode}
+                periodoLock5Enabled={app.periodoLock5Enabled}
+                setPeriodoLock5Enabled={app.setPeriodoLock5Enabled}
                 className=""
               />
             </div>
@@ -229,6 +235,8 @@ export const DesktopView: React.FC<DesktopViewProps> = ({ app }) => {
             onAddColor={app.handleAddColor}
             isDarkMode={app.isDarkMode}
             toggleDarkMode={app.toggleDarkMode}
+            periodoLock5Enabled={app.periodoLock5Enabled}
+            setPeriodoLock5Enabled={app.setPeriodoLock5Enabled}
           />
 
           {/* 2. Columna Derecha: Calendario + Opciones + Paneles */}

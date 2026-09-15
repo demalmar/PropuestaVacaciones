@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sun, Moon, Trash2, Plus } from 'lucide-react';
+import { Sun, Moon, Trash2, Plus, Lock, LockOpen } from 'lucide-react';
 import { LegendColorItem } from '../../types/calendar.ts';
 import './ColorPalette.css';
 
@@ -11,6 +11,8 @@ interface ColorPaletteProps {
   onAddColor: (label: string, color: string) => void;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
+  periodoLock5Enabled?: boolean;
+  setPeriodoLock5Enabled?: (val: boolean) => void;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -23,6 +25,8 @@ export const ColorPalette: React.FC<ColorPaletteProps> = ({
   onAddColor,
   isDarkMode,
   toggleDarkMode,
+  periodoLock5Enabled = false,
+  setPeriodoLock5Enabled,
   className = 'column is-3-desktop is-4-tablet',
   style
 }) => {
@@ -207,6 +211,52 @@ export const ColorPalette: React.FC<ColorPaletteProps> = ({
                     {item.label}
                   </span>
                 </div>
+
+                {/* Si es Vac. por periodo: icono candado y 5 */}
+                {item.id === '2' && setPeriodoLock5Enabled && (
+                  <div className="is-flex is-align-items-center" style={{ flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveColorId('2');
+                        setPeriodoLock5Enabled(!periodoLock5Enabled);
+                      }}
+                      className="button is-small p-0"
+                      style={{
+                        height: '24px',
+                        minWidth: '38px',
+                        padding: '0 6px',
+                        borderRadius: '6px',
+                        border: periodoLock5Enabled 
+                          ? (isDarkMode ? '1.5px solid #14b8a6' : '1.5px solid #0f766e') 
+                          : (isDarkMode ? '1px solid #475569' : '1px solid #cbd5e1'),
+                        backgroundColor: periodoLock5Enabled
+                          ? (isDarkMode ? 'rgba(20, 184, 166, 0.25)' : '#ccfbf1')
+                          : (isDarkMode ? 'rgba(255, 255, 255, 0.05)' : '#f1f5f9'),
+                        color: periodoLock5Enabled
+                          ? (isDarkMode ? '#2dd4bf' : '#0f766e')
+                          : (isDarkMode ? '#94a3b8' : '#64748b'),
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '3px',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                        boxShadow: periodoLock5Enabled ? '0 1px 3px rgba(15, 118, 110, 0.25)' : 'none'
+                      }}
+                      title={periodoLock5Enabled 
+                        ? 'Bloque de 5 días ACTIVO: al marcar un día, se marcan 5 días laborables consecutivos (haz clic para desactivar)' 
+                        : 'Bloque de 5 días DESACTIVADO: haz clic para activar el marcado de 5 en 5 días'}
+                    >
+                      {periodoLock5Enabled ? (
+                        <Lock size={13} strokeWidth={2.6} />
+                      ) : (
+                        <LockOpen size={13} strokeWidth={2.5} />
+                      )}
+                      <span style={{ fontSize: '11px', fontWeight: 800, lineHeight: 1 }}>5</span>
+                    </button>
+                  </div>
+                )}
 
                 {/* Derecha: Papelera para eliminar personalizadas */}
                 {isCustom && (

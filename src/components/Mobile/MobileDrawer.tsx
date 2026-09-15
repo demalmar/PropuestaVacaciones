@@ -12,6 +12,8 @@ interface MobileDrawerProps {
   setShowWeekends: (show: boolean) => void;
   show4060: boolean;
   setShow4060: (show: boolean) => void;
+  validateConsecutiveRules: boolean;
+  setValidateConsecutiveRules: (val: boolean) => void;
   presencialFirstMonday: boolean;
   onPresencialFirstMondayToggle: (val: boolean) => void;
   onExportData: () => void;
@@ -32,6 +34,8 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
   setShowWeekends,
   show4060,
   setShow4060,
+  validateConsecutiveRules,
+  setValidateConsecutiveRules,
   presencialFirstMonday,
   onPresencialFirstMondayToggle,
   onExportData,
@@ -52,6 +56,95 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
       setIsMenuClosing(false);
     }, 210);
   };
+
+  // Renderiza una fila de opción con checkbox estandarizado y botón de ayuda opcional
+  const renderCheckboxOption = ({
+    label,
+    checked,
+    onChange,
+    sublabel,
+    onHelpClick,
+    helpTitle
+  }: {
+    label: string;
+    checked: boolean;
+    onChange: (checked: boolean) => void;
+    sublabel?: string;
+    onHelpClick?: () => void;
+    helpTitle?: string;
+  }) => (
+    <div className="is-flex is-align-items-start" style={{ gap: '0.65rem' }}>
+      <input 
+        type="checkbox" 
+        checked={checked} 
+        className={sublabel ? 'mt-1' : ''}
+        style={{ 
+          width: '18px', 
+          height: '18px', 
+          cursor: 'pointer', 
+          accentColor: '#0f766e',
+          margin: sublabel ? undefined : 0,
+          flexShrink: 0
+        }}
+        onChange={(e) => onChange(e.target.checked)} 
+      />
+      <div className="is-flex is-flex-direction-column" style={{ minWidth: 0, lineHeight: 1.25, flex: 1 }}>
+        <div className="is-flex is-align-items-center" style={{ gap: '0.45rem', flexWrap: 'wrap' }}>
+          <span 
+            onClick={() => onChange(!checked)}
+            className="has-text-weight-bold section-header" 
+            style={{ 
+              color: isDarkMode ? '#e2e8f0' : '#334155', 
+              fontSize: 'var(--font-size-label)',
+              cursor: 'pointer',
+              userSelect: 'none'
+            }}
+          >
+            {label}
+          </span>
+
+          {onHelpClick && (
+            <button
+              type="button"
+              className="button is-ghost is-small p-0 is-flex is-align-items-center"
+              onClick={(e) => {
+                e.stopPropagation();
+                onHelpClick();
+              }}
+              title={helpTitle || 'Ver explicación en la Ayuda'}
+              style={{ 
+                height: 'auto', 
+                color: isDarkMode ? '#38bdf8' : '#0284c7', 
+                cursor: 'pointer',
+                border: 'none',
+                background: 'none',
+                flexShrink: 0
+              }}
+            >
+              <Info size={16} />
+            </button>
+          )}
+        </div>
+        {sublabel && (
+          <span 
+            onClick={() => onChange(!checked)}
+            className="is-block subtext-helper" 
+            style={{ 
+              fontSize: 'var(--font-size-subtext)', 
+              fontWeight: 'var(--font-weight-medium)', 
+              color: isDarkMode ? '#94a3b8' : '#64748b', 
+              marginTop: '2px', 
+              lineHeight: 1.25,
+              cursor: 'pointer',
+              userSelect: 'none'
+            }}
+          >
+            {sublabel}
+          </span>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -186,44 +279,36 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             </div>
 
             {/* 1. Mostrar fines de semana */}
-            <label 
-              className="checkbox is-flex is-align-items-center mb-0" 
-              style={{ gap: '0.65rem', cursor: 'pointer' }}
-            >
-              <input 
-                type="checkbox" 
-                checked={showWeekends} 
-                onChange={(e) => setShowWeekends(e.target.checked)} 
-                style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#0f766e' }}
-              />
-              <span className="has-text-weight-bold" style={{ color: isDarkMode ? '#e2e8f0' : '#334155', fontSize: 'var(--font-size-label)' }}>
-                Mostrar fines de semana
-              </span>
-            </label>
+            {renderCheckboxOption({
+              label: 'Mostrar fines de semana',
+              checked: showWeekends,
+              onChange: setShowWeekends
+            })}
 
             <hr style={{ margin: '0.1rem 0', backgroundColor: isDarkMode ? '#334155' : '#f1f5f9', height: '1px' }} />
 
             {/* 2. Checkbox Mostrar panel 40-60 */}
-            <label 
-              className="checkbox is-flex is-align-items-start mb-0" 
-              style={{ gap: '0.65rem', cursor: 'pointer' }}
-            >
-              <input 
-                type="checkbox" 
-                checked={show4060} 
-                className="mt-1"
-                style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#0f766e' }}
-                onChange={(e) => setShow4060(e.target.checked)} 
-              />
-              <div>
-                <span className="has-text-weight-bold is-block section-header" style={{ color: isDarkMode ? '#e2e8f0' : '#334155', lineHeight: 1.25, fontSize: 'var(--font-size-header-section)' }}>
-                  Mostrar panel 40-60
-                </span>
-                <span className="is-block subtext-helper" style={{ fontSize: 'var(--font-size-subtext)', fontWeight: 'var(--font-weight-medium)', color: isDarkMode ? '#94a3b8' : '#64748b', marginTop: '2px', lineHeight: 1.25 }}>
-                  (Funcionarios AEAT)
-                </span>
-              </div>
-            </label>
+            {renderCheckboxOption({
+              label: 'Mostrar panel 40-60',
+              sublabel: '(Funcionarios AEAT)',
+              checked: show4060,
+              onChange: setShow4060
+            })}
+
+            <hr style={{ margin: '0.1rem 0', backgroundColor: isDarkMode ? '#334155' : '#f1f5f9', height: '1px' }} />
+
+            {/* 2b. Checkbox Validar incompatibilidades */}
+            {renderCheckboxOption({
+              label: 'Validar incompatibilidades',
+              sublabel: '(Periodo y Asuntos propios)',
+              checked: validateConsecutiveRules,
+              onChange: setValidateConsecutiveRules,
+              onHelpClick: () => {
+                onOpenHowItWorks('help-incompatibilidades');
+                handleClose();
+              },
+              helpTitle: 'Ver explicación en la Ayuda'
+            })}
 
             <hr style={{ margin: '0.1rem 0', backgroundColor: isDarkMode ? '#334155' : '#f1f5f9', height: '1px' }} />
 

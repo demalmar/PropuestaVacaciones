@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Lock } from 'lucide-react';
 import { LegendColorItem } from '../../types/calendar.ts';
 import './MobileColorBar.css';
 
@@ -10,6 +10,8 @@ interface MobileColorBarProps {
   onOpenColorSettings: (item: LegendColorItem) => void;
   onOpenAddColorModal: () => void;
   isDarkMode: boolean;
+  periodoLock5Enabled?: boolean;
+  setPeriodoLock5Enabled?: (val: boolean) => void;
 }
 
 export const MobileColorBar: React.FC<MobileColorBarProps> = ({
@@ -18,7 +20,9 @@ export const MobileColorBar: React.FC<MobileColorBarProps> = ({
   setActiveColorId,
   onOpenColorSettings,
   onOpenAddColorModal,
-  isDarkMode
+  isDarkMode,
+  periodoLock5Enabled = false,
+  setPeriodoLock5Enabled
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -270,6 +274,36 @@ export const MobileColorBar: React.FC<MobileColorBarProps> = ({
                   }}
                   title={`${item.fullName || item.label} (Mantén pulsado para opciones)`}
                 >
+                  {/* Indicador visual cuando el modo 5 días está activo (no interactivo; se activa/desactiva manteniendo pulsado) */}
+                  {item.id === '2' && periodoLock5Enabled && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '4px',
+                        right: '4px',
+                        height: '18px',
+                        padding: '0 4px',
+                        borderRadius: '4px',
+                        border: isDarkMode ? '1px solid #14b8a6' : '1px solid #0f766e',
+                        backgroundColor: isDarkMode ? 'rgba(20, 184, 166, 0.35)' : '#ccfbf1',
+                        color: isDarkMode ? '#2dd4bf' : '#0f766e',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '2px',
+                        fontSize: '9.5px',
+                        fontWeight: 800,
+                        pointerEvents: 'none',
+                        zIndex: 2,
+                        boxShadow: '0 1px 3px rgba(15, 118, 110, 0.25)'
+                      }}
+                      title="Modo 5 días activo"
+                    >
+                      <Lock size={10} strokeWidth={2.8} />
+                      <span style={{ fontSize: '9.5px', fontWeight: 800, lineHeight: 1 }}>5</span>
+                    </div>
+                  )}
+
                   {/* Muestra de color */}
                   <span
                     style={{

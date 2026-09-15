@@ -7,6 +7,7 @@ import {
   WeeklySelections,
   FixedWeeklySelections
 } from '../../types/calendar.ts';
+import { ConflictInfo } from '../../utils/consecutiveRules.ts';
 import './AnnualView.css';
 
 interface AnnualViewProps {
@@ -22,6 +23,7 @@ interface AnnualViewProps {
   presencialFirstMonday: boolean;
   weeklySelections: WeeklySelections;
   fixedWeeklySelections: FixedWeeklySelections;
+  consecutiveConflicts?: Map<string, ConflictInfo>;
   onDayClick: (year: number, month: number, day: number) => void;
   onHeaderDayClick: (year: number, month: number, dayIndex: number) => void;
 }
@@ -39,6 +41,7 @@ export const AnnualView: React.FC<AnnualViewProps> = ({
   presencialFirstMonday,
   weeklySelections,
   fixedWeeklySelections,
+  consecutiveConflicts,
   onDayClick,
   onHeaderDayClick
 }) => {
@@ -213,6 +216,7 @@ export const AnnualView: React.FC<AnnualViewProps> = ({
               presencialFirstMonday={presencialFirstMonday}
               weeklySelections={weeklySelections}
               fixedWeeklySelections={fixedWeeklySelections}
+              consecutiveConflicts={consecutiveConflicts}
               onDayClick={onDayClick}
               onHeaderDayClick={onHeaderDayClick}
             />
@@ -236,6 +240,7 @@ export const AnnualView: React.FC<AnnualViewProps> = ({
                 presencialFirstMonday={presencialFirstMonday}
                 weeklySelections={weeklySelections}
                 fixedWeeklySelections={fixedWeeklySelections}
+                consecutiveConflicts={consecutiveConflicts}
                 onDayClick={onDayClick}
                 onHeaderDayClick={onHeaderDayClick}
               />
