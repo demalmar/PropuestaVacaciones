@@ -182,6 +182,14 @@ export const DesktopView: React.FC<DesktopViewProps> = ({ app }) => {
                 toggleDarkMode={app.toggleDarkMode}
                 periodoLock5Enabled={app.periodoLock5Enabled}
                 setPeriodoLock5Enabled={app.setPeriodoLock5Enabled}
+                viewMode={app.viewMode}
+                currentYear={app.currentYear}
+                currentDate={app.currentDate}
+                onPrevYear={app.handlePrevYear}
+                onNextYear={app.handleNextYear}
+                onYearChange={app.handleSetYear}
+                onPrevMonth={app.handlePrevMonth}
+                onNextMonth={app.handleNextMonth}
                 className=""
               />
             </div>
@@ -237,6 +245,14 @@ export const DesktopView: React.FC<DesktopViewProps> = ({ app }) => {
             toggleDarkMode={app.toggleDarkMode}
             periodoLock5Enabled={app.periodoLock5Enabled}
             setPeriodoLock5Enabled={app.setPeriodoLock5Enabled}
+            viewMode={app.viewMode}
+            currentYear={app.currentYear}
+            currentDate={app.currentDate}
+            onPrevYear={app.handlePrevYear}
+            onNextYear={app.handleNextYear}
+            onYearChange={app.handleSetYear}
+            onPrevMonth={app.handlePrevMonth}
+            onNextMonth={app.handleNextMonth}
           />
 
           {/* 2. Columna Derecha: Calendario + Opciones + Paneles */}

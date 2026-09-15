@@ -26,6 +26,7 @@ interface AnnualViewProps {
   consecutiveConflicts?: Map<string, ConflictInfo>;
   onDayClick: (year: number, month: number, day: number) => void;
   onHeaderDayClick: (year: number, month: number, dayIndex: number) => void;
+  hideHeader?: boolean;
 }
 
 export const AnnualView: React.FC<AnnualViewProps> = ({
@@ -43,7 +44,8 @@ export const AnnualView: React.FC<AnnualViewProps> = ({
   fixedWeeklySelections,
   consecutiveConflicts,
   onDayClick,
-  onHeaderDayClick
+  onHeaderDayClick,
+  hideHeader = true
 }) => {
   const [yearText, setYearText] = useState(currentYear.toString());
   const [isFocused, setIsFocused] = useState(false);
@@ -106,99 +108,101 @@ export const AnnualView: React.FC<AnnualViewProps> = ({
 
   return (
     <div key="view-anual" className="view-transition-content">
-      {/* Barra de navegación de año centrada */}
-      <div 
-        className="is-flex is-align-items-center is-justify-content-center mb-3"
-        style={{ gap: '0.75rem', height: '38px' }}
-      >
-        <button
-          type="button"
-          onClick={onPrevYear}
-          className="button is-small"
-          style={{
-            backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
-            color: '#ffffff',
-            border: 'none',
-            borderRadius: '8px',
-            height: '34px',
-            padding: '0 12px',
-            fontWeight: 700,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.35rem',
-            boxShadow: '0 2px 8px rgba(15, 118, 110, 0.3)',
-            cursor: 'pointer'
-          }}
-          title="Año anterior"
+      {/* Barra de navegación de año centrada (oculta si se navega desde la barra lateral) */}
+      {!hideHeader && (
+        <div 
+          className="is-flex is-align-items-center is-justify-content-center mb-3"
+          style={{ gap: '0.75rem', height: '38px' }}
         >
-          <ChevronLeft size={16} strokeWidth={2.8} />
-          <span style={{ fontSize: 'var(--font-size-button)' }}>{currentYear - 1}</span>
-        </button>
+          <button
+            type="button"
+            onClick={onPrevYear}
+            className="button is-small"
+            style={{
+              backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '8px',
+              height: '34px',
+              padding: '0 12px',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              boxShadow: '0 2px 8px rgba(15, 118, 110, 0.3)',
+              cursor: 'pointer'
+            }}
+            title="Año anterior"
+          >
+            <ChevronLeft size={16} strokeWidth={2.8} />
+            <span style={{ fontSize: 'var(--font-size-button)' }}>{currentYear - 1}</span>
+          </button>
 
-        {/* Input escribible para seleccionar el año a mano */}
-        <input 
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          maxLength={4}
-          value={yearText}
-          onChange={handleYearChange}
-          onFocus={(e) => {
-            setIsFocused(true);
-            e.target.select();
-          }}
-          onBlur={handleYearBlur}
-          onKeyDown={handleYearKeyDown}
-          className="has-text-centered has-text-weight-bold"
-          style={{
-            backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
-            border: isDarkMode 
-              ? (isFocused ? '1.5px solid #14b8a6' : '1.5px solid #0d9488') 
-              : (isFocused ? '1.5px solid #0d9488' : '1.5px solid #0f766e'),
-            borderRadius: '10px',
-            boxShadow: isFocused 
-              ? (isDarkMode ? '0 0 0 3px rgba(20, 184, 166, 0.3)' : '0 0 0 3px rgba(15, 118, 110, 0.2)') 
-              : (isDarkMode ? '0 2px 10px rgba(0,0,0,0.3)' : '0 2px 8px rgba(15,118,110,0.12)'),
-            color: isDarkMode ? '#f8fafc' : '#0f172a',
-            fontWeight: 800,
-            fontSize: 'var(--font-size-title-year)',
-            letterSpacing: '0.03em',
-            width: '96px',
-            height: '34px',
-            padding: '0 4px',
-            outline: 'none',
-            textAlign: 'center',
-            cursor: 'text',
-            transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
-            fontFamily: 'inherit'
-          }}
-          title="Haz clic o escribe para cambiar el año (Enter para confirmar)"
-        />
+          {/* Input escribible para seleccionar el año a mano */}
+          <input 
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={4}
+            value={yearText}
+            onChange={handleYearChange}
+            onFocus={(e) => {
+              setIsFocused(true);
+              e.target.select();
+            }}
+            onBlur={handleYearBlur}
+            onKeyDown={handleYearKeyDown}
+            className="has-text-centered has-text-weight-bold"
+            style={{
+              backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+              border: isDarkMode 
+                ? (isFocused ? '1.5px solid #14b8a6' : '1.5px solid #0d9488') 
+                : (isFocused ? '1.5px solid #0d9488' : '1.5px solid #0f766e'),
+              borderRadius: '10px',
+              boxShadow: isFocused 
+                ? (isDarkMode ? '0 0 0 3px rgba(20, 184, 166, 0.3)' : '0 0 0 3px rgba(15, 118, 110, 0.2)') 
+                : (isDarkMode ? '0 2px 10px rgba(0,0,0,0.3)' : '0 2px 8px rgba(15,118,110,0.12)'),
+              color: isDarkMode ? '#f8fafc' : '#0f172a',
+              fontWeight: 800,
+              fontSize: 'var(--font-size-title-year)',
+              letterSpacing: '0.03em',
+              width: '96px',
+              height: '34px',
+              padding: '0 4px',
+              outline: 'none',
+              textAlign: 'center',
+              cursor: 'text',
+              transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
+              fontFamily: 'inherit'
+            }}
+            title="Haz clic o escribe para cambiar el año (Enter para confirmar)"
+          />
 
-        <button
-          type="button"
-          onClick={onNextYear}
-          className="button is-small"
-          style={{
-            backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
-            color: '#ffffff',
-            border: 'none',
-            borderRadius: '8px',
-            height: '34px',
-            padding: '0 12px',
-            fontWeight: 700,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.35rem',
-            boxShadow: '0 2px 8px rgba(15, 118, 110, 0.3)',
-            cursor: 'pointer'
-          }}
-          title="Año siguiente"
-        >
-          <span style={{ fontSize: 'var(--font-size-button)' }}>{currentYear + 1}</span>
-          <ChevronRight size={16} strokeWidth={2.8} />
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={onNextYear}
+            className="button is-small"
+            style={{
+              backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '8px',
+              height: '34px',
+              padding: '0 12px',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              boxShadow: '0 2px 8px rgba(15, 118, 110, 0.3)',
+              cursor: 'pointer'
+            }}
+            title="Año siguiente"
+          >
+            <span style={{ fontSize: 'var(--font-size-button)' }}>{currentYear + 1}</span>
+            <ChevronRight size={16} strokeWidth={2.8} />
+          </button>
+        </div>
+      )}
 
       {/* Cuadrícula Anual: 4 columnas x 3 filas (12 meses) */}
       <div key={`annual-grid-${currentYear}`} className="annual-calendar-grid">

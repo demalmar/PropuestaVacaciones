@@ -24,6 +24,7 @@ interface SemestralViewProps {
   consecutiveConflicts?: Map<string, ConflictInfo>;
   onDayClick: (year: number, month: number, day: number) => void;
   onHeaderDayClick: (year: number, month: number, dayIndex: number) => void;
+  hideHeader?: boolean;
 }
 
 export const SemestralView: React.FC<SemestralViewProps> = ({
@@ -39,7 +40,8 @@ export const SemestralView: React.FC<SemestralViewProps> = ({
   fixedWeeklySelections,
   consecutiveConflicts,
   onDayClick,
-  onHeaderDayClick
+  onHeaderDayClick,
+  hideHeader = true
 }) => {
   const leftYear = currentDate.getFullYear();
   const leftMonth = currentDate.getMonth();
@@ -50,11 +52,12 @@ export const SemestralView: React.FC<SemestralViewProps> = ({
 
   return (
     <div key="view-bimestral" className="view-transition-content">
-      {/* Control de navegación bimestral (< >) centrado encima del calendario */}
-      <div 
-        className="is-flex is-align-items-center is-justify-content-center mb-3"
-        style={{ height: '38px' }}
-      >
+      {/* Control de navegación bimestral (< >) centrado encima del calendario (oculto si se navega desde la barra lateral) */}
+      {!hideHeader && (
+        <div 
+          className="is-flex is-align-items-center is-justify-content-center mb-3"
+          style={{ height: '38px' }}
+        >
         <div 
           className="is-flex is-align-items-center"
           style={{
@@ -109,6 +112,7 @@ export const SemestralView: React.FC<SemestralViewProps> = ({
           </button>
         </div>
       </div>
+      )}
 
       {/* Meses del calendario bimestral */}
       <div className="is-flex is-justify-content-center" style={{ gap: '1.25rem', alignItems: 'flex-start' }}>

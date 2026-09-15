@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Sun, Moon, Trash2, Plus, Lock, LockOpen } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sun, Moon, Trash2, Plus, Lock, LockOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LegendColorItem } from '../../types/calendar.ts';
 import './ColorPalette.css';
 
@@ -15,6 +15,14 @@ interface ColorPaletteProps {
   setPeriodoLock5Enabled?: (val: boolean) => void;
   className?: string;
   style?: React.CSSProperties;
+  viewMode?: 'anual' | 'bimestral' | 'semestral';
+  currentYear?: number;
+  currentDate?: Date;
+  onPrevYear?: () => void;
+  onNextYear?: () => void;
+  onYearChange?: (year: number) => void;
+  onPrevMonth?: () => void;
+  onNextMonth?: () => void;
 }
 
 export const ColorPalette: React.FC<ColorPaletteProps> = ({
@@ -28,10 +36,81 @@ export const ColorPalette: React.FC<ColorPaletteProps> = ({
   periodoLock5Enabled = false,
   setPeriodoLock5Enabled,
   className = 'column is-3-desktop is-4-tablet',
-  style
+  style,
+  viewMode = 'anual',
+  currentYear,
+  currentDate,
+  onPrevYear,
+  onNextYear,
+  onYearChange,
+  onPrevMonth,
+  onNextMonth
 }) => {
   const [newLabel, setNewLabel] = useState('');
   const [newColorHex, setNewColorHex] = useState('#cbd5e1');
+
+  // Estado y lógica para el input del año en vista anual
+  const [yearText, setYearText] = useState((currentYear || new Date().getFullYear()).toString());
+  const [isYearFocused, setIsYearFocused] = useState(false);
+
+  useEffect(() => {
+    if (currentYear) {
+      setYearText(currentYear.toString());
+    }
+  }, [currentYear]);
+
+  const commitYear = (val: string) => {
+    const parsed = parseInt(val, 10);
+    if (!isNaN(parsed) && parsed >= 1970 && parsed <= 2100) {
+      if (onYearChange) {
+        onYearChange(parsed);
+      }
+      setYearText(parsed.toString());
+    } else if (currentYear) {
+      setYearText(currentYear.toString());
+    }
+  };
+
+  const handleYearChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/[^0-9]/g, '');
+    if (val.length <= 4) {
+      setYearText(val);
+    }
+  };
+
+  const handleYearBlur = () => {
+    setIsYearFocused(false);
+    commitYear(yearText);
+  };
+
+  const handleYearKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      commitYear(yearText);
+      (e.target as HTMLInputElement).blur();
+    } else if (e.key === 'Escape') {
+      if (currentYear) setYearText(currentYear.toString());
+      (e.target as HTMLInputElement).blur();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      onNextYear?.();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      onPrevYear?.();
+    }
+  };
+
+  // Cálculo de meses para vista bimestral
+  const MONTH_SHORT = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const leftDate = currentDate || new Date();
+  const leftMonth = leftDate.getMonth();
+  const leftYear = leftDate.getFullYear();
+  const rightDate = new Date(leftYear, leftMonth + 1, 1);
+  const rightMonth = rightDate.getMonth();
+  const rightYear = rightDate.getFullYear();
+
+  const bimestreLabel = leftYear === rightYear
+    ? `${MONTH_SHORT[leftMonth]} - ${MONTH_SHORT[rightMonth]} ${leftYear}`
+    : `${MONTH_SHORT[leftMonth]} ${leftYear} - ${MONTH_SHORT[rightMonth]} ${rightYear}`;
 
   const handleAdd = () => {
     if (!newLabel.trim()) return;
@@ -138,6 +217,190 @@ export const ColorPalette: React.FC<ColorPaletteProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Navegación temporal (Año en vista anual, Bimestre en vista bimestral) */}
+      {(onPrevYear || onPrevMonth) && (
+        <div 
+          className="box mb-3 p-2" 
+          style={{ 
+            border: isDarkMode ? '1px solid #334155' : '1px solid #cbd5e1', 
+            borderRadius: '12px', 
+            backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+            boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(30, 41, 59, 0.04)',
+            minHeight: '48px',
+            display: 'flex',
+            alignItems: 'center'
+          }}
+        >
+          {viewMode === 'bimestral' || viewMode === 'semestral' ? (
+            <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '6px' }}>
+              <button
+                type="button"
+                onClick={onPrevMonth}
+                className="button is-small p-0"
+                style={{
+                  backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  height: '34px',
+                  width: '38px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  boxShadow: '0 1px 4px rgba(15, 118, 110, 0.25)',
+                  flexShrink: 0
+                }}
+                title="Bimestre anterior"
+              >
+                <ChevronLeft size={18} strokeWidth={2.8} />
+              </button>
+
+              <div className="is-flex is-flex-direction-column is-align-items-center" style={{ minWidth: 0, flex: 1 }}>
+                <span 
+                  className="has-text-weight-bold has-text-centered is-clipped" 
+                  style={{ 
+                    color: isDarkMode ? '#f8fafc' : '#0f172a',
+                    fontSize: '13.5px',
+                    lineHeight: 1.2,
+                    letterSpacing: '0.01em',
+                    whiteSpace: 'nowrap'
+                  }}
+                  title={bimestreLabel}
+                >
+                  {bimestreLabel}
+                </span>
+                <span style={{ fontSize: '10px', color: isDarkMode ? '#94a3b8' : '#64748b', fontWeight: 600, letterSpacing: '0.04em' }}>
+                  VISTA BIMESTRAL
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={onNextMonth}
+                className="button is-small p-0"
+                style={{
+                  backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  height: '34px',
+                  width: '38px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  boxShadow: '0 1px 4px rgba(15, 118, 110, 0.25)',
+                  flexShrink: 0
+                }}
+                title="Bimestre siguiente"
+              >
+                <ChevronRight size={18} strokeWidth={2.8} />
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', width: '100%', gap: '6px' }}>
+              <button
+                type="button"
+                onClick={onPrevYear}
+                className="button is-small"
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  height: '34px',
+                  padding: '0 4px',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '3px',
+                  boxShadow: '0 1px 4px rgba(15, 118, 110, 0.25)',
+                  cursor: 'pointer',
+                  fontSize: '12.5px',
+                  whiteSpace: 'nowrap'
+                }}
+                title="Año anterior"
+              >
+                <ChevronLeft size={15} strokeWidth={2.8} />
+                <span>{currentYear ? currentYear - 1 : ''}</span>
+              </button>
+
+              <input 
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={4}
+                value={yearText}
+                onChange={handleYearChange}
+                onFocus={(e) => {
+                  setIsYearFocused(true);
+                  e.target.select();
+                }}
+                onBlur={handleYearBlur}
+                onKeyDown={handleYearKeyDown}
+                className="has-text-centered has-text-weight-bold"
+                style={{
+                  backgroundColor: isDarkMode ? '#0f172a' : '#f8fafc',
+                  border: isDarkMode 
+                    ? (isYearFocused ? '1.5px solid #14b8a6' : '1.5px solid #334155') 
+                    : (isYearFocused ? '1.5px solid #0d9488' : '1.5px solid #cbd5e1'),
+                  borderRadius: '8px',
+                  boxShadow: isYearFocused 
+                    ? (isDarkMode ? '0 0 0 2px rgba(20, 184, 166, 0.3)' : '0 0 0 2px rgba(15, 118, 110, 0.2)') 
+                    : 'none',
+                  color: isDarkMode ? '#f8fafc' : '#0f172a',
+                  fontWeight: 800,
+                  fontSize: '16px',
+                  letterSpacing: '0.02em',
+                  width: '82px',
+                  height: '34px',
+                  padding: '0 2px',
+                  outline: 'none',
+                  textAlign: 'center',
+                  cursor: 'text',
+                  transition: 'all 0.15s ease',
+                  flexShrink: 0
+                }}
+                title="Haz clic o escribe para cambiar el año (Enter para confirmar)"
+              />
+
+              <button
+                type="button"
+                onClick={onNextYear}
+                className="button is-small"
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  backgroundColor: isDarkMode ? '#0d9488' : '#0f766e',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  height: '34px',
+                  padding: '0 4px',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '3px',
+                  boxShadow: '0 1px 4px rgba(15, 118, 110, 0.25)',
+                  cursor: 'pointer',
+                  fontSize: '12.5px',
+                  whiteSpace: 'nowrap'
+                }}
+                title="Año siguiente"
+              >
+                <span>{currentYear ? currentYear + 1 : ''}</span>
+                <ChevronRight size={15} strokeWidth={2.8} />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       <div 
         className="box p-3 is-flex is-flex-direction-column" 
