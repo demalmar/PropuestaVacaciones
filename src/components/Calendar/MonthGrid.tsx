@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MONTHS, DAYS_OF_WEEK } from '../../constants/calendar.ts';
 import { getFirstDayOfMonth, dateToString } from '../../utils/dateUtils.ts';
+import { getContrastTextColor } from '../../utils/colorUtils.ts';
 import {
   LegendColorItem,
   ColoredDays,
@@ -259,14 +260,10 @@ export const MonthGrid: React.FC<MonthGridProps> = ({
           // Color de fondo
           let cellBg = finalBgColor ? finalBgColor : (useDarkMode ? '#1c2635' : '#ffffff');
           
-          // Color del texto
+          // Color del texto dinámico según contraste de luminancia
           let textColor = '#1e293b';
           if (finalBgColor) {
-            if (finalBgColor === '#ef4444' || finalBgColor === '#dc2626') {
-              textColor = '#ffffff';
-            } else {
-              textColor = '#0f172a';
-            }
+            textColor = getContrastTextColor(finalBgColor, '#0f172a', '#ffffff');
           } else if (useDarkMode) {
             textColor = dayData.dayIndex >= 5 ? '#fda4af' : '#e2e8f0';
           } else {
