@@ -327,8 +327,8 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
             </p>
             <ul>
               <li><strong>Vac. días independientes:</strong> Vacaciones disfrutadas por días sueltos.</li>
-              <li><strong>Vac. por periodo:</strong> Vacaciones planificadas por bloques continuos mínimos de 5 días. Cuenta con un icono de candado con el <strong>5</strong> para activar o desactivar el marcado automático de 5 en 5 días laborables consecutivos (respetando fines de semana, festivos, vac. independientes y asuntos propios, o ajustando al resto disponible).</li>
-              <li><strong>Asuntos Propios:</strong> Días reservados para trámites y gestiones personales.</li>
+              <li><strong>Vac. por periodo:</strong> Vacaciones planificadas por bloques continuos mínimos de 5 días. Cuenta con un icono de candado con el <strong>5</strong> para activar o desactivar el marcado automático de 5 en 5 días laborables consecutivos (respetando fines de semana, festivos, vac. independientes y asuntos particulares, o ajustando al resto disponible).</li>
+              <li><strong>Asuntos Particulares:</strong> Días retribuidos (habitualmente conocidos como moscosos) reservados para trámites y gestiones personales (no confundir con permisos por asuntos propios, que son licencias sin sueldo).</li>
               <li><strong>Festivo:</strong> Días no laborales.</li>
               <li><strong>Personalizadas:</strong> Puedes crear tus propios marcadores con nombre y color libre.</li>
             </ul>
@@ -413,14 +413,14 @@ export const HowItWorksModal: React.FC<HowItWorksModalProps> = ({
           >
             <h4 className="title is-6 has-text-info mb-2 is-flex is-align-items-center" style={{ gap: '0.5rem' }}>
               <span>⚠️</span>
-              <span>Validar incompatibilidades (Periodo y Asuntos propios)</span>
+              <span>Validar incompatibilidades (Periodo y Asuntos particulares)</span>
             </h4>
             <p className="mb-2">
               Esta opción supervisa si existen combinaciones continuas no permitidas entre tus solicitudes:
             </p>
             <ul>
-              <li><strong>Permitido:</strong> Vacaciones por periodo con Días independientes, o Días independientes con Asuntos propios (Moscosos).</li>
-              <li><strong>No permitido:</strong> Vacaciones por periodo unidas a Asuntos propios (Moscosos), ya sea de forma directa o intercalando días independientes.</li>
+              <li><strong>Permitido:</strong> Vacaciones por periodo con Días independientes, o Días independientes con Asuntos particulares (Moscosos).</li>
+              <li><strong>No permitido:</strong> Vacaciones por periodo unidas a Asuntos particulares (Moscosos), ya sea de forma directa o intercalando días independientes.</li>
               <li><strong>Fines de semana:</strong> No rompen la continuidad (un viernes y el lunes siguiente se consideran contiguos).</li>
               <li><strong>Festivos y días laborables no marcados:</strong> Sí rompen la continuidad (si hay un festivo o día laborable libre entre medias, ya no se consideran pegados).</li>
             </ul>

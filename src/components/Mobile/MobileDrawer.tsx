@@ -300,7 +300,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({
             {/* 2b. Checkbox Validar incompatibilidades */}
             {renderCheckboxOption({
               label: 'Validar incompatibilidades',
-              sublabel: '(Periodo y Asuntos propios)',
+              sublabel: '(Periodo y Asuntos particulares)',
               checked: validateConsecutiveRules,
               onChange: setValidateConsecutiveRules,
               onHelpClick: () => {

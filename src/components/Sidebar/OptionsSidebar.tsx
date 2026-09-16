@@ -307,7 +307,7 @@ export const OptionsSidebar: React.FC<OptionsSidebarProps> = ({
           {/* 3b. Validar incompatibilidades (Periodo y Moscosos) */}
           {renderCheckboxOption({
             label: 'Validar incompatibilidades',
-            sublabel: '(Periodo y Asuntos propios)',
+            sublabel: '(Periodo y Asuntos particulares)',
             checked: validateConsecutiveRules,
             onChange: setValidateConsecutiveRules,
             onHelpClick: () => onOpenHowItWorks('help-incompatibilidades'),

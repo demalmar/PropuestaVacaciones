@@ -11,7 +11,7 @@ export interface ConflictInfo {
 
 /**
  * Detecta cadenas contiguas de días de ausencia donde se combinan indebidamente
- * "Vacaciones por periodo" y "Asuntos propios / Moscosos" (ya sea de forma directa
+ * "Vacaciones por periodo" y "Asuntos particulares / Moscosos" (ya sea de forma directa
  * o mediante días individuales/independientes interpuestos).
  *
  * Normas de contigüidad:
@@ -96,7 +96,7 @@ export const getConsecutiveRuleConflicts = (
 
       // Si conviven vacaciones por periodo y moscosos en la misma cadena -> Infracción
       if (hasPeriodo && hasMoscoso) {
-        let msg = 'Incompatibilidad de días consecutivos: No se pueden unir vacaciones por periodo y días de asuntos propios (moscosos)';
+        let msg = 'Incompatibilidad de días consecutivos: No se pueden unir vacaciones por periodo y días de asuntos particulares (moscosos)';
         if (hasIndep) {
           msg += ', ni directamente ni intercalando días de vacaciones individuales.';
         } else {

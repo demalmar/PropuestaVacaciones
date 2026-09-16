@@ -257,6 +257,9 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
             if ((c.id === '4' || c.label?.toLowerCase().includes('festivo')) && (c.color === '#fca5a5' || c.color === '#f87171')) {
               return { ...c, color: '#ef4444' };
             }
+            if (c.id === '3' && (c.label === 'Asuntos Propios' || c.fullName === 'Asuntos Propios')) {
+              return { ...c, label: 'Asuntos Particulares', fullName: 'Asuntos Particulares' };
+            }
             return c;
           });
         }
@@ -515,7 +518,7 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
         return;
       }
 
-      // Función auxiliar para comprobar si un color es festivo, vac. individuales o asuntos propios
+      // Función auxiliar para comprobar si un color es festivo, vac. individuales o asuntos particulares
       const isProtectedColor = (colorId: string | undefined): boolean => {
         if (!colorId) return false;
         if (colorId === '4' || colorId === '1' || colorId === '3') return true;
@@ -531,7 +534,7 @@ export const useCalendarApp = (): UseCalendarAppReturn => {
       const clickedDayOfWeek = clickedDate.getDay();
       const isWeekend = clickedDayOfWeek === 0 || clickedDayOfWeek === 6;
 
-      // Si el día pulsado es fin de semana, festivo, vac. independiente o asuntos propios, no se sobrescribe
+      // Si el día pulsado es fin de semana, festivo, vac. independiente o asuntos particulares, no se sobrescribe
       if (isWeekend || isProtectedColor(coloredDays[clickedDateStr])) {
         return;
       }
